@@ -7,12 +7,14 @@ __kernel void field_summary
  __global const double * __restrict const xvel0,
  __global const double * __restrict const yvel0,
  __global const double * __restrict const zvel0,
+ __global const double * __restrict const u,
 
  __global double * __restrict const vol,
  __global double * __restrict const mass,
  __global double * __restrict const ie,
  __global double * __restrict const ke,
- __global double * __restrict const press)
+ __global double * __restrict const press,
+ __global double * __restrict const temp)
 {
     __kernel_indexes;
 
