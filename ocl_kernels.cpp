@@ -114,6 +114,34 @@ void CloverChunk::initProgram
     compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_front_buffer", pack_front_buffer_device);
     compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_front_buffer", unpack_front_buffer_device);
 
+    if (tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV)
+    {
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_u", tea_leaf_cg_init_u_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_directions", tea_leaf_cg_init_directions_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_others", tea_leaf_cg_init_others_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_w", tea_leaf_cg_solve_calc_w_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_ur", tea_leaf_cg_solve_calc_ur_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_p", tea_leaf_cg_solve_calc_p_device);
+
+        if (tea_solver == TEA_ENUM_CHEBYSHEV)
+        {
+            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_init_p", tea_leaf_cheby_solve_init_p_device);
+            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_u", tea_leaf_cheby_solve_calc_u_device);
+            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_p", tea_leaf_cheby_solve_calc_p_device);
+            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_resid", tea_leaf_cheby_solve_calc_resid_device);
+            //compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_loop_calc_u", tea_leaf_cheby_solve_loop_calc_u_device);
+        }
+    }
+    else
+    {
+        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_init", tea_leaf_jacobi_init_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_copy_u", tea_leaf_jacobi_copy_u_device);
+        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_solve", tea_leaf_jacobi_solve_device);
+    }
+
+    compileKernel(options_str, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_diag", tea_leaf_init_diag_device);
+    compileKernel(options_str, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_finalise", tea_leaf_finalise_device);
+
     fprintf(stdout, "done.\n");
     fprintf(DBGOUT, "All kernels compiled\n");
 }

@@ -109,6 +109,7 @@ private:
     cl::Kernel viscosity_device;
     cl::Kernel revert_device;
     cl::Kernel reset_field_device;
+    cl::Kernel set_field_device;
     cl::Kernel field_summary_device;
     cl::Kernel calc_dt_device;
 
@@ -155,7 +156,6 @@ private:
     cl::Kernel update_halo_right_device;
     cl::Kernel update_halo_back_device;
     cl::Kernel update_halo_front_device;
-
     // mpi packing
     cl::Kernel pack_left_buffer_device;
     cl::Kernel unpack_left_buffer_device;
@@ -183,6 +183,48 @@ private:
     std::vector<cl::Buffer> top_subbuffers[2];
     std::vector<cl::Buffer> back_subbuffers[2];
     std::vector<cl::Buffer> front_subbuffers[2];
+
+    #define TEA_ENUM_JACOBI     1
+    #define TEA_ENUM_CG         2
+    #define TEA_ENUM_CHEBYSHEV  3
+    int tea_solver;
+
+    // TODO could be used by all - precalculate diagonal + scale Kx/Ky
+    cl::Kernel tea_leaf_init_diag_device;
+
+    // tea leaf
+    cl::Kernel tea_leaf_cg_init_u_device;
+    cl::Kernel tea_leaf_cg_init_directions_device;
+    cl::Kernel tea_leaf_cg_init_others_device;
+    cl::Kernel tea_leaf_cg_solve_calc_w_device;
+    cl::Kernel tea_leaf_cg_solve_calc_ur_device;
+    cl::Kernel tea_leaf_cg_solve_calc_p_device;
+    cl::Buffer z;
+
+    // chebyshev solver
+    cl::Kernel tea_leaf_cheby_solve_init_p_device;
+    cl::Kernel tea_leaf_cheby_solve_calc_u_device;
+    cl::Kernel tea_leaf_cheby_solve_calc_p_device;
+    cl::Kernel tea_leaf_cheby_solve_calc_resid_device;
+    //cl::Kernel tea_leaf_cheby_solve_loop_calc_u_device;
+
+    // used to hold the alphas/beta used in chebyshev solver - different from CG ones!
+    cl::Buffer ch_alphas_device, ch_betas_device;
+
+    // need more for the Kx/Ky arrays
+    cl::Kernel tea_leaf_jacobi_init_device;
+    cl::Kernel tea_leaf_jacobi_copy_u_device;
+    cl::Kernel tea_leaf_jacobi_solve_device;
+
+    cl::Buffer u, u0;
+    cl::Kernel tea_leaf_finalise_device;
+
+    // tolerance specified in tea.in
+    float tolerance;
+
+    // calculate rx/ry to pass back to fortran
+    void calcrxry
+    (double dt, double * rx, double * ry);
 
     // specific sizes and launch offsets for different kernels
     typedef struct {
@@ -375,7 +417,7 @@ public:
         double* xl_pos, double* yl_pos,double* zl_pos, int* jldt, int* kldt,int* lldt, int* small);
 
     void field_summary_kernel(double* vol, double* mass,
-        double* ie, double* ke, double* press);
+        double* ie, double* ke, double* press, double* temp);
 
     void PdV_kernel(int* error_condition, int predict, double dbyt);
 
@@ -410,9 +452,32 @@ public:
 
     void revert_kernel();
 
+    void set_field_kernel();
     void reset_field_kernel();
 
     void viscosity_kernel();
+
+    // Tea leaf
+    void tea_leaf_init_jacobi(int, double, double*, double*);
+    void tea_leaf_kernel_jacobi(double, double, double*);
+
+    void tea_leaf_init_cg(int, double, double*, double*, double*);
+    void tea_leaf_kernel_cg_calc_w(double rx, double ry, double* pw);
+    void tea_leaf_kernel_cg_calc_ur(double alpha, double* rrn);
+    void tea_leaf_kernel_cg_calc_p(double beta);
+
+    void tea_leaf_cheby_copy_u
+    (void);
+    void tea_leaf_calc_2norm_kernel
+    (int norm_array, double* norm);
+    void tea_leaf_kernel_cheby_init
+    (const double * ch_alphas, const double * ch_betas, int n_coefs,
+     const double rx, const double ry, const double theta, double* error);
+    void tea_leaf_kernel_cheby_iterate
+    (const double * ch_alphas, const double * ch_betas, int n_coefs,
+     const double rx, const double ry, const int cheby_calc_steps);
+
+    void tea_leaf_finalise();
 
     // ctor
     CloverChunk
