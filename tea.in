@@ -25,6 +25,8 @@
  opencl_type=GPU
  opencl_device=0
 
+ tl_use_cg
+
  !profiler_on=1
 
 *endclover

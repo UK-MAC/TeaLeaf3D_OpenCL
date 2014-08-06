@@ -109,10 +109,9 @@ void CloverChunk::initOcl
 
     int desired_vendor = platformRead(input);
 
-
     if (desired_vendor == NO_PLAT)
     {
-        DIE("No platform specified in tea.in\n");
+        DIE("No opencl_vendor specified in tea.in\n");
     }
     else if (desired_vendor == LIST_PLAT)
     {
@@ -187,8 +186,38 @@ void CloverChunk::initOcl
     int preferred_device = preferredDevice(input);
     preferred_device = (preferred_device < 0) ? 0 : preferred_device;
     fprintf(DBGOUT, "Preferred device is %d\n", preferred_device);
-    bool usefirst = paramEnabled(input, "opencl_usefirst");
     desired_type = typeRead(input);
+
+    // find out which solver to use
+    bool tl_use_jacobi = paramEnabled(input, "tl_use_jacobi");
+    bool tl_use_cg = paramEnabled(input, "tl_use_cg");
+    bool tl_use_chebyshev = paramEnabled(input, "tl_use_chebyshev");
+
+    // use first device whatever happens (ignore MPI rank) for running across different platforms
+    bool usefirst = paramEnabled(input, "opencl_usefirst");
+
+    if(!rank)fprintf(stdout, "Solver to use: ");
+    if (tl_use_chebyshev)
+    {
+        tea_solver = TEA_ENUM_CHEBYSHEV;
+        if(!rank)fprintf(stdout, "Chebyshev + CG\n");
+    }
+    else if (tl_use_cg)
+    {
+        tea_solver = TEA_ENUM_CG;
+        if(!rank)fprintf(stdout, "Conjugate gradient\n");
+    }
+    else if (tl_use_jacobi)
+    {
+        tea_solver = TEA_ENUM_JACOBI;
+        if(!rank)fprintf(stdout, "Jacobi\n");
+    }
+    else
+    {
+        tea_solver = TEA_ENUM_JACOBI;
+        if(!rank)fprintf(stdout, "Jacobi (no solver specified in tea.in)\n");
+    }
+
     fclose(input);
 
     // try to create a context with the desired type
