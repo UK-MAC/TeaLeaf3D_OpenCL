@@ -26,6 +26,8 @@
  opencl_device=0
 
  tl_use_cg
+ tl_max_iters=500
+ tl_eps=0.00000000001
 
  !profiler_on=1
 

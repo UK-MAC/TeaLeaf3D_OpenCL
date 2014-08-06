@@ -91,6 +91,9 @@ SUBROUTINE read_input()
   profiler%flux=0.0
   profiler%halo_exchange=0.0
 
+  eps = 1e-10
+  max_iters = 1000
+
   tl_ch_cg_errswitch = .false.
   tl_ch_cg_presteps = 30
   tl_ch_cg_epslim = 1e-5

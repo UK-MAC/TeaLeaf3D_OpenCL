@@ -3,7 +3,8 @@
 __kernel void tea_leaf_init_diag
 (__global       double * __restrict const Kx,
  __global       double * __restrict const Ky,
- double rx, double ry)
+ __global       double * __restrict const Kz,
+ double rx, double ry, double rz)
 {
     __kernel_indexes;
 
@@ -13,6 +14,7 @@ __kernel void tea_leaf_init_diag
     {
         Kx[THARR3D(0, 0, 0, 0, 0)] *= rx;
         Ky[THARR3D(0, 0, 0, 0, 0)] *= ry;
+        Kz[THARR3D(0, 0, 0, 0, 0)] *= ry;
     }
 }
 

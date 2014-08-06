@@ -8,11 +8,11 @@
 __kernel void tea_leaf_jacobi_init
 (__global const double * __restrict const density1,
  __global const double * __restrict const energy1,
+ __global       double * __restrict const u0,
+ __global       double * __restrict const u1,
  __global       double * __restrict const Kx,
  __global       double * __restrict const Ky,
  __global       double * __restrict const Kz,
- __global       double * __restrict const u0,
- __global       double * __restrict const u1,
  const int coef)
 {
     __kernel_indexes;
@@ -68,12 +68,12 @@ __kernel void tea_leaf_jacobi_copy_u
 
 __kernel void tea_leaf_jacobi_solve
 (double rx, double ry, double rz,
- __global const double * __restrict const Kx,
- __global const double * __restrict const Ky,
- __global const double * __restrict const Kz,
  __global const double * __restrict const u0,
  __global       double * __restrict const u1,
  __global const double * __restrict const un,
+ __global const double * __restrict const Kx,
+ __global const double * __restrict const Ky,
+ __global const double * __restrict const Kz,
  __global       double * __restrict const error)
 {
     __kernel_indexes;

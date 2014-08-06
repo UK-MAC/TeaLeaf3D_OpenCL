@@ -182,15 +182,15 @@ void CloverChunk::tea_leaf_init_cg
     calcrxryrz(dt, rx, ry, rz);
 
     // only needs to be set once
-    tea_leaf_cg_solve_calc_w_device.setArg(5, *rx);
-    tea_leaf_cg_solve_calc_w_device.setArg(6, *ry);
-    tea_leaf_cg_solve_calc_w_device.setArg(7, *rz);
-    tea_leaf_cg_init_others_device.setArg(8, *rx);
-    tea_leaf_cg_init_others_device.setArg(9, *ry);
-    tea_leaf_cg_init_others_device.setArg(10, *rz);
-    tea_leaf_init_diag_device.setArg(2, *rx);
-    tea_leaf_init_diag_device.setArg(3, *ry);
-    tea_leaf_init_diag_device.setArg(4, *rz);
+    tea_leaf_cg_solve_calc_w_device.setArg(6, *rx);
+    tea_leaf_cg_solve_calc_w_device.setArg(7, *ry);
+    tea_leaf_cg_solve_calc_w_device.setArg(8, *rz);
+    tea_leaf_cg_init_others_device.setArg(9, *rx);
+    tea_leaf_cg_init_others_device.setArg(10, *ry);
+    tea_leaf_cg_init_others_device.setArg(11, *rz);
+    tea_leaf_init_diag_device.setArg(3, *rx);
+    tea_leaf_init_diag_device.setArg(4, *ry);
+    tea_leaf_init_diag_device.setArg(5, *rz);
 
     // copy u, get density value modified by coefficient
     tea_leaf_cg_init_u_device.setArg(6, coefficient);
