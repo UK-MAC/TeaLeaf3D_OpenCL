@@ -38,8 +38,8 @@ SUBROUTINE initialise
   IF(parallel%boss)THEN
     g_out=get_unit(dummy)
 
-    OPEN(FILE='clover.out',ACTION='WRITE',UNIT=g_out,IOSTAT=ios)
-    IF(ios.NE.0) CALL report_error('initialise','Error opening clover.out file.')
+    OPEN(FILE='tea.out',ACTION='WRITE',UNIT=g_out,IOSTAT=ios)
+    IF(ios.NE.0) CALL report_error('initialise','Error opening tea.out file.')
 
   ELSE
     g_out=6
@@ -55,7 +55,7 @@ SUBROUTINE initialise
       WRITE(g_out,'(a14,i6)') 'Task Count ',parallel%max_task !MPI
 !$    WRITE(g_out,'(a15,i5)') 'Thread Count: ',OMP_GET_NUM_THREADS()
       WRITE(g_out,*)
-      WRITE(*,*)'Output file clover.out opened. All output will go there.'
+      WRITE(*,*)'Output file tea.out opened. All output will go there.'
 !$  ENDIF
   ENDIF
 !$OMP END PARALLEL
@@ -70,10 +70,10 @@ SUBROUTINE initialise
   IF(parallel%boss)THEN
     uin=get_unit(dummy)
 
-    OPEN(FILE='clover.in',ACTION='READ',STATUS='OLD',UNIT=uin,IOSTAT=ios)
+    OPEN(FILE='tea.in',ACTION='READ',STATUS='OLD',UNIT=uin,IOSTAT=ios)
     IF(ios.NE.0) THEN
       out_unit=get_unit(dummy)
-      OPEN(FILE='clover.in',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
+      OPEN(FILE='tea.in',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
       WRITE(out_unit,'(A)')'*clover'
       WRITE(out_unit,'(A)')' state 1 density=0.2 energy=1.0'
       WRITE(out_unit,'(A)')' state 2 density=1.0 energy=2.5 geometry=cuboid xmin=0.0 xmax=5.0 ymin=0.0 ymax=2.0 zmin=0.0 zmax=2.0'
@@ -93,12 +93,12 @@ SUBROUTINE initialise
       WRITE(out_unit,'(A)')'*endclover'
       CLOSE(out_unit)
       uin=get_unit(dummy)
-      OPEN(FILE='clover.in',ACTION='READ',STATUS='OLD',UNIT=uin,IOSTAT=ios)
+      OPEN(FILE='tea.in',ACTION='READ',STATUS='OLD',UNIT=uin,IOSTAT=ios)
     ENDIF
 
     out_unit=get_unit(dummy)
-    OPEN(FILE='clover.in.tmp',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
-    IF(ios.NE.0) CALL  report_error('initialise','Error opening clover.in.tmp file')
+    OPEN(FILE='tea.in.tmp',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
+    IF(ios.NE.0) CALL  report_error('initialise','Error opening tea.in.tmp file')
     stat=parse_init(uin,'')
     DO
        stat=parse_getline(-1_4)
@@ -111,9 +111,9 @@ SUBROUTINE initialise
   CALL clover_barrier
 
   g_in=get_unit(dummy)
-  OPEN(FILE='clover.in.tmp',ACTION='READ',STATUS='OLD',UNIT=g_in,IOSTAT=ios)
+  OPEN(FILE='tea.in.tmp',ACTION='READ',STATUS='OLD',UNIT=g_in,IOSTAT=ios)
 
-  IF(ios.NE.0) CALL report_error('initialise','Error opening clover.in.tmp file')
+  IF(ios.NE.0) CALL report_error('initialise','Error opening tea.in.tmp file')
 
   CALL clover_barrier
 

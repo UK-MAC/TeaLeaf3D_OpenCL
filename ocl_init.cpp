@@ -100,7 +100,7 @@ void CloverChunk::initOcl
     }
 
     // Read in from file - easier than passing in from fortran
-    FILE* input = fopen("clover.in", "r");
+    FILE* input = fopen("tea.in", "r");
     if (NULL == input)
     {
         // should never happen

@@ -21,18 +21,18 @@ extern "C" void tea_leaf_calc_2norm_kernel_ocl_
 
 extern "C" void tea_leaf_kernel_cheby_init_ocl_
 (const double * ch_alphas, const double * ch_betas, int* n_coefs,
- const double * rx, const double * ry, const double * theta, double* error)
+ const double * rx, const double * ry, const double * rz, const double * theta, double* error)
 {
     chunk.tea_leaf_kernel_cheby_init(ch_alphas, ch_betas, *n_coefs,
-        *rx, *ry, *theta, error);
+        *rx, *ry, *rz, *theta, error);
 }
 
 extern "C" void tea_leaf_kernel_cheby_iterate_ocl_
 (const double * ch_alphas, const double * ch_betas, int *n_coefs,
- const double * rx, const double * ry, const int * cheby_calc_step)
+ const double * rx, const double * ry, const double * rz, const int * cheby_calc_step)
 {
     chunk.tea_leaf_kernel_cheby_iterate(ch_alphas, ch_betas, *n_coefs,
-        *rx, *ry, *cheby_calc_step);
+        *rx, *ry, *rz, *cheby_calc_step);
 }
 
 void CloverChunk::tea_leaf_cheby_copy_u
@@ -68,7 +68,7 @@ void CloverChunk::tea_leaf_calc_2norm_kernel
 
 void CloverChunk::tea_leaf_kernel_cheby_init
 (const double * ch_alphas, const double * ch_betas, int n_coefs,
- const double rx, const double ry, const double theta, double* error)
+ const double rx, const double ry, const double rz, const double theta, double* error)
 {
     size_t ch_buf_sz = n_coefs*sizeof(double);
 
@@ -95,7 +95,7 @@ void CloverChunk::tea_leaf_kernel_cheby_init
 
 void CloverChunk::tea_leaf_kernel_cheby_iterate
 (const double * ch_alphas, const double * ch_betas, int n_coefs,
- const double rx, const double ry, const int cheby_calc_step)
+ const double rx, const double ry, const double rz, const int cheby_calc_step)
 {
     tea_leaf_cheby_solve_calc_p_device.setArg(12, cheby_calc_step-1);
 
@@ -109,15 +109,15 @@ void CloverChunk::tea_leaf_kernel_cheby_iterate
 
 // CG solver functions
 extern "C" void tea_leaf_kernel_init_cg_ocl_
-(const int * coefficient, double * dt, double * rx, double * ry, double * rro)
+(const int * coefficient, double * dt, double * rx, double * ry, double * rz, double * rro)
 {
-    chunk.tea_leaf_init_cg(*coefficient, *dt, rx, ry, rro);
+    chunk.tea_leaf_init_cg(*coefficient, *dt, rx, ry, rz, rro);
 }
 
 extern "C" void tea_leaf_kernel_solve_cg_ocl_calc_w_
-(const double * rx, const double * ry, double * pw)
+(const double * rx, const double * ry, double * rz, double * pw)
 {
-    chunk.tea_leaf_kernel_cg_calc_w(*rx, *ry, pw);
+    chunk.tea_leaf_kernel_cg_calc_w(*rx, *ry, *rz, pw);
 }
 extern "C" void tea_leaf_kernel_solve_cg_ocl_calc_ur_
 (double * alpha, double * rrn)
@@ -131,8 +131,8 @@ extern "C" void tea_leaf_kernel_solve_cg_ocl_calc_p_
 }
 
 // copy back dx/dy and calculate rx/ry
-void CloverChunk::calcrxry
-(double dt, double * rx, double * ry)
+void CloverChunk::calcrxryrz
+(double dt, double * rx, double * ry, double * rz)
 {
     static int initd = 0;
     if (!initd)
@@ -143,7 +143,7 @@ void CloverChunk::calcrxry
         initd = 1;
     }
 
-    double dx, dy;
+    double dx, dy, dz;
 
     try
     {
@@ -152,6 +152,8 @@ void CloverChunk::calcrxry
             sizeof(double)*x_min, sizeof(double), &dx);
         queue.enqueueReadBuffer(celldy, CL_TRUE,
             sizeof(double)*y_min, sizeof(double), &dy);
+        queue.enqueueReadBuffer(celldz, CL_TRUE,
+            sizeof(double)*z_min, sizeof(double), &dz);
     }
     catch (cl::Error e)
     {
@@ -161,13 +163,14 @@ void CloverChunk::calcrxry
 
     *rx = dt/(dx*dx);
     *ry = dt/(dy*dy);
+    *rz = dt/(dz*dz);
 }
 
 /********************/
 #include <cassert>
 
 void CloverChunk::tea_leaf_init_cg
-(int coefficient, double dt, double * rx, double * ry, double * rro)
+(int coefficient, double dt, double * rx, double * ry, double * rz, double * rro)
 {
     if (coefficient != CONDUCTIVITY && coefficient != RECIP_CONDUCTIVITY)
     {
@@ -176,15 +179,18 @@ void CloverChunk::tea_leaf_init_cg
 
     assert(tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV);
 
-    calcrxry(dt, rx, ry);
+    calcrxryrz(dt, rx, ry, rz);
 
     // only needs to be set once
     tea_leaf_cg_solve_calc_w_device.setArg(5, *rx);
     tea_leaf_cg_solve_calc_w_device.setArg(6, *ry);
+    tea_leaf_cg_solve_calc_w_device.setArg(7, *rz);
     tea_leaf_cg_init_others_device.setArg(8, *rx);
     tea_leaf_cg_init_others_device.setArg(9, *ry);
+    tea_leaf_cg_init_others_device.setArg(10, *rz);
     tea_leaf_init_diag_device.setArg(2, *rx);
     tea_leaf_init_diag_device.setArg(3, *ry);
+    tea_leaf_init_diag_device.setArg(4, *rz);
 
     // copy u, get density value modified by coefficient
     tea_leaf_cg_init_u_device.setArg(6, coefficient);
@@ -207,7 +213,7 @@ void CloverChunk::tea_leaf_init_cg
 }
 
 void CloverChunk::tea_leaf_kernel_cg_calc_w
-(double rx, double ry, double* pw)
+(double rx, double ry, double rz, double* pw)
 {
     //ENQUEUE(tea_leaf_cg_solve_calc_w_device);
     ENQUEUE_OFFSET(tea_leaf_cg_solve_calc_w_device);
@@ -237,27 +243,27 @@ void CloverChunk::tea_leaf_kernel_cg_calc_p
 
 // jacobi solver functions
 extern "C" void tea_leaf_kernel_init_ocl_
-(const int * coefficient, double * dt, double * rx, double * ry)
+(const int * coefficient, double * dt, double * rx, double * ry, double * rz)
 {
-    chunk.tea_leaf_init_jacobi(*coefficient, *dt, rx, ry);
+    chunk.tea_leaf_init_jacobi(*coefficient, *dt, rx, ry, rz);
 }
 
 extern "C" void tea_leaf_kernel_solve_ocl_
-(const double * rx, const double * ry, double * error)
+(const double * rx, const double * ry, double * rz, double * error)
 {
-    chunk.tea_leaf_kernel_jacobi(*rx, *ry, error);
+    chunk.tea_leaf_kernel_jacobi(*rx, *ry, *rz, error);
 }
 
 // jacobi
 void CloverChunk::tea_leaf_init_jacobi
-(int coefficient, double dt, double * rx, double * ry)
+(int coefficient, double dt, double * rx, double * ry, double * rz)
 {
     if (coefficient != CONDUCTIVITY && coefficient != RECIP_CONDUCTIVITY)
     {
         DIE("Unknown coefficient %d passed to tea leaf\n", coefficient);
     }
 
-    calcrxry(dt, rx, ry);
+    calcrxryrz(dt, rx, ry, rz);
 
     tea_leaf_jacobi_init_device.setArg(6, coefficient);
     //ENQUEUE(tea_leaf_jacobi_init_device);
@@ -265,10 +271,11 @@ void CloverChunk::tea_leaf_init_jacobi
 
     tea_leaf_jacobi_solve_device.setArg(0, *rx);
     tea_leaf_jacobi_solve_device.setArg(1, *ry);
+    tea_leaf_jacobi_solve_device.setArg(2, *rz);
 }
 
 void CloverChunk::tea_leaf_kernel_jacobi
-(double rx, double ry, double* error)
+(double rx, double ry, double rz, double* error)
 {
     //ENQUEUE(tea_leaf_jacobi_copy_u_device);
     ENQUEUE_OFFSET(tea_leaf_jacobi_copy_u_device);

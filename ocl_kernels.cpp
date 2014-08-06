@@ -60,6 +60,7 @@ void CloverChunk::initProgram
     compileKernel(options_str, "./kernel_files/generate_chunk_cl.cl", "generate_chunk", generate_chunk_device);
 
     compileKernel(options_str, "./kernel_files/reset_field_cl.cl", "reset_field", reset_field_device);
+    compileKernel(options_str, "./kernel_files/set_field_cl.cl", "set_field", set_field_device);
 
     compileKernel(options_str, "./kernel_files/PdV_cl.cl", "PdV_predict", PdV_predict_device);
     compileKernel(options_str, "./kernel_files/PdV_cl.cl", "PdV_not_predict", PdV_not_predict_device);
@@ -434,6 +435,7 @@ void CloverChunk::initSizes
     FIND_PADDING_SIZE(viscosity, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(revert, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(reset_field, 0, 1, 0, 1, 0, 1);
+    FIND_PADDING_SIZE(set_field, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(field_summary, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(calc_dt, 0, 0, 0, 0, 0, 0);
 
@@ -729,6 +731,12 @@ void CloverChunk::initArgs
     reset_field_device.setArg(7, yvel1);
     reset_field_device.setArg(8, zvel0);
     reset_field_device.setArg(9, zvel1);
+
+    // set field
+    set_field_device.setArg(0, density0);
+    set_field_device.setArg(1, density1);
+    set_field_device.setArg(2, energy0);
+    set_field_device.setArg(3, energy1);
 
     // generate chunk
     generate_chunk_init_device.setArg(0, density0);

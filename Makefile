@@ -187,6 +187,7 @@ FORTRAN_FILES=\
 	tea_leaf.o
 
 OCL_FILES=\
+	tea_leaf_kernel_ocl.o \
 	ocl_pack.o \
 	ocl_init.o \
 	ocl_strings.o \
@@ -197,7 +198,6 @@ OCL_FILES=\
 	ideal_gas_kernel_ocl.o \
 	accelerate_kernel_ocl.o \
 	viscosity_kernel_ocl.o \
-	tea_leaf_kernel_ocl.o \
 	set_field_kernel_ocl.o \
 	reset_field_kernel_ocl.o \
 	field_summary_kernel_ocl.o \

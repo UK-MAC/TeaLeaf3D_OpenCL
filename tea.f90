@@ -106,6 +106,7 @@ SUBROUTINE tea_leaf()
       if (use_fortran_kernels .or. use_c_kernels) then
         !rx = dt/(chunks(c)%field%celldx(chunks(c)%field%x_min)**2)
         !ry = dt/(chunks(c)%field%celldy(chunks(c)%field%y_min)**2)
+        !rz = dt/(chunks(c)%field%celldz(chunks(c)%field%z_min)**2)
         call report_error('tea.f90', 'Fortran/c not implemented')
       endif
 

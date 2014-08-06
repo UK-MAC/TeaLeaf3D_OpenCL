@@ -225,8 +225,8 @@ private:
     float tolerance;
 
     // calculate rx/ry to pass back to fortran
-    void calcrxry
-    (double dt, double * rx, double * ry);
+    void calcrxryrz
+    (double dt, double * rx, double * ry, double * rz);
 
     // specific sizes and launch offsets for different kernels
     typedef struct {
@@ -460,11 +460,11 @@ public:
     void viscosity_kernel();
 
     // Tea leaf
-    void tea_leaf_init_jacobi(int, double, double*, double*);
-    void tea_leaf_kernel_jacobi(double, double, double*);
+    void tea_leaf_init_jacobi(int, double, double*, double*, double*);
+    void tea_leaf_kernel_jacobi(double, double, double, double*);
 
-    void tea_leaf_init_cg(int, double, double*, double*, double*);
-    void tea_leaf_kernel_cg_calc_w(double rx, double ry, double* pw);
+    void tea_leaf_init_cg(int, double, double*, double*, double*, double*);
+    void tea_leaf_kernel_cg_calc_w(double rx, double ry, double rz, double* pw);
     void tea_leaf_kernel_cg_calc_ur(double alpha, double* rrn);
     void tea_leaf_kernel_cg_calc_p(double beta);
 
@@ -474,10 +474,10 @@ public:
     (int norm_array, double* norm);
     void tea_leaf_kernel_cheby_init
     (const double * ch_alphas, const double * ch_betas, int n_coefs,
-     const double rx, const double ry, const double theta, double* error);
+     const double rx, const double ry, const double rz, const double theta, double* error);
     void tea_leaf_kernel_cheby_iterate
     (const double * ch_alphas, const double * ch_betas, int n_coefs,
-     const double rx, const double ry, const int cheby_calc_steps);
+     const double rx, const double ry, const double rz, const int cheby_calc_steps);
 
     void tea_leaf_finalise();
 
