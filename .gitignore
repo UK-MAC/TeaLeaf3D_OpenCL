@@ -1,0 +1,13 @@
+*.o
+*.mod
+*.lst
+*.cub
+*.ptx
+*genmod*
+*.vtk
+clover.out
+clover.in.tmp
+*.xf
+*.ap2
+clover_leaf
+*.swp
