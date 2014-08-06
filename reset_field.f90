@@ -57,7 +57,7 @@ SUBROUTINE reset_field()
                               chunks(c)%field%zvel0,     &
                               chunks(c)%field%zvel1      )
       ELSEIF(use_opencl_kernels)THEN
-	CALL reset_field_kernel_ocl()
+        CALL reset_field_kernel_ocl()
       ELSEIF(use_C_kernels)THEN
         CALL reset_field_kernel_c(chunks(c)%field%x_min, &
                               chunks(c)%field%x_max,     &

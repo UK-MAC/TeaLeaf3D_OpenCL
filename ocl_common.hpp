@@ -34,7 +34,9 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 #define FIELD_mass_flux_x   17
 #define FIELD_mass_flux_y   18
 #define FIELD_mass_flux_z   19
-#define NUM_FIELDS          19
+#define FIELD_u 20
+#define FIELD_p 21
+#define NUM_FIELDS          21
 
 // only 10 is used in fortran
 #define NUM_BUFFERED_FIELDS 13

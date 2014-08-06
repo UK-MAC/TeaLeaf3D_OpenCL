@@ -74,11 +74,37 @@ MODULE definitions_module
    INTEGER      :: test_problem
    LOGICAL      :: complete
 
-   LOGICAL      :: use_opencl_kernels
    LOGICAL      :: use_fortran_kernels
    LOGICAL      :: use_C_kernels
+   LOGICAL      :: use_OA_kernels
+   LOGICAL      :: use_opencl_kernels
+   LOGICAL      :: use_Tealeaf
+   LOGICAL      :: use_Hydro
+   LOGICAL      :: tl_use_chebyshev
+   LOGICAL      :: tl_use_cg
+   LOGICAL      :: tl_use_jacobi
+   INTEGER      :: max_iters
+   REAL(KIND=8) :: eps
+   INTEGER      :: coefficient
+
+   ! for chebyshev solver - whether to run cg until a certain error (tl_ch_eps)
+   ! is reached, or for a certain number of steps (tl_ch_cg_presteps)
+   LOGICAL      :: tl_ch_cg_errswitch
+   ! error to run cg to if tl_ch_cg_errswitch is set
+   REAL(KIND=8) :: tl_ch_cg_epslim
+   ! number of steps of cg to run to before switching to ch if tl_ch_cg_errswitch not set
+   INTEGER      :: tl_ch_cg_presteps
+
+   LOGICAL      :: use_vector_loops ! Some loops work better in serial depending on the hardware
 
    LOGICAL      :: profiler_on ! Internal code profiler to make comparisons across systems easier
+
+   ! Profile execution time per iteration of lienar solver.
+   ! Want to know the time taken per step, but turning profiling on
+   ! interferes with GPU based solvers as profiling requires
+   ! waiting for each kernel to finish execution
+   LOGICAL      :: profile_solver
+                                
 
    TYPE profiler_type
      REAL(KIND=8)       :: timestep        &
@@ -93,6 +119,8 @@ MODULE definitions_module
                           ,reset           &
                           ,revert          &
                           ,flux            &
+                          ,tea             &
+                          ,set_field       &
                           ,halo_exchange
                      
    END TYPE profiler_type

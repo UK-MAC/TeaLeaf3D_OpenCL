@@ -1,24 +1,3 @@
-#Crown Copyright 2014 AWE.
-#
-# This file is part of CloverLeaf.
-#
-# CloverLeaf is free software: you can redistribute it and/or modify it under 
-# the terms of the GNU General Public License as published by the 
-# Free Software Foundation, either version 3 of the License, or (at your option) 
-# any later version.
-#
-# CloverLeaf is distributed in the hope that it will be useful, but 
-# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
-# details.
-#
-# You should have received a copy of the GNU General Public License along with 
-# CloverLeaf. If not, see http://www.gnu.org/licenses/.
-
-#  @brief Makefile for CloverLeaf
-#  @author David Beckingsale, Wayne Gaudin
-#  @details Agnostic, platform independent makefile for the CloverLeaf benchmark code.
-
 # Agnostic, platform independent makefile for the CloverLeaf benchmark code.
 # It is not meant to be clever in anyway, just a simple build out of the box script.
 # Just make sure mpif90 is in your path. It uses mpif90 even for all builds because this abstracts the base
@@ -80,7 +59,7 @@ FLAGS_PGI       = -fastsse -gopt -Mipa=fast -Mlist
 FLAGS_PATHSCALE = -O3
 FLAGS_XL       = -O5 -qipa=partition=large -g -qfullpath -Q -qsigtrap -qextname=flush:ideal_gas_kernel_c:viscosity_kernel_c:pdv_kernel_c:revert_kernel_c:accelerate_kernel_c:flux_calc_kernel_c:advec_cell_kernel_c:advec_mom_kernel_c:reset_field_kernel_c:timer_c:unpack_top_bottom_buffers_c:pack_top_bottom_buffers_c:unpack_left_right_buffers_c:pack_left_right_buffers_c:field_summary_kernel_c:update_halo_kernel_c:generate_chunk_kernel_c:initialise_chunk_kernel_c:calc_dt_kernel_c -qlistopt -qattr=full -qlist -qreport -qxref=full -qsource -qsuppress=1506-224:1500-036
 FLAGS_          = -O3
-CFLAGS_INTEL     = -O3 -no-prec-div -restrict -fno-alias -xhost
+CFLAGS_INTEL     = -O3  -no-prec-div -restrict -fno-alias
 CFLAGS_SUN       = -fast -xipo=2
 CFLAGS_GNU       = -O3 -march=native -funroll-loops
 CFLAGS_CRAY      = -em -h list=a
@@ -146,8 +125,10 @@ C_FILES=\
 	update_halo_kernel_c.o                  \
 	generate_chunk_kernel_c.o                  \
 	flux_calc_kernel_c.o            \
+	tea_leaf_kernel_c.o			\
 	revert_kernel_c.o               \
 	reset_field_kernel_c.o          \
+	set_field_kernel_c.o          \
 	ideal_gas_kernel_c.o            \
 	viscosity_kernel_c.o            \
 	advec_cell_kernel_c.o			\
@@ -157,7 +138,10 @@ FORTRAN_FILES=\
 	pack_kernel.o \
 	data.o			\
 	definitions.o			\
-	clover.o			\
+	tea.o			\
+	tea_leaf_jacobi.o			\
+	tea_leaf_cg.o			\
+	tea_leaf_cheby.o			\
 	report.o			\
 	timer.o			\
 	parse.o			\
@@ -194,10 +178,13 @@ FORTRAN_FILES=\
 	advec_mom_driver.o		\
 	advection.o			\
 	reset_field_kernel.o		\
+	set_field_kernel.o		\
 	reset_field.o			\
+	set_field.o			\
 	hydro.o			\
 	visit.o			\
-	clover_leaf.o
+	clover.o \
+	tea_leaf.o
 
 OCL_FILES=\
 	ocl_pack.o \
@@ -210,6 +197,8 @@ OCL_FILES=\
 	ideal_gas_kernel_ocl.o \
 	accelerate_kernel_ocl.o \
 	viscosity_kernel_ocl.o \
+	tea_leaf_kernel_ocl.o \
+	set_field_kernel_ocl.o \
 	reset_field_kernel_ocl.o \
 	field_summary_kernel_ocl.o \
 	PdV_kernel_ocl.o \
@@ -222,14 +211,14 @@ OCL_FILES=\
 	initialise_chunk_kernel_ocl.o \
 	flux_calc_kernel_ocl.o
 
-clover_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
+tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 	$(MPI_COMPILER) $(FLAGS)	\
 	$(FORTRAN_FILES)	\
 	$(C_FILES)	\
 	$(OCL_FILES) \
 	$(LDFLAGS) \
 	$(LDLIBS) \
-	-o clover_leaf
+	-o tea_leaf
 	@echo $(MESSAGE)
 
 include make.deps
@@ -244,5 +233,5 @@ include make.deps
 	$(C_MPI_COMPILER) $(CFLAGS) -c $< -o $*.o
 
 clean:
-	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx clover_leaf
+	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx tea_leaf
 

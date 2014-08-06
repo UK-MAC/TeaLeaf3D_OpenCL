@@ -6521,6 +6521,26 @@ SUBROUTINE clover_sum(value)
 
 END SUBROUTINE clover_sum
 
+SUBROUTINE clover_allsum(value)
+
+  ! Global reduction for CG solver
+
+  IMPLICIT NONE
+
+  REAL(KIND=8) :: value
+
+  REAL(KIND=8) :: total
+
+  INTEGER :: err
+
+  total=value
+
+  CALL MPI_ALLREDUCE(value,total,1,MPI_DOUBLE_PRECISION,MPI_SUM,MPI_COMM_WORLD,err)
+
+  value=total
+
+END SUBROUTINE clover_allsum
+
 SUBROUTINE clover_min(value)
 
   IMPLICIT NONE

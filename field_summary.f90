@@ -32,7 +32,7 @@ SUBROUTINE field_summary()
 
   IMPLICIT NONE
 
-  REAL(KIND=8) :: vol,mass,ie,ke,press
+  REAL(KIND=8) :: vol,mass,ie,ke,press,temp
   REAL(KIND=8) :: qa_diff
 
 !$ INTEGER :: OMP_GET_THREAD_NUM
@@ -44,7 +44,8 @@ SUBROUTINE field_summary()
   IF(parallel%boss)THEN
     WRITE(g_out,*)
     WRITE(g_out,*) 'Time ',time
-    WRITE(g_out,'(a13,7a16)')'           ','Volume','Mass','Density','Pressure','Internal Energy','Kinetic Energy','Total Energy'
+    WRITE(g_out,'(a13,8a16)')'           ','Volume','Mass','Density','Pressure',&
+        'Internal Energy','Kinetic Energy','Total Energy','U'
   ENDIF
 
   IF(profiler_on) kernel_time=timer()
@@ -76,7 +77,7 @@ SUBROUTINE field_summary()
   ELSEIF(use_opencl_kernels)THEN
     DO c=1,chunks_per_task
       IF(chunks(c)%task.EQ.parallel%task) THEN
-        CALL field_summary_kernel_ocl(vol,mass,ie,ke,press)
+        CALL field_summary_kernel_ocl(vol,mass,ie,ke,press,temp)
       ENDIF
     ENDDO
   ELSEIF(use_C_kernels)THEN
@@ -106,11 +107,12 @@ SUBROUTINE field_summary()
   CALL clover_sum(press)
   CALL clover_sum(ie)
   CALL clover_sum(ke)
+  CALL clover_sum(temp)
   IF(profiler_on) profiler%summary=profiler%summary+(timer()-kernel_time)
 
   IF(parallel%boss) THEN
 !$  IF(OMP_GET_THREAD_NUM().EQ.0) THEN
-      WRITE(g_out,'(a6,i7,7e16.8)')' step:',step,vol,mass,mass/vol,press/vol,ie,ke,ie+ke
+      WRITE(g_out,'(a6,i7,8e16.7)')' step:',step,vol,mass,mass/vol,press/vol,ie,ke,ie+ke,temp
       WRITE(g_out,*)
 !$  ENDIF
    ENDIF

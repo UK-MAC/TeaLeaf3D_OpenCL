@@ -794,12 +794,14 @@ void CloverChunk::initArgs
     field_summary_device.setArg(4, xvel0);
     field_summary_device.setArg(5, yvel0);
     field_summary_device.setArg(6, zvel0);
+    field_summary_device.setArg(7, u);
 
-    field_summary_device.setArg(7, reduce_buf_1);
-    field_summary_device.setArg(8, reduce_buf_2);
-    field_summary_device.setArg(9, reduce_buf_3);
-    field_summary_device.setArg(10, reduce_buf_4);
-    field_summary_device.setArg(11, reduce_buf_5);
+    field_summary_device.setArg(8, reduce_buf_1);
+    field_summary_device.setArg(9, reduce_buf_2);
+    field_summary_device.setArg(10, reduce_buf_3);
+    field_summary_device.setArg(11, reduce_buf_4);
+    field_summary_device.setArg(12, reduce_buf_5);
+    field_summary_device.setArg(13, reduce_buf_6);
 
     // calc dt
     /*

@@ -23,11 +23,13 @@ __kernel void field_summary
     __local double ie_shared[BLOCK_SZ];
     __local double ke_shared[BLOCK_SZ];
     __local double press_shared[BLOCK_SZ];
+    __local double temp_shared[BLOCK_SZ];
     vol_shared[lid] = 0.0;
     mass_shared[lid] = 0.0;
     ie_shared[lid] = 0.0;
     ke_shared[lid] = 0.0;
     press_shared[lid] = 0.0;
+    temp_shared[lid] = 0.0;
 
     if(/*row >= (y_min + 1) &&*/ row <= (y_max + 1)
     && /*column >= (x_min + 1) &&*/ column <= (x_max + 1)

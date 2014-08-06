@@ -63,7 +63,9 @@ MODULE data_module
                                 ,FIELD_MASS_FLUX_X=17         &
                                 ,FIELD_MASS_FLUX_Y=18         &
                                 ,FIELD_MASS_FLUX_Z=19         &
-                                ,NUM_FIELDS       =19
+                                ,FIELD_U=20         &
+                                ,FIELD_P=21         &
+                                ,NUM_FIELDS       =21
 
    INTEGER,         PARAMETER :: CELL_DATA     = 1,        &
                                  VERTEX_DATA   = 2,        &
@@ -102,6 +104,9 @@ MODULE data_module
    ! one for every field that needs to be exchanged.
    INTEGER :: lr_pack_buffer_size, bt_pack_buffer_size, fb_pack_buffer_size
 
+
+   INTEGER         ::            CONDUCTIVITY        = 1 &
+                                ,RECIP_CONDUCTIVITY  = 2
 
    TYPE parallel_type
       LOGICAL           ::      parallel &
