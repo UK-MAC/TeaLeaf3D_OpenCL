@@ -11,6 +11,5 @@ void CloverChunk::accelerate_kernel
 {
     accelerate_device.setArg(0, dbyt);
 
-    //ENQUEUE(accelerate_device)
     ENQUEUE_OFFSET(accelerate_device)
 }

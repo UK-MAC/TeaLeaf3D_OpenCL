@@ -509,8 +509,6 @@ public:
                                    launch_specs.at(#knl).global,    \
                                    local_group_size);
 
-    #define ENQUEUE(knl) ENQUEUE_OFFSET(knl)
-
     // reduction
     template <typename T>
     T reduceValue

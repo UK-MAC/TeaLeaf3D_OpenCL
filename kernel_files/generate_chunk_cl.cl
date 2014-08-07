@@ -11,6 +11,7 @@ __kernel void generate_chunk
  __global double * __restrict const xvel0,
  __global double * __restrict const yvel0,
  __global double * __restrict const zvel0,
+ __global double * __restrict const u,
 
  __global const double * __restrict const state_density,
  __global const double * __restrict const state_energy,
@@ -178,6 +179,13 @@ __kernel void generate_chunk
                 zvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
             }
         }
+    }
+
+    if (slice >= (z_min + 1) - 1 && slice <= (z_max + 1) + 1)
+    if (row >= (y_min + 1) - 1 && row <= (y_max + 1) + 1
+    && column >= (x_min + 1) - 1 && column <= (x_max + 1) + 1)
+    {
+        u[THARR3D(0, 0, 0, 0, 0)] = energy0[THARR3D(0, 0, 0, 0, 0)]*density0[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 

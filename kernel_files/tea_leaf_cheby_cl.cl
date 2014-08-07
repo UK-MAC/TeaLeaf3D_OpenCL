@@ -75,7 +75,7 @@ __kernel void tea_leaf_cheby_solve_calc_p
 
         r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
         p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
-                            + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
+                                  + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 

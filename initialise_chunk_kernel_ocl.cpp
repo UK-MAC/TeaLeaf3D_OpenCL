@@ -15,7 +15,7 @@ void CloverChunk::initialise_chunk_kernel
     initialise_chunk_first_device.setArg(3, d_dx);
     initialise_chunk_first_device.setArg(4, d_dy);
     initialise_chunk_first_device.setArg(5, d_dz);
-    ENQUEUE(initialise_chunk_first_device)
+    ENQUEUE_OFFSET(initialise_chunk_first_device)
 
     initialise_chunk_second_device.setArg(0, d_xmin);
     initialise_chunk_second_device.setArg(1, d_ymin);
@@ -23,5 +23,5 @@ void CloverChunk::initialise_chunk_kernel
     initialise_chunk_second_device.setArg(3, d_dx);
     initialise_chunk_second_device.setArg(4, d_dy);
     initialise_chunk_second_device.setArg(5, d_dz);
-    ENQUEUE(initialise_chunk_second_device)
+    ENQUEUE_OFFSET(initialise_chunk_second_device)
 }

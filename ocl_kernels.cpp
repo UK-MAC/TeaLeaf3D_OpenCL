@@ -480,11 +480,9 @@ void CloverChunk::initSizes
     FIND_PADDING_SIZE(PdV_predict, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(PdV_not_predict, 0, 0, 0, 0, 0, 0);
 
-    FIND_PADDING_SIZE(initialise_chunk_first, 0, 3, 0, 3, 0, 3);
+    FIND_PADDING_SIZE(initialise_chunk_first, -2, 3, -2, 3, -2, 3);
     FIND_PADDING_SIZE(initialise_chunk_second, -2, 2, -2, 2, -2, 2);
     FIND_PADDING_SIZE(generate_chunk_init, -2, 2, -2, 2, -2, 2);
-    FIND_PADDING_SIZE(generate_chunk, -2, 2, -2, 2, -2, 2);
-
     FIND_PADDING_SIZE(generate_chunk, -2, 2, -2, 2, -2, 2);
 
     if (tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV)
@@ -789,6 +787,7 @@ void CloverChunk::initArgs
     generate_chunk_device.setArg(8, xvel0);
     generate_chunk_device.setArg(9, yvel0);
     generate_chunk_device.setArg(10, zvel0);
+    generate_chunk_device.setArg(11, u);
 
     // PdV
     PdV_predict_device.setArg(1, PdV_reduce_buf);

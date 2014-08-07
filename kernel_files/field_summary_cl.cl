@@ -80,6 +80,7 @@ __kernel void field_summary
         ie_shared[lid] = cell_mass * energy0[THARR3D(0, 0, 0,0,0)];
         ke_shared[lid] = cell_mass * 0.5 * vsqrd;
         press_shared[lid] = cell_vol * pressure[THARR3D(0, 0, 0,0,0)];
+        temp_shared[lid] = cell_mass*u[THARR3D(0, 0, 0, 0, 0)];
     }
 
     REDUCTION(vol_shared, vol, SUM)
@@ -87,4 +88,5 @@ __kernel void field_summary
     REDUCTION(ie_shared, ie, SUM)
     REDUCTION(ke_shared, ke, SUM)
     REDUCTION(press_shared, press, SUM)
+    REDUCTION(temp_shared, temp, SUM)
 }
