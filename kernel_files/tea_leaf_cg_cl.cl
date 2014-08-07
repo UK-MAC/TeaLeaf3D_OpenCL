@@ -138,7 +138,7 @@ __kernel void tea_leaf_cg_solve_calc_w
             + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*p[THARR3D(0, 0, 0, 0, 0)]
             - (Kx[THARR3D(1, 0, 0, 0, 0)]*p[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(-1, 0, 0, 0, 0)])
             - (Ky[THARR3D(0, 1, 0, 0, 0)]*p[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, -1, 0, 0, 0)])
-            - (Kz[THARR3D(0, 0, 1, 0, 0)]*p[THARR3D(0, 0, 1, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, 0, -1, 0, 0)]);
+            - (Kz[THARR3D(0, 0, 1, 0, 0)]*p[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, 0, -1, 0, 0)]);
         
         pw_shared[lid] = p[THARR3D(0, 0, 0, 0, 0)]*w[THARR3D(0, 0, 0, 0, 0)];
     }

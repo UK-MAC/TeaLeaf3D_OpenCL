@@ -52,9 +52,10 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
   ie=0.0
   ke=0.0
   press=0.0
+  temp=0.0
 
 !$OMP PARALLEL
-!$OMP DO PRIVATE(vsqrd,cell_vol,cell_mass,j,k,jv,kv,lv) REDUCTION(+ : vol,mass,press,ie,ke)
+!$OMP DO PRIVATE(vsqrd,cell_vol,cell_mass,j,k,jv,kv,lv) REDUCTION(+ : vol,mass,press,ie,ke, temp)
   DO l=z_min,z_max
     DO k=y_min,y_max
       DO j=x_min,x_max
