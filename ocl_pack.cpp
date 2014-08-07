@@ -119,6 +119,8 @@ void CloverChunk::packUnpackAllBuffers
             case FIELD_pressure:
             case FIELD_viscosity:
             case FIELD_soundspeed:
+            case FIELD_p:
+            case FIELD_u:
                 break;
             default:
                 DIE("Invalid field number %d in choosing _inc values\n", which_field);
@@ -141,6 +143,8 @@ void CloverChunk::packUnpackAllBuffers
             CASE_BUF(pressure); break;
             CASE_BUF(viscosity); break;
             CASE_BUF(soundspeed); break;
+            CASE_BUF(u); break;
+            CASE_BUF(work_array_1); break;
             CASE_BUF(xvel0); break;
             CASE_BUF(xvel1); break;
             CASE_BUF(yvel0); break;

@@ -91,7 +91,7 @@ SUBROUTINE tea_leaf()
   error = 1e10
   cheby_calc_steps = 0
 
-  DO c=1,number_of_chunks
+  DO c=1,chunks_per_task
 
     IF(chunks(c)%task.EQ.parallel%task) THEN
 

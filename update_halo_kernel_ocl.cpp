@@ -92,4 +92,7 @@ const int* chunk_neighbours)
 
     HALO_UPDATE_RESIDENT(vol_flux_z, Z_FACE);
     HALO_UPDATE_RESIDENT(mass_flux_z, Z_FACE);
+
+    HALO_UPDATE_RESIDENT(work_array_1, CELL);
+    HALO_UPDATE_RESIDENT(u, CELL);
 }
