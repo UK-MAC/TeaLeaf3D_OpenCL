@@ -84,6 +84,9 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    ALLOCATE(chunks(chunk)%field%u(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
                    chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
                    chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
+   ALLOCATE(chunks(chunk)%field%u0(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
+                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
+                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
 
    ALLOCATE(chunks(chunk)%field%xvel0(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
                                       chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
@@ -196,6 +199,7 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    chunks(chunk)%field%soundspeed=0.0
 
    chunks(chunk)%field%u=0.0
+   chunks(chunk)%field%u0=0.0
    
    chunks(chunk)%field%xvel0=0.0
    chunks(chunk)%field%xvel1=0.0

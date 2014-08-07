@@ -14,18 +14,18 @@
  !visit_frequency 1
  !summary_frequency 1
 
- x_cells=50
- y_cells=50
- z_cells=50
+ x_cells=100
+ y_cells=100
+ z_cells=100
  end_time=100.0
- end_step=10
+ end_step=100
 
- use_opencl_kernels
+ !use_opencl_kernels
  opencl_vendor=any
  opencl_type=GPU
  opencl_device=0
 
- tl_use_cg
+ tl_use_chebyshev
  tl_max_iters=500
  tl_eps=0.00000000001
  tl_ch_cg_errswitch

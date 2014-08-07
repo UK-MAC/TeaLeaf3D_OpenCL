@@ -174,13 +174,14 @@ SUBROUTINE tea_leaf()
       ! need the original value of u
       if(tl_use_chebyshev) then
         IF(use_fortran_kernels) then
-          call report_error('tea.f90', 'Fortran/c not implemented')
-          !call tea_leaf_kernel_cheby_copy_u(chunks(c)%field%x_min,&
-          !  chunks(c)%field%x_max,                       &
-          !  chunks(c)%field%y_min,                       &
-          !  chunks(c)%field%y_max,                       &
-          !  chunks(c)%field%u0,                &
-          !  chunks(c)%field%u)
+          call tea_leaf_kernel_cheby_copy_u(chunks(c)%field%x_min,&
+            chunks(c)%field%x_max,                       &
+            chunks(c)%field%y_min,                       &
+            chunks(c)%field%y_max,                       &
+            chunks(c)%field%z_min,                       &
+            chunks(c)%field%z_max,                       &
+            chunks(c)%field%u0,                &
+            chunks(c)%field%u)
         elseif(use_opencl_kernels) then
           call tea_leaf_kernel_cheby_copy_u_ocl()
         endif
@@ -222,12 +223,14 @@ SUBROUTINE tea_leaf()
 
             ! calculate 2 norm of u0
             IF(use_fortran_kernels) THEN
-              !call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
-              !      chunks(c)%field%x_max,                       &
-              !      chunks(c)%field%y_min,                       &
-              !      chunks(c)%field%y_max,                       &
-              !      chunks(c)%field%u0,                 &
-              !      bb)
+              call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
+                    chunks(c)%field%x_max,                       &
+                    chunks(c)%field%y_min,                       &
+                    chunks(c)%field%y_max,                       &
+                    chunks(c)%field%z_min,                       &
+                    chunks(c)%field%z_max,                       &
+                    chunks(c)%field%u0,                 &
+                    bb)
             ELSEIF(use_opencl_kernels) THEN
               call tea_leaf_calc_2norm_kernel_ocl(0, bb)
             ENDIF
@@ -236,21 +239,24 @@ SUBROUTINE tea_leaf()
 
             ! initialise 'p' array
             IF(use_fortran_kernels) THEN
-              !call tea_leaf_kernel_cheby_init(chunks(c)%field%x_min,&
-              !      chunks(c)%field%x_max,                       &
-              !      chunks(c)%field%y_min,                       &
-              !      chunks(c)%field%y_max,                       &
-              !      chunks(c)%field%u,                           &
-              !      chunks(c)%field%u0,                 &
-              !      chunks(c)%field%work_array1,                 &
-              !      chunks(c)%field%work_array2,                 &
-              !      chunks(c)%field%work_array3,                 &
-              !      chunks(c)%field%work_array4,                 &
-              !      chunks(c)%field%work_array5,                 &
-              !      chunks(c)%field%work_array6,                 &
-              !      chunks(c)%field%work_array7,                 &
-              !      ch_alphas, ch_betas, max_cheby_iters, &
-              !      rx, ry, theta, error)
+              call tea_leaf_kernel_cheby_init(chunks(c)%field%x_min,&
+                    chunks(c)%field%x_max,                       &
+                    chunks(c)%field%y_min,                       &
+                    chunks(c)%field%y_max,                       &
+                    chunks(c)%field%z_min,                       &
+                    chunks(c)%field%z_max,                       &
+                    chunks(c)%field%u,                           &
+                    chunks(c)%field%u0,                 &
+                    chunks(c)%field%work_array1,                 &
+                    chunks(c)%field%work_array2,                 &
+                    chunks(c)%field%work_array3,                 &
+                    chunks(c)%field%work_array4,                 &
+                    chunks(c)%field%work_array5,                 &
+                    chunks(c)%field%work_array6,                 &
+                    chunks(c)%field%work_array7,                 &
+                    chunks(c)%field%work_array8,                 &
+                    ch_alphas, ch_betas, max_cheby_iters, &
+                    rx, ry, rz, theta, error)
             ELSEIF(use_opencl_kernels) THEN
               call tea_leaf_kernel_cheby_init_ocl(ch_alphas, ch_betas, &
                 max_cheby_iters, rx, ry, rz, theta, error)
@@ -259,33 +265,38 @@ SUBROUTINE tea_leaf()
             CALL update_halo(fields,1)
 
             IF(use_fortran_kernels) THEN
-                !call tea_leaf_kernel_cheby_iterate(chunks(c)%field%x_min,&
-                !    chunks(c)%field%x_max,                       &
-                !    chunks(c)%field%y_min,                       &
-                !    chunks(c)%field%y_max,                       &
-                !    chunks(c)%field%u,                           &
-                !    chunks(c)%field%u0,                          &
-                !    chunks(c)%field%work_array1,                 &
-                !    chunks(c)%field%work_array2,                 &
-                !    chunks(c)%field%work_array3,                 &
-                !    chunks(c)%field%work_array4,                 &
-                !    chunks(c)%field%work_array5,                 &
-                !    chunks(c)%field%work_array6,                 &
-                !    chunks(c)%field%work_array7,                 &
-                !    ch_alphas, ch_betas, max_cheby_iters,        &
-                !    rx, ry, cheby_calc_steps)
+                call tea_leaf_kernel_cheby_iterate(chunks(c)%field%x_min,&
+                    chunks(c)%field%x_max,                       &
+                    chunks(c)%field%y_min,                       &
+                    chunks(c)%field%y_max,                       &
+                    chunks(c)%field%z_min,                       &
+                    chunks(c)%field%z_max,                       &
+                    chunks(c)%field%u,                           &
+                    chunks(c)%field%u0,                          &
+                    chunks(c)%field%work_array1,                 &
+                    chunks(c)%field%work_array2,                 &
+                    chunks(c)%field%work_array3,                 &
+                    chunks(c)%field%work_array4,                 &
+                    chunks(c)%field%work_array5,                 &
+                    chunks(c)%field%work_array6,                 &
+                    chunks(c)%field%work_array7,                 &
+                    chunks(c)%field%work_array8,                 &
+                    ch_alphas, ch_betas, max_cheby_iters,        &
+                    rx, ry, rz, cheby_calc_steps)
             ELSEIF(use_opencl_kernels) THEN
                 call tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
                   rx, ry, rz, cheby_calc_steps)
             ENDIF
 
             IF(use_fortran_kernels) THEN
-              !call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
-              !      chunks(c)%field%x_max,                       &
-              !      chunks(c)%field%y_min,                       &
-              !      chunks(c)%field%y_max,                       &
-              !      chunks(c)%field%work_array2,                 &
-              !      error)
+              call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
+                    chunks(c)%field%x_max,                       &
+                    chunks(c)%field%y_min,                       &
+                    chunks(c)%field%y_max,                       &
+                    chunks(c)%field%z_min,                       &
+                    chunks(c)%field%z_max,                       &
+                    chunks(c)%field%work_array2,                 &
+                    error)
             ELSEIF(use_opencl_kernels) THEN
               call tea_leaf_calc_2norm_kernel_ocl(1, error)
             ENDIF
@@ -319,21 +330,24 @@ SUBROUTINE tea_leaf()
             cheby_calc_steps = 2
           else
             IF(use_fortran_kernels) THEN
-                !call tea_leaf_kernel_cheby_iterate(chunks(c)%field%x_min,&
-                !    chunks(c)%field%x_max,                       &
-                !    chunks(c)%field%y_min,                       &
-                !    chunks(c)%field%y_max,                       &
-                !    chunks(c)%field%u,                           &
-                !    chunks(c)%field%u0,                          &
-                !    chunks(c)%field%work_array1,                 &
-                !    chunks(c)%field%work_array2,                 &
-                !    chunks(c)%field%work_array3,                 &
-                !    chunks(c)%field%work_array4,                 &
-                !    chunks(c)%field%work_array5,                 &
-                !    chunks(c)%field%work_array6,                 &
-                !    chunks(c)%field%work_array7,                 &
-                !    ch_alphas, ch_betas, max_cheby_iters,        &
-                !    rx, ry, cheby_calc_steps)
+                call tea_leaf_kernel_cheby_iterate(chunks(c)%field%x_min,&
+                    chunks(c)%field%x_max,                       &
+                    chunks(c)%field%y_min,                       &
+                    chunks(c)%field%y_max,                       &
+                    chunks(c)%field%z_min,                       &
+                    chunks(c)%field%z_max,                       &
+                    chunks(c)%field%u,                           &
+                    chunks(c)%field%u0,                          &
+                    chunks(c)%field%work_array1,                 &
+                    chunks(c)%field%work_array2,                 &
+                    chunks(c)%field%work_array3,                 &
+                    chunks(c)%field%work_array4,                 &
+                    chunks(c)%field%work_array5,                 &
+                    chunks(c)%field%work_array6,                 &
+                    chunks(c)%field%work_array7,                 &
+                    chunks(c)%field%work_array8,                 &
+                    ch_alphas, ch_betas, max_cheby_iters,        &
+                    rx, ry, rz, cheby_calc_steps)
             ELSEIF(use_opencl_kernels) THEN
                 call tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
                   rx, ry, rz, cheby_calc_steps)
@@ -346,12 +360,14 @@ SUBROUTINE tea_leaf()
             ! synchronisations needed
             if ((n-switch_step .ge. est_itc) .and. (mod(n, 10) .eq. 0)) then
               IF(use_fortran_kernels) THEN
-                !call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
-                !      chunks(c)%field%x_max,                       &
-                !      chunks(c)%field%y_min,                       &
-                !      chunks(c)%field%y_max,                       &
-                !      chunks(c)%field%work_array2,                 &
-                !      error)
+                call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
+                      chunks(c)%field%x_max,                       &
+                      chunks(c)%field%y_min,                       &
+                      chunks(c)%field%y_max,                       &
+                      chunks(c)%field%z_min,                       &
+                      chunks(c)%field%z_max,                       &
+                      chunks(c)%field%work_array2,                 &
+                      error)
               ELSEIF(use_opencl_kernels) THEN
                 call tea_leaf_calc_2norm_kernel_ocl(1, error)
               ENDIF

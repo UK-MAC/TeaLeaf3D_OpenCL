@@ -173,7 +173,7 @@ MODULE definitions_module
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array6 !pre_vol, post_ener
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array7 !post_vol, ener_flux
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array8 !Kz
-     REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: u
+     REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: u,u0
 
      INTEGER         :: left            &
                        ,right           &
