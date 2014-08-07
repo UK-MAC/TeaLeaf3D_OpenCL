@@ -81,6 +81,10 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
                    chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
                    chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
 
+   ALLOCATE(chunks(chunk)%field%u(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
+                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
+                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
+
    ALLOCATE(chunks(chunk)%field%xvel0(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
                                       chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
                                       chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
@@ -141,6 +145,9 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    ALLOCATE(chunks(chunk)%field%work_array7(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
                                             chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
                                             chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
+   ALLOCATE(chunks(chunk)%field%work_array8(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
+                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
+                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
 
    ALLOCATE(chunks(chunk)%field%cellx   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2))
    ALLOCATE(chunks(chunk)%field%celly   (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
@@ -178,6 +185,7 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    chunks(chunk)%field%work_array5=0.0
    chunks(chunk)%field%work_array6=0.0
    chunks(chunk)%field%work_array7=0.0
+   chunks(chunk)%field%work_array8=0.0
 
    chunks(chunk)%field%density0=0.0
    chunks(chunk)%field%density1=0.0
@@ -186,6 +194,8 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    chunks(chunk)%field%pressure=0.0
    chunks(chunk)%field%viscosity=0.0
    chunks(chunk)%field%soundspeed=0.0
+
+   chunks(chunk)%field%u=0.0
    
    chunks(chunk)%field%xvel0=0.0
    chunks(chunk)%field%xvel1=0.0

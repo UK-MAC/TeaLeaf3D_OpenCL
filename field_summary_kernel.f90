@@ -32,16 +32,17 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
                                 xvel0,                   &
                                 yvel0,                   &
                                 zvel0,                   &
-                                vol,mass,ie,ke,press     )
+                                u,                   &
+                                vol,mass,ie,ke,press,temp)
 
   IMPLICIT NONE
 
   INTEGER      :: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: volume
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: volume,u
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density0,energy0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: pressure
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+3,z_min-2:z_max+2) :: xvel0,yvel0,zvel0
-  REAL(KIND=8) :: vol,mass,ie,ke,press
+  REAL(KIND=8) :: vol,mass,ie,ke,press, temp
 
   INTEGER      :: j,k,l,jv,kv,lv
   REAL(KIND=8) :: vsqrd,cell_vol,cell_mass
@@ -72,6 +73,7 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max, &
         ie=ie+cell_mass*energy0(j,k,l)
         ke=ke+cell_mass*0.5*vsqrd
         press=press+cell_vol*pressure(j,k,l)
+        temp = temp + cell_mass*u(j,k,l)
       ENDDO
     ENDDO
   ENDDO

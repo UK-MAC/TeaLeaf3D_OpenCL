@@ -178,24 +178,28 @@ SUBROUTINE tea_leaf_kernel_finalise(x_min,    &
                            x_max,             &
                            y_min,             &
                            y_max,             &
+                           z_min,             &
+                           z_max,             &
                            energy,            &
                            density,           &
                            u)
 
   IMPLICIT NONE
 
-  INTEGER(KIND=4):: x_min,x_max,y_min,y_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: u
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: energy
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: density
+  INTEGER(KIND=4):: x_min,x_max,y_min,y_max, z_min, z_max
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density
 
-  INTEGER(KIND=4) :: j,k
+  INTEGER(KIND=4) :: j,k,l
 
 !$OMP PARALLEL DO 
+  DO l=z_min, z_max
   DO k=y_min, y_max
     DO j=x_min, x_max
-      energy(j,k) = u(j,k) / density(j,k)
+      energy(j, k, l) = u(j, k, l) / density(j, k, l)
     ENDDO
+  ENDDO
   ENDDO
 !$OMP END PARALLEL DO
 

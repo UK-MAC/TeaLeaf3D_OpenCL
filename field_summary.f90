@@ -71,7 +71,8 @@ SUBROUTINE field_summary()
                                   chunks(c)%field%xvel0,                   &
                                   chunks(c)%field%yvel0,                   &
                                   chunks(c)%field%zvel0,                   &
-                                  vol,mass,ie,ke,press                     )
+                                  chunks(c)%field%u,                   &
+                                  vol,mass,ie,ke,press,temp                )
       ENDIF
     ENDDO
   ELSEIF(use_opencl_kernels)THEN

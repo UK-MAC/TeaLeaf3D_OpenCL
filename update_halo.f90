@@ -66,10 +66,12 @@ SUBROUTINE update_halo(fields,depth)
                                 chunks(c)%field%mass_flux_x,    &
                                 chunks(c)%field%mass_flux_y,    &
                                 chunks(c)%field%mass_flux_z,    &
+                                chunks(c)%field%u,    &
+                                chunks(c)%field%work_array1,    &
                                 fields,                         &
                                 depth                           )
       ELSEIF(use_opencl_kernels)THEN
-	CALL update_halo_kernel_ocl(chunks(c)%chunk_neighbours, &
+        CALL update_halo_kernel_ocl(chunks(c)%chunk_neighbours, &
                                     fields, &
                                     depth )
       ELSEIF(use_C_kernels)THEN

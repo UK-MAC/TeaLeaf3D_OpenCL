@@ -155,8 +155,8 @@ void CloverChunk::initOcl
         MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 #endif
         fprintf(stdout, "No platform specified - using platform %d in rank %d\n",
-            rank, rank);
-        platform = platforms.at(rank);
+            rank, 1);
+        platform = platforms.at(1);
     }
     else
     {

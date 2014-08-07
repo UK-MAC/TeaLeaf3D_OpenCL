@@ -104,29 +104,31 @@ SUBROUTINE tea_leaf()
       IF(profiler_on) kernel_time=timer()
 
       if (use_fortran_kernels .or. use_c_kernels) then
-        !rx = dt/(chunks(c)%field%celldx(chunks(c)%field%x_min)**2)
-        !ry = dt/(chunks(c)%field%celldy(chunks(c)%field%y_min)**2)
-        !rz = dt/(chunks(c)%field%celldz(chunks(c)%field%z_min)**2)
-        call report_error('tea.f90', 'Fortran/c not implemented')
+        rx = dt/(chunks(c)%field%celldx(chunks(c)%field%x_min)**2)
+        ry = dt/(chunks(c)%field%celldy(chunks(c)%field%y_min)**2)
+        rz = dt/(chunks(c)%field%celldz(chunks(c)%field%z_min)**2)
       endif
 
       IF(tl_use_cg .or. tl_use_chebyshev) then
         IF(use_fortran_kernels) THEN
-          !CALL tea_leaf_kernel_init_cg_fortran(chunks(c)%field%x_min, &
-          !    chunks(c)%field%x_max,                       &
-          !    chunks(c)%field%y_min,                       &
-          !    chunks(c)%field%y_max,                       &
-          !    chunks(c)%field%density1,                    &
-          !    chunks(c)%field%energy1,                     &
-          !    chunks(c)%field%u,                           &
-          !    chunks(c)%field%work_array1,                 &
-          !    chunks(c)%field%work_array2,                 &
-          !    chunks(c)%field%work_array3,                 &
-          !    chunks(c)%field%work_array4,                 &
-          !    chunks(c)%field%work_array5,                 &
-          !    chunks(c)%field%work_array6,                 &
-          !    chunks(c)%field%work_array7,                 &
-          !    rx, ry, rro, coefficient)
+          CALL tea_leaf_kernel_init_cg_fortran(chunks(c)%field%x_min, &
+              chunks(c)%field%x_max,                       &
+              chunks(c)%field%y_min,                       &
+              chunks(c)%field%y_max,                       &
+              chunks(c)%field%z_min,                       &
+              chunks(c)%field%z_max,                       &
+              chunks(c)%field%density1,                    &
+              chunks(c)%field%energy1,                     &
+              chunks(c)%field%u,                           &
+              chunks(c)%field%work_array1,                 &
+              chunks(c)%field%work_array2,                 &
+              chunks(c)%field%work_array3,                 &
+              chunks(c)%field%work_array4,                 &
+              chunks(c)%field%work_array5,                 &
+              chunks(c)%field%work_array6,                 &
+              chunks(c)%field%work_array7,                 &
+              chunks(c)%field%work_array8,                 &
+              rx, ry, rz, rro, coefficient)
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_init_cg_ocl(coefficient, dt, rx, ry, rz, rro)
         ENDIF
@@ -141,6 +143,7 @@ SUBROUTINE tea_leaf()
         call clover_allsum(rro)
       ELSE
         IF (use_fortran_kernels) THEN
+          call report_error('tea.f90', 'Fortran/c not implemented')
           !CALL tea_leaf_kernel_init(chunks(c)%field%x_min, &
           !    chunks(c)%field%x_max,                       &
           !    chunks(c)%field%y_min,                       &
@@ -171,6 +174,7 @@ SUBROUTINE tea_leaf()
       ! need the original value of u
       if(tl_use_chebyshev) then
         IF(use_fortran_kernels) then
+          call report_error('tea.f90', 'Fortran/c not implemented')
           !call tea_leaf_kernel_cheby_copy_u(chunks(c)%field%x_min,&
           !  chunks(c)%field%x_max,                       &
           !  chunks(c)%field%y_min,                       &
@@ -366,15 +370,18 @@ SUBROUTINE tea_leaf()
           cg_calc_steps = cg_calc_steps + 1
 
           IF(use_fortran_kernels) THEN
-            !CALL tea_leaf_kernel_solve_cg_fortran_calc_w(chunks(c)%field%x_min,&
-            !    chunks(c)%field%x_max,                       &
-            !    chunks(c)%field%y_min,                       &
-            !    chunks(c)%field%y_max,                       &
-            !    chunks(c)%field%work_array1,                 &
-            !    chunks(c)%field%work_array4,                 &
-            !    chunks(c)%field%work_array6,                 &
-            !    chunks(c)%field%work_array7,                 &
-            !    rx, ry, pw)
+            CALL tea_leaf_kernel_solve_cg_fortran_calc_w(chunks(c)%field%x_min,&
+                chunks(c)%field%x_max,                       &
+                chunks(c)%field%y_min,                       &
+                chunks(c)%field%y_max,                       &
+                chunks(c)%field%z_min,                       &
+                chunks(c)%field%z_max,                       &
+                chunks(c)%field%work_array1,                 &
+                chunks(c)%field%work_array4,                 &
+                chunks(c)%field%work_array6,                 &
+                chunks(c)%field%work_array7,                 &
+                chunks(c)%field%work_array8,                 &
+                rx, ry, rz, pw)
           ELSEIF(use_opencl_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_ocl_calc_w(rx, ry, rz, pw)
           ENDIF
@@ -384,17 +391,19 @@ SUBROUTINE tea_leaf()
           if(tl_use_chebyshev) cg_alphas(n) = alpha
 
           IF(use_fortran_kernels) THEN
-            !CALL tea_leaf_kernel_solve_cg_fortran_calc_ur(chunks(c)%field%x_min,&
-            !    chunks(c)%field%x_max,                       &
-            !    chunks(c)%field%y_min,                       &
-            !    chunks(c)%field%y_max,                       &
-            !    chunks(c)%field%u,                           &
-            !    chunks(c)%field%work_array1,                 &
-            !    chunks(c)%field%work_array2,                 &
-            !    chunks(c)%field%work_array3,                 &
-            !    chunks(c)%field%work_array4,                 &
-            !    chunks(c)%field%work_array5,                 &
-            !    alpha, rrn)
+            CALL tea_leaf_kernel_solve_cg_fortran_calc_ur(chunks(c)%field%x_min,&
+                chunks(c)%field%x_max,                       &
+                chunks(c)%field%y_min,                       &
+                chunks(c)%field%y_max,                       &
+                chunks(c)%field%z_min,                       &
+                chunks(c)%field%z_max,                       &
+                chunks(c)%field%u,                           &
+                chunks(c)%field%work_array1,                 &
+                chunks(c)%field%work_array2,                 &
+                chunks(c)%field%work_array3,                 &
+                chunks(c)%field%work_array4,                 &
+                chunks(c)%field%work_array5,                 &
+                alpha, rrn)
           ELSEIF(use_opencl_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_ocl_calc_ur(alpha, rrn)
           ENDIF
@@ -404,14 +413,16 @@ SUBROUTINE tea_leaf()
           if(tl_use_chebyshev) cg_betas(n) = beta
 
           IF(use_fortran_kernels) THEN
-            !CALL tea_leaf_kernel_solve_cg_fortran_calc_p(chunks(c)%field%x_min,&
-            !    chunks(c)%field%x_max,                       &
-            !    chunks(c)%field%y_min,                       &
-            !    chunks(c)%field%y_max,                       &
-            !    chunks(c)%field%work_array1,                 &
-            !    chunks(c)%field%work_array2,                 &
-            !    chunks(c)%field%work_array5,                 &
-            !    beta)
+            CALL tea_leaf_kernel_solve_cg_fortran_calc_p(chunks(c)%field%x_min,&
+                chunks(c)%field%x_max,                       &
+                chunks(c)%field%y_min,                       &
+                chunks(c)%field%y_max,                       &
+                chunks(c)%field%z_min,                       &
+                chunks(c)%field%z_max,                       &
+                chunks(c)%field%work_array1,                 &
+                chunks(c)%field%work_array2,                 &
+                chunks(c)%field%work_array5,                 &
+                beta)
           ELSEIF(use_opencl_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_ocl_calc_p(beta)
           ENDIF
@@ -468,13 +479,15 @@ SUBROUTINE tea_leaf()
 
       ! RESET
       IF(use_fortran_kernels) THEN
-          !CALL tea_leaf_kernel_finalise(chunks(c)%field%x_min, &
-          !    chunks(c)%field%x_max,                           &
-          !    chunks(c)%field%y_min,                           &
-          !    chunks(c)%field%y_max,                           &
-          !    chunks(c)%field%energy1,                         &
-          !    chunks(c)%field%density1,                        &
-          !    chunks(c)%field%u)
+          CALL tea_leaf_kernel_finalise(chunks(c)%field%x_min, &
+              chunks(c)%field%x_max,                           &
+              chunks(c)%field%y_min,                           &
+              chunks(c)%field%y_max,                           &
+              chunks(c)%field%z_min,                           &
+              chunks(c)%field%z_max,                           &
+              chunks(c)%field%energy1,                         &
+              chunks(c)%field%density1,                        &
+              chunks(c)%field%u)
       ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_finalise_ocl()
       ENDIF

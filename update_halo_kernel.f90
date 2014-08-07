@@ -50,6 +50,7 @@ CONTAINS
                         mass_flux_x,                                                &
                         mass_flux_y,                                                &
                         mass_flux_z,                                                &
+                        u, p,                                                &
                         fields,                                                     &
                         depth                                                       )
   IMPLICIT NONE
@@ -64,6 +65,7 @@ CONTAINS
   REAL(KIND=8), DIMENSION(x_min-2:x_max+3,y_min-2:y_max+2,z_min-2:z_max+2) :: vol_flux_x,mass_flux_x
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+3,z_min-2:z_max+2) :: vol_flux_y,mass_flux_y
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+3) :: vol_flux_z,mass_flux_z
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u, p
   INTEGER :: fields(:),depth
 
   ! These need to be kept consistent with the data module to avoid use statement
@@ -93,7 +95,9 @@ CONTAINS
                             ,FIELD_VOL_FLUX_Z =16         & 
                             ,FIELD_MASS_FLUX_X=17         &
                             ,FIELD_MASS_FLUX_Y=18         &
-                            ,FIELD_MASS_FLUX_Z=19
+                            ,FIELD_MASS_FLUX_Z=19 &
+                            ,FIELD_u=20 &
+                            ,FIELD_p=21
 
   INTEGER :: j,k,l
 
@@ -1406,6 +1410,142 @@ CONTAINS
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
             mass_flux_z(j,k,z_max+1+l)=-mass_flux_z(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_p).EQ.1) THEN
+    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO k=1,depth
+            p(j,1-k,l)=p(j,0+k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO k=1,depth
+            p(j,y_max+k,l)=p(j,y_max+1-k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO k=y_min-depth,y_max+depth
+          DO j=1,depth
+            p(1-j,k,l)=p(0+j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO k=y_min-depth,y_max+depth
+          DO j=1,depth
+            p(x_max+j,k,l)=p(x_max+1-j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO l=1,depth
+            p(j,k,1-l)=p(j,k,0+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO l=1,depth
+            p(j,k,z_max+l)=p(j,k,z_max+1-l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+  ENDIF
+  IF(fields(FIELD_u).EQ.1) THEN
+    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO k=1,depth
+            u(j,1-k,l)=u(j,0+k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO k=1,depth
+            u(j,y_max+k,l)=u(j,y_max+1-k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO k=y_min-depth,y_max+depth
+          DO j=1,depth
+            u(1-j,k,l)=u(0+j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO l=z_min-depth,z_max+depth
+        DO k=y_min-depth,y_max+depth
+          DO j=1,depth
+            u(x_max+j,k,l)=u(x_max+1-j,k,l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO l=1,depth
+            u(j,k,1-l)=u(j,k,0+l)
+          ENDDO
+        ENDDO
+      ENDDO
+!$OMP END DO
+    ENDIF
+    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
+!$OMP DO
+      DO k=y_min-depth,y_max+depth
+        DO j=x_min-depth,x_max+depth
+          DO l=1,depth
+            u(j,k,z_max+l)=u(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO

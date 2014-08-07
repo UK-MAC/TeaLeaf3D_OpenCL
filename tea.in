@@ -18,10 +18,10 @@
  y_cells=50
  z_cells=50
  end_time=100.0
- end_step=100
+ end_step=10
 
  use_opencl_kernels
- opencl_vendor=advanced
+ opencl_vendor=any
  opencl_type=GPU
  opencl_device=0
 
