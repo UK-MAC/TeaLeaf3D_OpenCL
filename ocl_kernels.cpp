@@ -275,7 +275,6 @@ cl::Program CloverChunk::compileProgram
         throw KernelCompileError(errs.c_str());
     }
 
-    // return
     errstream << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
     std::string errs(errstream.str());
 
@@ -635,10 +634,9 @@ void CloverChunk::initArgs
     advec_mom_node_pre_x_device.setArg(2, work_array_4);
 
     advec_mom_flux_x_device.setArg(0, work_array_2);
-    advec_mom_flux_x_device.setArg(1, work_array_3);
-    advec_mom_flux_x_device.setArg(2, work_array_4);
-    advec_mom_flux_x_device.setArg(4, celldx);
-    advec_mom_flux_x_device.setArg(5, work_array_5);
+    advec_mom_flux_x_device.setArg(1, work_array_4);
+    advec_mom_flux_x_device.setArg(3, celldx);
+    advec_mom_flux_x_device.setArg(4, work_array_5);
 
     advec_mom_xvel_device.setArg(0, work_array_3);
     advec_mom_xvel_device.setArg(1, work_array_4);
@@ -657,10 +655,9 @@ void CloverChunk::initArgs
     advec_mom_node_pre_y_device.setArg(2, work_array_4);
 
     advec_mom_flux_y_device.setArg(0, work_array_2);
-    advec_mom_flux_y_device.setArg(1, work_array_3);
-    advec_mom_flux_y_device.setArg(2, work_array_4);
-    advec_mom_flux_y_device.setArg(4, celldy);
-    advec_mom_flux_y_device.setArg(5, work_array_5);
+    advec_mom_flux_y_device.setArg(1, work_array_4);
+    advec_mom_flux_y_device.setArg(3, celldy);
+    advec_mom_flux_y_device.setArg(4, work_array_5);
 
     advec_mom_yvel_device.setArg(0, work_array_3);
     advec_mom_yvel_device.setArg(1, work_array_4);
@@ -679,10 +676,9 @@ void CloverChunk::initArgs
     advec_mom_node_pre_z_device.setArg(2, work_array_4);
 
     advec_mom_flux_z_device.setArg(0, work_array_2);
-    advec_mom_flux_z_device.setArg(1, work_array_3);
-    advec_mom_flux_z_device.setArg(2, work_array_4);
-    advec_mom_flux_z_device.setArg(4, celldz);
-    advec_mom_flux_z_device.setArg(5, work_array_5);
+    advec_mom_flux_z_device.setArg(1, work_array_4);
+    advec_mom_flux_z_device.setArg(3, celldz);
+    advec_mom_flux_z_device.setArg(4, work_array_5);
 
     advec_mom_zvel_device.setArg(0, work_array_3);
     advec_mom_zvel_device.setArg(1, work_array_4);
@@ -695,14 +691,13 @@ void CloverChunk::initArgs
     */
 
     #define SET_SHARED(knl)             \
-        knl.setArg(1, volume);          \
-        knl.setArg(2, vol_flux_x);      \
-        knl.setArg(3, vol_flux_y);      \
-        knl.setArg(4, vol_flux_z);      \
-        knl.setArg(5, work_array_2);    \
-        knl.setArg(6, density1);        \
-        knl.setArg(7, energy1);         \
-        knl.setArg(8, work_array_1);
+        knl.setArg(1, vol_flux_x);      \
+        knl.setArg(2, vol_flux_y);      \
+        knl.setArg(3, vol_flux_z);      \
+        knl.setArg(4, work_array_2);    \
+        knl.setArg(5, density1);        \
+        knl.setArg(6, energy1);         \
+        knl.setArg(7, work_array_1);
 
     // x kernels
     advec_cell_pre_vol_x_device.setArg(1, work_array_2);
@@ -713,11 +708,11 @@ void CloverChunk::initArgs
     advec_cell_pre_vol_x_device.setArg(6, vol_flux_z);
 
     SET_SHARED(advec_cell_ener_flux_x_device)
-    advec_cell_ener_flux_x_device.setArg(9, vertexdx);
-    advec_cell_ener_flux_x_device.setArg(10, mass_flux_x);
+    advec_cell_ener_flux_x_device.setArg(8, vertexdx);
+    advec_cell_ener_flux_x_device.setArg(9, mass_flux_x);
 
     SET_SHARED(advec_cell_x_device)
-    advec_cell_x_device.setArg(9, mass_flux_x);
+    advec_cell_x_device.setArg(8, mass_flux_x);
 
     // y kernels
     advec_cell_pre_vol_y_device.setArg(1, work_array_2);
@@ -728,11 +723,11 @@ void CloverChunk::initArgs
     advec_cell_pre_vol_y_device.setArg(6, vol_flux_z);
 
     SET_SHARED(advec_cell_ener_flux_y_device)
-    advec_cell_ener_flux_y_device.setArg(9, vertexdy);
-    advec_cell_ener_flux_y_device.setArg(10, mass_flux_y);
+    advec_cell_ener_flux_y_device.setArg(8, vertexdy);
+    advec_cell_ener_flux_y_device.setArg(9, mass_flux_y);
 
     SET_SHARED(advec_cell_y_device)
-    advec_cell_y_device.setArg(9, mass_flux_y);
+    advec_cell_y_device.setArg(8, mass_flux_y);
 
     // z kernels
     advec_cell_pre_vol_z_device.setArg(1, work_array_2);
@@ -743,11 +738,11 @@ void CloverChunk::initArgs
     advec_cell_pre_vol_z_device.setArg(6, vol_flux_z);
 
     SET_SHARED(advec_cell_ener_flux_z_device)
-    advec_cell_ener_flux_z_device.setArg(9, vertexdz);
-    advec_cell_ener_flux_z_device.setArg(10, mass_flux_z);
+    advec_cell_ener_flux_z_device.setArg(8, vertexdz);
+    advec_cell_ener_flux_z_device.setArg(9, mass_flux_z);
 
     SET_SHARED(advec_cell_z_device)
-    advec_cell_z_device.setArg(9, mass_flux_z);
+    advec_cell_z_device.setArg(8, mass_flux_z);
 
     #undef SET_SHARED
 
@@ -804,9 +799,6 @@ void CloverChunk::initArgs
     PdV_predict_device.setArg(12, xvel0);
     PdV_predict_device.setArg(13, yvel0);
     PdV_predict_device.setArg(14, zvel0);
-    PdV_predict_device.setArg(15, xvel1);
-    PdV_predict_device.setArg(16, yvel1);
-    PdV_predict_device.setArg(17, zvel1);
 
     PdV_not_predict_device.setArg(1, PdV_reduce_buf);
     PdV_not_predict_device.setArg(2, xarea);

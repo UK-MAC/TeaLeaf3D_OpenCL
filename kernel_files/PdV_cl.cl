@@ -15,10 +15,7 @@ __kernel void PdV_predict
  __global const double * __restrict const viscosity,
  __global const double * __restrict const xvel0,
  __global const double * __restrict const yvel0,
- __global const double * __restrict const zvel0,
- __global const double * __restrict const xvel1,
- __global const double * __restrict const yvel1,
- __global const double * __restrict const zvel1)
+ __global const double * __restrict const zvel0)
 {
     __kernel_indexes;
 

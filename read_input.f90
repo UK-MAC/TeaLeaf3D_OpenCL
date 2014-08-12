@@ -68,8 +68,6 @@ SUBROUTINE read_input()
   dtdiv_safe=0.7_8
 
   use_fortran_kernels=.TRUE.
-  use_C_kernels=.FALSE.
-  use_OA_kernels=.FALSE.
   use_opencl_kernels=.FALSE.
   use_vector_loops=.FALSE.
   use_Hydro = .FALSE.
@@ -202,19 +200,9 @@ SUBROUTINE read_input()
         tl_ch_cg_errswitch = .true.
       CASE('use_fortran_kernels')
         use_fortran_kernels=.TRUE.
-        use_C_kernels=.FALSE.
-      CASE('use_c_kernels')
-        use_fortran_kernels=.FALSE.
-        use_C_kernels=.TRUE.
       CASE('use_opencl_kernels')
         use_fortran_kernels=.FALSE.
-        use_C_kernels=.FALSE.
         use_opencl_kernels=.TRUE.
-      CASE('use_oa_kernels')
-        use_fortran_kernels=.FALSE.
-        use_C_kernels=.FALSE.
-        use_OA_kernels=.TRUE.
-        use_opencl_kernels=.FALSE.
       CASE('tl_use_jacobi')
         tl_use_chebyshev = .false.
         tl_use_cg = .false.
@@ -335,8 +323,6 @@ SUBROUTINE read_input()
     WRITE(g_out,*)
     IF(use_fortran_kernels) THEN
       WRITE(g_out,"(1x,a25)")'Using Fortran Kernels'
-    ELSEIF(use_c_kernels) THEN
-      WRITE(g_out,"(1x,a25)")'Using C Kernels'
     ELSEIF(use_opencl_kernels) THEN
       WRITE(g_out,"(1x,a25)")'Using OpenCL Kernels'
     ENDIF

@@ -59,7 +59,7 @@ FLAGS_PGI       = -fastsse -gopt -Mipa=fast -Mlist
 FLAGS_PATHSCALE = -O3
 FLAGS_XL       = -O5 -qipa=partition=large -g -qfullpath -Q -qsigtrap -qextname=flush:ideal_gas_kernel_c:viscosity_kernel_c:pdv_kernel_c:revert_kernel_c:accelerate_kernel_c:flux_calc_kernel_c:advec_cell_kernel_c:advec_mom_kernel_c:reset_field_kernel_c:timer_c:unpack_top_bottom_buffers_c:pack_top_bottom_buffers_c:unpack_left_right_buffers_c:pack_left_right_buffers_c:field_summary_kernel_c:update_halo_kernel_c:generate_chunk_kernel_c:initialise_chunk_kernel_c:calc_dt_kernel_c -qlistopt -qattr=full -qlist -qreport -qxref=full -qsource -qsuppress=1506-224:1500-036
 FLAGS_          = -O3
-CFLAGS_INTEL     = -O3  -no-prec-div -restrict -fno-alias
+CFLAGS_INTEL     = -O3 -no-prec-div -restrict -fno-alias -xhost
 CFLAGS_SUN       = -fast -xipo=2
 CFLAGS_GNU       = -O3 -march=native -funroll-loops
 CFLAGS_CRAY      = -em -h list=a
@@ -115,24 +115,7 @@ CXX_MPI_COMPILER=mpiCC
 CXXFLAGS+=$(CFLAGS)
 
 C_FILES=\
-	accelerate_kernel_c.o           \
-	pack_kernel_c.o \
-	PdV_kernel_c.o                  \
-	timer_c.o                  \
-	initialise_chunk_kernel_c.o                  \
-	calc_dt_kernel_c.o                  \
-	field_summary_kernel_c.o                  \
-	update_halo_kernel_c.o                  \
-	generate_chunk_kernel_c.o                  \
-	flux_calc_kernel_c.o            \
-	tea_leaf_kernel_c.o			\
-	revert_kernel_c.o               \
-	reset_field_kernel_c.o          \
-	set_field_kernel_c.o          \
-	ideal_gas_kernel_c.o            \
-	viscosity_kernel_c.o            \
-	advec_cell_kernel_c.o			\
-	advec_mom_kernel_c.o
+    timer_c.o
 
 FORTRAN_FILES=\
 	pack_kernel.o \
@@ -228,7 +211,7 @@ include make.deps
 %.mod %_module.mod %_leaf_module.mod: %.f90 %.o
 	@true
 %.o: %.f90 Makefile
-	$(MPI_COMPILER) -cpp $(CFLAGS) -c $< -o $*.o
+	$(MPI_COMPILER) -cpp $(FLAGS) -c $< -o $*.o
 %.o: %.c Makefile
 	$(C_MPI_COMPILER) $(CFLAGS) -c $< -o $*.o
 

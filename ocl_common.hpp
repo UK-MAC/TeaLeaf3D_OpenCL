@@ -348,6 +348,8 @@ private:
     int profiler_on;
     // for recording times if profiling is on
     std::map<std::string, double> kernel_times;
+    // recording number of times each kernel was called
+    std::map<std::string, int> kernel_calls;
 
     // Where to send debug output
     FILE* DBGOUT;
@@ -518,7 +520,7 @@ public:
 
     void packUnpackAllBuffers
     (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int depth,
-     int face, int pack, const int n_exchanged, double * buffer);
+     int face, int pack, double * buffer);
 
     void packRect
     (double* host_buffer,

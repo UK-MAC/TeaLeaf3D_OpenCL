@@ -5,35 +5,30 @@ extern "C" void ocl_pack_buffers_
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int * depth,
  int * face, double * buffer)
 {
-    int n_exchanged = std::accumulate(fields, fields + (NUM_FIELDS-1), 0);
-
-    if (n_exchanged > 0)
-    {
-        // only call if there's actually something to pack
-        chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 1, n_exchanged, buffer);
-    }
+    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 1, buffer);
 }
 
 extern "C" void ocl_unpack_buffers_
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int * depth,
  int * face, double * buffer)
 {
-    int n_exchanged = std::accumulate(fields, fields + (NUM_FIELDS-1), 0);
-
-    if (n_exchanged > 0)
-    {
-        // only call if there's actually something to unpack
-        chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 0, n_exchanged, buffer);
-    }
+    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 0, buffer);
 }
 
 void CloverChunk::packUnpackAllBuffers
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS],
- const int depth, const int face, const int pack, const int n_exchanged,
+ const int depth, const int face, const int pack,
  double * buffer)
 {
     // which subbuffer to use - incrmement by 1 for each buffer packed
     int current_subbuf = 0;
+
+    const int n_exchanged = std::accumulate(fields, fields + (NUM_FIELDS-1), 0);
+
+    if (n_exchanged < 1)
+    {
+        return;
+    }
 
     if (!pack)
     {
@@ -129,10 +124,10 @@ void CloverChunk::packUnpackAllBuffers
             #define CASE_BUF(which_array)   \
             case FIELD_##which_array:       \
             {                               \
-                device_array = &which_array;\
+                device_array = which_array;\
             }
 
-            cl::Buffer * device_array = NULL;
+            cl::Buffer device_array;
 
             switch (which_field)
             {
@@ -160,6 +155,8 @@ void CloverChunk::packUnpackAllBuffers
             default:
                 DIE("Invalid face %d passed to left/right pack buffer\n", which_field);
             }
+
+            #undef CASE_BUF
 
             cl::Kernel pack_kernel;
 
@@ -250,21 +247,21 @@ void CloverChunk::packUnpackAllBuffers
 
             switch (face)
             {
-            // depth*y_max+... region - 1 or 2 columns
+            // depth*z_max*y_max+... region - 1 or 2 columns
             case CHUNK_LEFT:
             case CHUNK_RIGHT:
                 pack_global = update_lr_global_size[depth-1];
                 pack_local = update_lr_local_size[depth-1];
                 break;
 
-            // depth*x_max+... region - 1 or 2 rows
+            // depth*z_max*x_max+... region - 1 or 2 rows
             case CHUNK_BOTTOM:
             case CHUNK_TOP:
                 pack_global = update_ud_global_size[depth-1];
                 pack_local = update_ud_local_size[depth-1];
                 break;
 
-            // FIXME these sizes seem not very good - eg multiples of 10, should be multiples of 32 etc
+            // depth*x_max*y_max+... region - 1 or 2 rows
             case CHUNK_BACK:
             case CHUNK_FRONT:
                 pack_global = update_fb_global_size[depth-1];
@@ -279,7 +276,7 @@ void CloverChunk::packUnpackAllBuffers
             pack_kernel.setArg(0, x_inc);
             pack_kernel.setArg(1, y_inc);
             pack_kernel.setArg(2, z_inc);
-            pack_kernel.setArg(3, *device_array);
+            pack_kernel.setArg(3, device_array);
             pack_kernel.setArg(4, packing_subbuf);
             pack_kernel.setArg(5, depth);
 

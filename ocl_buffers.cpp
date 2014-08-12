@@ -1,9 +1,9 @@
 #include "ocl_common.hpp"
 
 extern "C" void ocl_allocate_mpi_buffers_
-(int * lr_align_bytes, int * bt_align_bytes, int * fb_align_bytes)
+(int * lr_align_elems, int * bt_align_elems, int * fb_align_elems)
 {
-    chunk.allocateMPIBuffers(lr_align_bytes, bt_align_bytes, fb_align_bytes);
+    chunk.allocateMPIBuffers(lr_align_elems, bt_align_elems, fb_align_elems);
 }
 
 void CloverChunk::initBuffers
@@ -116,12 +116,13 @@ void CloverChunk::initBuffers
 }
 
 void CloverChunk::allocateMPIBuffers
-(int * lr_align_bytes, int * bt_align_bytes, int * fb_align_bytes)
+(int * lr_align_elems, int * bt_align_elems, int * fb_align_elems)
 {
     const std::vector<double> zeros(total_cells, 0.0);
 
     int device_alignment;
 
+    // get the (device-specific) minimum alignment for the subbuffers
     try
     {
         device_alignment = device.getInfo<CL_DEVICE_MEM_BASE_ADDR_ALIGN>();
@@ -131,7 +132,7 @@ void CloverChunk::allocateMPIBuffers
         DIE("%d (%s) when trying to get device alignment\n");
     }
 
-
+    // set initial (ideal) size for buffers and increment untl it hits alignment
     lr_mpi_buf_sz = sizeof(double)*(y_max + 5)*(z_max + 5);
     bt_mpi_buf_sz = sizeof(double)*(x_max + 5)*(z_max + 5);
     fb_mpi_buf_sz = sizeof(double)*(x_max + 5)*(y_max + 5);
@@ -190,9 +191,9 @@ void CloverChunk::allocateMPIBuffers
         }
     }
 
-    *lr_align_bytes = lr_mpi_buf_sz/sizeof(double);
-    *bt_align_bytes = bt_mpi_buf_sz/sizeof(double);
-    *fb_align_bytes = fb_mpi_buf_sz/sizeof(double);
+    *lr_align_elems = lr_mpi_buf_sz/sizeof(double);
+    *bt_align_elems = bt_mpi_buf_sz/sizeof(double);
+    *fb_align_elems = fb_mpi_buf_sz/sizeof(double);
 
     #undef BUF3D_ALLOC
     #undef BUF2D_ALLOC

@@ -117,7 +117,6 @@ __kernel void advec_mom_node_pre_x
 
 __kernel void advec_mom_flux_x
 (__global const double* __restrict const node_flux,
- __global const double* __restrict const node_mass_post,
  __global const double* __restrict const node_mass_pre,
  __global const double* __restrict const xvel1,
  __global const double* __restrict const celldx,
@@ -250,7 +249,6 @@ __kernel void advec_mom_node_pre_y
 
 __kernel void advec_mom_flux_y
 (__global const double* __restrict const node_flux,
- __global const double* __restrict const node_mass_post,
  __global const double* __restrict const node_mass_pre,
  __global const double* __restrict const yvel1,
  __global const double* __restrict const celldy,
@@ -382,7 +380,6 @@ __kernel void advec_mom_node_pre_z
 
 __kernel void advec_mom_flux_z
 (__global const double* __restrict const node_flux,
- __global const double* __restrict const node_mass_post,
  __global const double* __restrict const node_mass_pre,
  __global const double* __restrict const zvel1,
  __global const double* __restrict const celldz,

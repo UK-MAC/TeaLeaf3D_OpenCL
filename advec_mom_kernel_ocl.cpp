@@ -18,29 +18,29 @@ void CloverChunk::advec_mom_kernel
 
     if (1 == which_vel)
     {
-        advec_mom_flux_x_device.setArg(3, xvel1);
+        advec_mom_flux_x_device.setArg(2, xvel1);
         advec_mom_xvel_device.setArg(3, xvel1);
-        advec_mom_flux_y_device.setArg(3, xvel1);
+        advec_mom_flux_y_device.setArg(2, xvel1);
         advec_mom_yvel_device.setArg(3, xvel1);
-        advec_mom_flux_z_device.setArg(3, xvel1);
+        advec_mom_flux_z_device.setArg(2, xvel1);
         advec_mom_zvel_device.setArg(3, xvel1);
     }
     else if (2 == which_vel)
     {
-        advec_mom_flux_x_device.setArg(3, yvel1);
+        advec_mom_flux_x_device.setArg(2, yvel1);
         advec_mom_xvel_device.setArg(3, yvel1);
-        advec_mom_flux_y_device.setArg(3, yvel1);
+        advec_mom_flux_y_device.setArg(2, yvel1);
         advec_mom_yvel_device.setArg(3, yvel1);
-        advec_mom_flux_z_device.setArg(3, yvel1);
+        advec_mom_flux_z_device.setArg(2, yvel1);
         advec_mom_zvel_device.setArg(3, yvel1);
     }
     else
     {
-        advec_mom_flux_x_device.setArg(3, zvel1);
+        advec_mom_flux_x_device.setArg(2, zvel1);
         advec_mom_xvel_device.setArg(3, zvel1);
-        advec_mom_flux_y_device.setArg(3, zvel1);
+        advec_mom_flux_y_device.setArg(2, zvel1);
         advec_mom_yvel_device.setArg(3, zvel1);
-        advec_mom_flux_z_device.setArg(3, zvel1);
+        advec_mom_flux_z_device.setArg(2, zvel1);
         advec_mom_zvel_device.setArg(3, zvel1);
     }
 
