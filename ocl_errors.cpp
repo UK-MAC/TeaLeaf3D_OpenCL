@@ -287,6 +287,24 @@ CloverChunk::~CloverChunk
             // slighty underestimated, but roughly correct
             kernel_params["reduction"] = 1.0/((x_max*y_max*z_max)/(LOCAL_X*LOCAL_Y*LOCAL_Z));
 
+            // TL specific
+            kernel_params["set_field"] = 4;
+            kernel_params["tea_leaf_init_diag"] = 3;
+            kernel_params["tea_leaf_finalise"] = 2;
+            kernel_params["tea_leaf_jacobi_init"] = 7;
+            kernel_params["tea_leaf_jacobi_copy_u"] = 2;
+            kernel_params["tea_leaf_jacobi_solve"] = 6;
+            kernel_params["tea_leaf_cg_init_u"] = 6;
+            kernel_params["tea_leaf_cg_init_directions"] = 4;
+            kernel_params["tea_leaf_cg_init_others"] = 9; // with preconditioner!
+            kernel_params["tea_leaf_cg_solve_calc_w"] = 5;
+            kernel_params["tea_leaf_cg_solve_calc_ur"] = 6; // with preconditioner!
+            kernel_params["tea_leaf_cg_solve_calc_p"] = 3; // with preconditioner!
+            kernel_params["tea_leaf_cheby_solve_init_p"] = 9; // with preconditioner!
+            kernel_params["tea_leaf_cheby_solve_calc_u"] = 2;
+            kernel_params["tea_leaf_cheby_solve_calc_p"] = 9; // with preconditioner!
+            kernel_params["tea_leaf_cheby_solve_calc_resid"] = 1;
+
             double total_transferred = 0.0;
             double total_kernel_time = 0.0;
 

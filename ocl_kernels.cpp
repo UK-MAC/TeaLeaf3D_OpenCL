@@ -136,7 +136,6 @@ void CloverChunk::initProgram
             compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_u", tea_leaf_cheby_solve_calc_u_device);
             compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_p", tea_leaf_cheby_solve_calc_p_device);
             compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_resid", tea_leaf_cheby_solve_calc_resid_device);
-            //compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_loop_calc_u", tea_leaf_cheby_solve_loop_calc_u_device);
         }
     }
     else
