@@ -945,10 +945,6 @@ void CloverChunk::initArgs
             tea_leaf_cheby_solve_calc_p_device.setArg(8, work_array_7);
 
             tea_leaf_cheby_solve_calc_resid_device.setArg(1, reduce_buf_1);
-
-            //tea_leaf_cheby_solve_loop_calc_u_device.setArg(0, u);
-            //tea_leaf_cheby_solve_loop_calc_u_device.setArg(1, work_array_1);
-            //tea_leaf_cheby_solve_loop_calc_u_device.setArg(2, work_array_2);
         }
     }
     else

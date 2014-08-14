@@ -40,7 +40,7 @@ void CloverChunk::tea_leaf_cheby_copy_u
 {
     // copy into u0 for later residual check
     queue.finish();
-    queue.enqueueCopyBuffer(u, u0, 0, 0, (x_max+4) * (y_max+4) * sizeof(double));
+    queue.enqueueCopyBuffer(u, u0, 0, 0, (x_max+4) * (y_max+4) * (z_max + 4) * sizeof(double));
 }
 
 void CloverChunk::tea_leaf_calc_2norm_kernel
