@@ -225,49 +225,6 @@ SUBROUTINE tea_leaf_kernel_cheby_copy_u(x_min,             &
 
 end SUBROUTINE
 
-SUBROUTINE tea_leaf_kernel_cheby_reset_Mi(x_min,             &
-                           x_max,             &
-                           y_min,             &
-                           y_max,             &
-                           z_min,             &
-                           z_max,             &
-                           p,           & ! 1
-                           r,           & ! 2
-                           Mi,          & ! 3
-                           z,           & ! 5
-                           rro)
-
-  IMPLICIT NONE
-
-  INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: p
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: r
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: Mi
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: z
-
-  INTEGER(KIND=4) :: j,k,l
-
-  REAL(kind=8) :: rro
-
-!$OMP PARALLEL
-!$OMP DO REDUCTION(+:rro)
-  DO l=z_min,z_max
-    DO k=y_min,y_max
-        DO j=x_min,x_max
-            Mi(j, k, l) = 1.0_8
-
-            z(j, k, l) = r(j, k, l)
-            p(j, k, l) = r(j, k, l)
-
-            rro = rro + r(j, k, l)*r(j, k, l);
-        ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
-!$OMP END PARALLEL
-
-end SUBROUTINE
-
 SUBROUTINE tqli(d,e,n, info)
     ! http://physics.sharif.edu/~jafari/fortran-codes/lanczos/tqli.f90
     IMPLICIT NONE
