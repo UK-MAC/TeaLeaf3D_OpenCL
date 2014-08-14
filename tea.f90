@@ -282,10 +282,10 @@ SUBROUTINE tea_leaf()
                     chunks(c)%field%work_array7,                 &
                     chunks(c)%field%work_array8,                 &
                     ch_alphas, ch_betas, max_cheby_iters,        &
-                    rx, ry, rz, cheby_calc_steps)
+                    rx, ry, rz, 1)
             ELSEIF(use_opencl_kernels) THEN
                 call tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
-                  rx, ry, rz, cheby_calc_steps)
+                  rx, ry, rz, 1)
             ENDIF
 
             IF(use_fortran_kernels) THEN
