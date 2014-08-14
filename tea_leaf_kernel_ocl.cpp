@@ -38,7 +38,7 @@ extern "C" void tea_leaf_kernel_cheby_iterate_ocl_
 void CloverChunk::tea_leaf_cheby_copy_u
 (void)
 {
-    // copy into u0/work_array_3 for later residual check
+    // copy into u0 for later residual check
     queue.finish();
     queue.enqueueCopyBuffer(u, u0, 0, 0, (x_max+4) * (y_max+4) * sizeof(double));
 }

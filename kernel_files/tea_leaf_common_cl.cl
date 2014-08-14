@@ -14,7 +14,7 @@ __kernel void tea_leaf_init_diag
     {
         Kx[THARR3D(0, 0, 0, 0, 0)] *= rx;
         Ky[THARR3D(0, 0, 0, 0, 0)] *= ry;
-        Kz[THARR3D(0, 0, 0, 0, 0)] *= ry;
+        Kz[THARR3D(0, 0, 0, 0, 0)] *= rz;
     }
 }
 
