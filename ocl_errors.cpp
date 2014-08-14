@@ -285,7 +285,7 @@ CloverChunk::~CloverChunk
             kernel_params["update_halo_back"] = 3.0/(z_max);
             kernel_params["update_halo_front"] = 3.0/(z_max);
             // slighty underestimated, but roughly correct
-            kernel_params["reduction"] = 1.0/((x_max*y_max*z_max)/(LOCAL_X*LOCAL_Y*LOCAL_Z));
+            kernel_params["reduction"] = 1.0/(LOCAL_X*LOCAL_Y*LOCAL_Z);
 
             // TL specific
             kernel_params["set_field"] = 4;
