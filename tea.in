@@ -20,7 +20,7 @@
  end_time=100.0
  end_step=3
 
- use_opencl_kernels
+ !use_opencl_kernels
  opencl_vendor=nvidia
  opencl_type=GPU
  opencl_device=1
@@ -28,7 +28,7 @@
  !tl_use_chebyshev
  tl_use_cg
 
- tl_max_iters=500
+ tl_max_iters=5000
  tl_eps=0.00000000001
  tl_ch_cg_errswitch
 

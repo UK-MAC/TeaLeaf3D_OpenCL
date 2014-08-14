@@ -138,7 +138,7 @@ SUBROUTINE tea_leaf_kernel_init_cg_fortran(x_min,             &
             Mi(j, k, l) = (1.0_8                                     &
                 + rx*(Kx(j+1, k, l) + Kx(j, k, l))  &
                 + ry*(Ky(j, k+1, l) + Ky(j, k, l))                      &
-                + rz*(Kz(j, k, l+1) + Kx(j, k, l)))
+                + rz*(Kz(j, k, l+1) + Kz(j, k, l)))
             Mi(j, k, l) = 1.0_8/Mi(j, k, l)
 
             z(j, k, l) = Mi(j, k, l)*r(j, k, l)
