@@ -349,19 +349,6 @@ SUBROUTINE clover_exchange(fields,depth)
     !make a call to wait / sync
     CALL MPI_WAITALL(message_count,request,status,err)
 
-    !unpack in left direction
-    IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
-      if (use_opencl_kernels) then
-        call ocl_unpack_buffers(fields, left_right_offset, depth, &
-            CHUNK_LEFT, chunks(chunk)%left_rcv_buffer)
-      else
-        CALL clover_unpack_left(fields, chunk, depth,                      &
-                                chunks(chunk)%left_rcv_buffer,             &
-                                left_right_offset)
-      endif
-    ENDIF
-
-
     !unpack in right direction
     IF(chunks(chunk)%chunk_neighbours(chunk_right).NE.external_face) THEN
       if (use_opencl_kernels) then
@@ -371,6 +358,18 @@ SUBROUTINE clover_exchange(fields,depth)
         CALL clover_unpack_right(fields, chunk, depth,                     &
                                  chunks(chunk)%right_rcv_buffer,           &
                                  left_right_offset)
+      endif
+    ENDIF
+
+    !unpack in left direction
+    IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
+      if (use_opencl_kernels) then
+        call ocl_unpack_buffers(fields, left_right_offset, depth, &
+            CHUNK_LEFT, chunks(chunk)%left_rcv_buffer)
+      else
+        CALL clover_unpack_left(fields, chunk, depth,                      &
+                                chunks(chunk)%left_rcv_buffer,             &
+                                left_right_offset)
       endif
     ENDIF
 

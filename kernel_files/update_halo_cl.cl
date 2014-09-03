@@ -130,14 +130,14 @@ __kernel void update_halo_front
 {
     __kernel_indexes;
 
-  int z_offset = (x_face || y_face);
+  int z_f_offset = (x_face || y_face);
 
   if (column >= 2 - depth && column <= (x_max + 1) + x_extra + depth)
   {
     if (row >= 2 - depth && row <= (y_max + 1) + y_extra + depth)
     {
         cur_array[THARR3D(0, 0, (z_max + 1) + 1 + z_extra, x_extra, y_extra)] =
-            z_invert * cur_array[THARR3D(0, 0, (z_max + 1) - z_offset - 2*slice, x_extra, y_extra)];
+            z_invert * cur_array[THARR3D(0, 0, (z_max + 1) - z_f_offset - 2*slice, x_extra, y_extra)];
     }
   }
 }

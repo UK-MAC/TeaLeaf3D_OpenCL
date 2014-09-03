@@ -35,7 +35,6 @@ const int depth)
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
-    if (column < depth)
     {
         left_buffer[VERT_IDX] = array[THARR3D((x_min + 1) + x_extra, 0, 0, x_extra, y_extra)];
     }
@@ -51,7 +50,6 @@ const int depth)
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
-    if (column < depth)
     {
         /*
          *  offset in column 0 =  1
@@ -74,7 +72,6 @@ const int depth)
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
-    if (column < depth)
     {
         right_buffer[VERT_IDX] = array[THARR3D((x_max + 1) - 2*column, 0, 0, x_extra, y_extra)];
     }
@@ -90,7 +87,6 @@ const int depth)
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
-    if (column < depth)
     {
         array[THARR3D((x_max + 1) + x_extra + 1, 0, 0, x_extra, y_extra)] = right_buffer[VERT_IDX];
     }
@@ -107,7 +103,6 @@ const int depth)
     __kernel_indexes;
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
-    if (row < depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
         bottom_buffer[HORZ_IDX] = array[THARR3D(0, (y_min + 1) + y_extra, 0, x_extra, y_extra)];
@@ -123,7 +118,6 @@ const int depth)
     __kernel_indexes;
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
-    if (row < depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
         array[THARR3D(0, 1 - 2*row, 0, x_extra, y_extra)] = bottom_buffer[HORZ_IDX];
@@ -141,7 +135,6 @@ const int depth)
     __kernel_indexes;
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
-    if (row < depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
         top_buffer[HORZ_IDX] = array[THARR3D(0, (y_max + 1) - 2*row, 0, x_extra, y_extra)];
@@ -157,7 +150,6 @@ const int depth)
     __kernel_indexes;
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
-    if (row < depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
         array[THARR3D(0, (y_max + 1) + y_extra + 1, 0, x_extra, y_extra)] = top_buffer[HORZ_IDX];
@@ -174,7 +166,6 @@ const int depth)
 {
     __kernel_indexes;
 
-    if (slice < depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
@@ -190,7 +181,6 @@ const int depth)
 {
     __kernel_indexes;
 
-    if (slice < depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
@@ -208,7 +198,6 @@ const int depth)
 {
     __kernel_indexes;
 
-    if (slice < depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
@@ -224,7 +213,6 @@ const int depth)
 {
     __kernel_indexes;
 
-    if (slice < depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
     if (column >= (x_min + 1) - depth && column <= (x_max + 1) + x_extra + depth)
     {
