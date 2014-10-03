@@ -5,7 +5,8 @@
 #define VERT_IDX                                                    \
     ((column - 1) +                                                 \
     ((row    - 1) + depth - 1)*depth +                              \
-    ((slice  - 1) + depth - 1)*(y_max + y_extra + 2*depth)*depth)
+    ((slice  - 1) + depth - 1)*(y_max + y_extra + 2*depth)*depth)   \
+    + offset
 #else
 #define VERT_IDX                                            \
     (slice  + depth - 1 +                                                           \
@@ -17,19 +18,21 @@
 #define HORZ_IDX                                                                    \
     (column + depth - 1 +                                                           \
     (slice  + depth - 1)* (x_max + x_extra + 2*depth) +                             \
-    (row            - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth)))
+    (row            - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth))) \
+    + offset
 
 // back/front
 #define DEPTH_IDX                                                                   \
     (row    + depth - 1 +                                                           \
     (column + depth - 1)* (x_max + x_extra + 2*depth) +                             \
-    (slice          - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth)))
+    (slice          - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth))) \
+    + offset
 
 __kernel void pack_left_buffer
 (int x_extra, int y_extra, int z_extra,
 const  __global double * __restrict array,
        __global double * __restrict left_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -44,18 +47,13 @@ __kernel void unpack_left_buffer
 (int x_extra, int y_extra, int z_extra,
        __global double * __restrict array,
 const  __global double * __restrict left_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
     if (slice >= (z_min + 1) - depth && slice <= (z_max + 1) + z_extra + depth)
     if (row >= (y_min + 1) - depth && row <= (y_max + 1) + y_extra + depth)
     {
-        /*
-         *  offset in column 0 =  1
-         *  offset in column 1 = -1
-         *  'swaps' column destination
-         */
         array[THARR3D(1 - 2*column, 0, 0, x_extra, y_extra)] = left_buffer[VERT_IDX];
     }
 }
@@ -66,7 +64,7 @@ __kernel void pack_right_buffer
 (int x_extra, int y_extra, int z_extra,
 const  __global double * __restrict array,
        __global double * __restrict right_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -81,7 +79,7 @@ __kernel void unpack_right_buffer
 (int x_extra, int y_extra, int z_extra,
        __global double * __restrict array,
 const  __global double * __restrict right_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -98,7 +96,7 @@ __kernel void pack_bottom_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  __global double * __restrict bottom_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -113,7 +111,7 @@ __kernel void unpack_bottom_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  __global double * __restrict bottom_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -130,7 +128,7 @@ __kernel void pack_top_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  __global double * __restrict top_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -145,7 +143,7 @@ __kernel void unpack_top_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  __global double * __restrict top_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -162,7 +160,7 @@ __kernel void pack_back_buffer
 (int x_extra, int y_extra, int z_extra,
  const __global double * __restrict array,
  __global double * __restrict back_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -177,7 +175,7 @@ __kernel void unpack_back_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  const __global double * __restrict back_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -194,7 +192,7 @@ __kernel void pack_front_buffer
 (int x_extra, int y_extra, int z_extra,
  const __global double * __restrict array,
  __global double * __restrict front_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 
@@ -209,7 +207,7 @@ __kernel void unpack_front_buffer
 (int x_extra, int y_extra, int z_extra,
  __global double * __restrict array,
  const __global double * __restrict front_buffer,
-const int depth)
+const int depth, int offset)
 {
     __kernel_indexes;
 

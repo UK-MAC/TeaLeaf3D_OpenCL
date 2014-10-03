@@ -146,65 +146,17 @@ void CloverChunk::initOcl
 
     int desired_vendor = platformRead(input);
 
-    if (desired_vendor == NO_PLAT)
-    {
-        DIE("No opencl_vendor specified in tea.in\n");
-    }
-    else if (desired_vendor == LIST_PLAT)
-    {
-        // special case to print out platforms instead
-        fprintf(stdout, "Listing platforms\n\n");
-
-        listPlatforms(platforms);
-
-        exit(0);
-    }
-    else if (desired_vendor == ANY_PLAT)
-    {
-        fprintf(stdout, "No platform specified - using platform 0\n");
-        platform = platforms.at(0);
-    }
-    else
-    {
-        // go through all platforms
-        for (size_t ii = 0;;)
-        {
-            std::string plat_name;
-            platforms.at(ii).getInfo(CL_PLATFORM_VENDOR, &plat_name);
-            fprintf(DBGOUT, "Checking platform %s\n", plat_name.c_str());
-
-            // if the platform name given matches one in the LUT
-            if (platformMatch(plat_name) == desired_vendor)
-            {
-                fprintf(DBGOUT, "Correct vendor platform found\n");
-                platform = platforms.at(ii);
-                break;
-            }
-
-            // if there are no platforms left to match
-            if (platforms.size() == ++ii)
-            {
-                fprintf(stderr, "Platforms available:\n");
-
-                listPlatforms(platforms);
-
-                DIE("Correct vendor platform NOT found\n");
-            }
-        }
-    }
-
     int preferred_device = preferredDevice(input);
     preferred_device = (preferred_device < 0) ? 0 : preferred_device;
     fprintf(DBGOUT, "Preferred device is %d\n", preferred_device);
     desired_type = typeRead(input);
 
-    // find out which solver to use
+    // use first device whatever happens (ignore MPI rank) for running across different platforms
+    bool usefirst = paramEnabled(input, "opencl_usefirst");
+
     bool tl_use_jacobi = paramEnabled(input, "tl_use_jacobi");
     bool tl_use_cg = paramEnabled(input, "tl_use_cg");
     bool tl_use_chebyshev = paramEnabled(input, "tl_use_chebyshev");
-
-    // use first device whatever happens (ignore MPI rank) for running across different platforms
-    bool usefirst = paramEnabled(input, "opencl_usefirst");
 
     if(!rank)fprintf(stdout, "Solver to use: ");
     if (tl_use_chebyshev)
@@ -230,44 +182,78 @@ void CloverChunk::initOcl
 
     fclose(input);
 
-    // try to create a context with the desired type
-    cl_context_properties properties[3] = {CL_CONTEXT_PLATFORM,
-        reinterpret_cast<cl_context_properties>(platform()), 0};
-
-    try
+    switch(desired_vendor)
     {
-        context = cl::Context(desired_type, properties);
-    }
-    catch (cl::Error e)
-    {
-        if (e.err() == CL_DEVICE_NOT_AVAILABLE)
-        {
-            DIE("Devices found but are not available (CL_DEVICE_NOT_AVAILABLE)\n");
-        }
-        // if there's no device of the desired type in this context
-        else if (e.err() == CL_DEVICE_NOT_FOUND)
-        {
-            fprintf(stderr, "No devices of specified type found:\n");
-            std::vector<cl::Device> devices;
-            platform.getDevices(CL_DEVICE_TYPE_ALL, &devices);
+    case NO_PLAT:
+        DIE("No opencl_vendor specified in clover.in\n");
 
-            for (size_t ii = 0; ii < devices.size(); ii++)
+    case LIST_PLAT:
+        // special case to print out platforms instead
+        fprintf(stdout, "Listing platforms\n\n");
+        listPlatforms(platforms);
+        exit(0);
+
+    case ANY_PLAT:
+        fprintf(stdout, "No platform specified - using platform 0\n");
+        platform = platforms.at(0);
+        break;
+
+    default:
+        // go through all platforms
+        for (size_t ii = 0;;)
+        {
+            std::string plat_name;
+            platforms.at(ii).getInfo(CL_PLATFORM_VENDOR, &plat_name);
+            fprintf(DBGOUT, "Checking platform %s\n", plat_name.c_str());
+
+            // if the platform name given matches one in the LUT
+            if (platformMatch(plat_name) == desired_vendor)
             {
-                std::string devname;
-                cl_device_type dtype;
-                devices.at(ii).getInfo(CL_DEVICE_NAME, &devname);
-                devices.at(ii).getInfo(CL_DEVICE_TYPE, &dtype);
-
-                std::string dtype_str = strType(dtype);
-                fprintf(stderr, "%s (%s)\n", devname.c_str(), dtype_str.c_str());
+                fprintf(DBGOUT, "Correct vendor platform found\n");
+                platform = platforms.at(ii);
+                break;
             }
 
-            DIE("Unable to get devices of desired type");
+            // if there are no platforms left to match
+            if (platforms.size() == ++ii)
+            {
+                fprintf(stderr, "Platforms available:\n");
+
+                listPlatforms(platforms);
+
+                DIE("Correct vendor platform NOT found\n");
+            }
         }
-        else
+
+        // try to create a context with the desired type
+        cl_context_properties properties[3] = {CL_CONTEXT_PLATFORM,
+            reinterpret_cast<cl_context_properties>(platform()), 0};
+
+        try
         {
-            DIE("Error %d (%s) in creating context\n", e.err(), e.what());
+            context = cl::Context(desired_type, properties);
         }
+        catch (cl::Error e)
+        {
+            if (e.err() == CL_DEVICE_NOT_AVAILABLE)
+            {
+                DIE("Devices found but are not available (CL_DEVICE_NOT_AVAILABLE)\n");
+            }
+            // if there's no device of the desired type in this context
+            else if (e.err() == CL_DEVICE_NOT_FOUND)
+            {
+                fprintf(stderr, "No devices of specified type found:\n");
+                listPlatforms(platforms);
+
+                DIE("Unable to get devices of desired type");
+            }
+            else
+            {
+                DIE("Error %d (%s) in creating context\n", e.err(), e.what());
+            }
+        }
+
+        break;
     }
 
 #if defined(MPI_HDR)
