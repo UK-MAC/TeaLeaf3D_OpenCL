@@ -103,7 +103,7 @@ SUBROUTINE tea_leaf()
       ! INIT
       IF(profiler_on) kernel_time=timer()
 
-      if (use_fortran_kernels .or. use_c_kernels) then
+      if (use_fortran_kernels) then
         rx = dt/(chunks(c)%field%celldx(chunks(c)%field%x_min)**2)
         ry = dt/(chunks(c)%field%celldy(chunks(c)%field%y_min)**2)
         rz = dt/(chunks(c)%field%celldz(chunks(c)%field%z_min)**2)

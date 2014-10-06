@@ -53,18 +53,6 @@ SUBROUTINE set_field()
                               chunks(c)%field%energy1)
       ELSEIF(use_opencl_kernels)THEN
         CALL set_field_kernel_ocl()
-      ELSEIF(use_C_kernels)THEN
-        call report_error('set_field.f90', ' c set field not implemented ')
-        !CALL set_field_kernel_c(chunks(c)%field%x_min,   &
-        !                      chunks(c)%field%x_max,     &
-        !                      chunks(c)%field%y_min,     &
-        !                      chunks(c)%field%y_max,     &
-        !                      chunks(c)%field%z_min,     &
-        !                      chunks(c)%field%z_max,     &
-        !                      chunks(c)%field%density0,  &
-        !                      chunks(c)%field%density1,  &
-        !                      chunks(c)%field%energy0,   &
-        !                      chunks(c)%field%energy1)
       ENDIF
     ENDIF
 
