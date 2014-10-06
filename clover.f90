@@ -265,7 +265,7 @@ SUBROUTINE clover_exchange(fields,depth)
     IMPLICIT NONE
 
     INTEGER      :: fields(:),depth, chunk
-    INTEGER      :: left_right_offset(19),bottom_top_offset(19),back_front_offset(19)
+    INTEGER      :: left_right_offset(NUM_FIELDS),bottom_top_offset(NUM_FIELDS),back_front_offset(NUM_FIELDS)
     INTEGER      :: request(4)
     INTEGER      :: message_count,err
     INTEGER      :: status(MPI_STATUS_SIZE,4)
