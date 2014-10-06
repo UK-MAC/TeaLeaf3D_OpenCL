@@ -14,6 +14,7 @@ void CloverChunk::initProgram
 #endif
 
     //if (tea_solver != TEA_ENUM_CHEBYSHEV)
+    if (0)
     {
         // use jacobi preconditioner when running CG solver
         options << "-DCG_DO_PRECONDITION ";
@@ -433,9 +434,9 @@ void CloverChunk::initSizes
 
     FIND_PADDING_SIZE(ideal_gas, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(accelerate, 0, 1, 0, 1, 0, 1);
-    FIND_PADDING_SIZE(flux_calc_x, 0, 0, 0, 0, 1, 0);
-    FIND_PADDING_SIZE(flux_calc_y, 0, 0, 0, 0, 0, 1);
     FIND_PADDING_SIZE(flux_calc_z, 0, 1, 0, 0, 0, 0);
+    FIND_PADDING_SIZE(flux_calc_y, 0, 0, 0, 1, 0, 0);
+    FIND_PADDING_SIZE(flux_calc_x, 0, 0, 0, 0, 0, 1);
     FIND_PADDING_SIZE(viscosity, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(revert, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(reset_field, 0, 1, 0, 1, 0, 1);
@@ -478,7 +479,7 @@ void CloverChunk::initSizes
     FIND_PADDING_SIZE(PdV_predict, 0, 0, 0, 0, 0, 0);
     FIND_PADDING_SIZE(PdV_not_predict, 0, 0, 0, 0, 0, 0);
 
-    FIND_PADDING_SIZE(initialise_chunk_first, -2, 3, -2, 3, -2, 3);
+    FIND_PADDING_SIZE(initialise_chunk_first, 0, 3, 0, 3, 0, 3);
     FIND_PADDING_SIZE(initialise_chunk_second, -2, 2, -2, 2, -2, 2);
     FIND_PADDING_SIZE(generate_chunk_init, -2, 2, -2, 2, -2, 2);
     FIND_PADDING_SIZE(generate_chunk, -2, 2, -2, 2, -2, 2);

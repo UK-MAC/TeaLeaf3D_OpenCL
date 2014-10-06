@@ -240,33 +240,22 @@ SUBROUTINE clover_allocate_buffers(chunk)
   IMPLICIT NONE
 
   INTEGER      :: chunk
-
-  if (use_opencl_kernels) then
-    ! get the packed sizes from opencl
-    call ocl_allocate_mpi_buffers(lr_pack_buffer_size, &
-        bt_pack_buffer_size, fb_pack_buffer_size)
-  else
-    ! normal sizes
-    lr_pack_buffer_size = (chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)
-    bt_pack_buffer_size = (chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)
-    fb_pack_buffer_size = (chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)
-  endif
-
+  
   ! Unallocated buffers for external boundaries caused issues on some systems so they are now
   !  all allocated
   IF(parallel%task.EQ.chunks(chunk)%task)THEN
-      ALLOCATE(chunks(chunk)%left_snd_buffer(19*2*lr_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%left_rcv_buffer(19*2*lr_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%right_snd_buffer(19*2*lr_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%right_rcv_buffer(19*2*lr_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%bottom_snd_buffer(19*2*bt_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(19*2*bt_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%top_snd_buffer(19*2*bt_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%top_rcv_buffer(19*2*bt_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%back_snd_buffer(19*2*fb_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%back_rcv_buffer(19*2*fb_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%front_snd_buffer(19*2*fb_pack_buffer_size))
-      ALLOCATE(chunks(chunk)%front_rcv_buffer(19*2*fb_pack_buffer_size))
+      ALLOCATE(chunks(chunk)%left_snd_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%left_rcv_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%right_snd_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%right_rcv_buffer(19*2*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%bottom_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%top_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%top_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)))
+      ALLOCATE(chunks(chunk)%back_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%back_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%front_snd_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
+      ALLOCATE(chunks(chunk)%front_rcv_buffer(19*2*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)))
   ENDIF
 
 END SUBROUTINE clover_allocate_buffers
@@ -275,8 +264,8 @@ SUBROUTINE clover_exchange(fields,depth)
 
     IMPLICIT NONE
 
-    INTEGER      :: fields(:),depth, chunk !, n, m
-    INTEGER      :: left_right_offset(NUM_FIELDS),bottom_top_offset(NUM_FIELDS),back_front_offset(NUM_FIELDS)
+    INTEGER      :: fields(:),depth, chunk
+    INTEGER      :: left_right_offset(19),bottom_top_offset(19),back_front_offset(19)
     INTEGER      :: request(4)
     INTEGER      :: message_count,err
     INTEGER      :: status(MPI_STATUS_SIZE,4)
@@ -304,9 +293,9 @@ SUBROUTINE clover_exchange(fields,depth)
         left_right_offset(field)=end_pack_index_left_right
         bottom_top_offset(field)=end_pack_index_bottom_top
         back_front_offset(field)=end_pack_index_back_front
-        end_pack_index_left_right=end_pack_index_left_right+depth*lr_pack_buffer_size
-        end_pack_index_bottom_top=end_pack_index_bottom_top+depth*bt_pack_buffer_size
-        end_pack_index_back_front=end_pack_index_back_front+depth*fb_pack_buffer_size
+        end_pack_index_left_right=end_pack_index_left_right+depth*(chunks(chunk)%field%y_max+5)*(chunks(chunk)%field%z_max+5)
+        end_pack_index_bottom_top=end_pack_index_bottom_top+depth*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%z_max+5)
+        end_pack_index_back_front=end_pack_index_back_front+depth*(chunks(chunk)%field%x_max+5)*(chunks(chunk)%field%y_max+5)
       ENDIF
     ENDDO
 
@@ -349,19 +338,6 @@ SUBROUTINE clover_exchange(fields,depth)
     !make a call to wait / sync
     CALL MPI_WAITALL(message_count,request,status,err)
 
-    !unpack in left direction
-    IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
-      if (use_opencl_kernels) then
-        call ocl_unpack_buffers(fields, left_right_offset, depth, &
-            CHUNK_LEFT, chunks(chunk)%left_rcv_buffer)
-      else
-        CALL clover_unpack_left(fields, chunk, depth,                      &
-                                chunks(chunk)%left_rcv_buffer,             &
-                                left_right_offset)
-      endif
-    ENDIF
-
-
     !unpack in right direction
     IF(chunks(chunk)%chunk_neighbours(chunk_right).NE.external_face) THEN
       if (use_opencl_kernels) then
@@ -371,6 +347,18 @@ SUBROUTINE clover_exchange(fields,depth)
         CALL clover_unpack_right(fields, chunk, depth,                     &
                                  chunks(chunk)%right_rcv_buffer,           &
                                  left_right_offset)
+      endif
+    ENDIF
+
+    !unpack in left direction
+    IF(chunks(chunk)%chunk_neighbours(chunk_left).NE.external_face) THEN
+      if (use_opencl_kernels) then
+        call ocl_unpack_buffers(fields, left_right_offset, depth, &
+            CHUNK_LEFT, chunks(chunk)%left_rcv_buffer)
+      else
+        CALL clover_unpack_left(fields, chunk, depth,                      &
+                                chunks(chunk)%left_rcv_buffer,             &
+                                left_right_offset)
       endif
     ENDIF
 

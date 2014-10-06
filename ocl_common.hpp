@@ -180,12 +180,6 @@ private:
     cl::Buffer top_buffer;
     cl::Buffer back_buffer;
     cl::Buffer front_buffer;
-    std::vector<cl::Buffer> left_subbuffers[2];
-    std::vector<cl::Buffer> right_subbuffers[2];
-    std::vector<cl::Buffer> bottom_subbuffers[2];
-    std::vector<cl::Buffer> top_subbuffers[2];
-    std::vector<cl::Buffer> back_subbuffers[2];
-    std::vector<cl::Buffer> front_subbuffers[2];
 
     #define TEA_ENUM_JACOBI     1
     #define TEA_ENUM_CG         2
@@ -354,23 +348,6 @@ private:
     // Where to send debug output
     FILE* DBGOUT;
 
-    // type of callback for buffer packing
-    typedef cl_int (cl::CommandQueue::*buffer_func_t)
-    (
-        const cl::Buffer&,
-        cl_bool,
-        const cl::size_t<3>&,
-        const cl::size_t<3>&,
-        const cl::size_t<3>&,
-        size_t,
-        size_t,
-        size_t,
-        size_t,
-        void *,
-        const std::vector<cl::Event> *,
-        cl::Event
-    ) const;
-
     // compile a file and the contained kernels, and check for errors
     void compileKernel
     (const std::string& options,
@@ -506,11 +483,11 @@ public:
      const std::vector< cl::Event > * const events=NULL,
      cl::Event * const event=NULL) ;
 
-    #define ENQUEUE_OFFSET(knl)                                     \
-        CloverChunk::enqueueKernel(knl, __LINE__, __FILE__,         \
-                                   launch_specs.at(#knl).offset,    \
-                                   launch_specs.at(#knl).global,    \
-                                   local_group_size);
+    #define ENQUEUE_OFFSET(knl)                        \
+        enqueueKernel(knl, __LINE__, __FILE__,         \
+                      launch_specs.at(#knl).offset,    \
+                      launch_specs.at(#knl).global,    \
+                      local_group_size);
 
     // reduction
     template <typename T>
@@ -521,16 +498,6 @@ public:
     void packUnpackAllBuffers
     (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int depth,
      int face, int pack, double * buffer);
-
-    void packRect
-    (double* host_buffer,
-     int x_inc, int y_inc, int z_inc,
-     int edge, int dest,
-     int which_field, int depth);
-
-    // allocate MPI buffers
-    void allocateMPIBuffers
-    (int*, int*, int*);
 };
 
 extern CloverChunk chunk;
