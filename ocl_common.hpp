@@ -36,9 +36,11 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 #define FIELD_mass_flux_z   19
 #define FIELD_u 20
 #define FIELD_p 21
-#define NUM_FIELDS          21
+#define FIELD_sd 22
+#define NUM_FIELDS          22
 
 #define FIELD_work_array_1 FIELD_p
+#define FIELD_work_array_8 FIELD_sd
 
 #define NUM_BUFFERED_FIELDS 15
 
@@ -184,10 +186,8 @@ private:
     #define TEA_ENUM_JACOBI     1
     #define TEA_ENUM_CG         2
     #define TEA_ENUM_CHEBYSHEV  3
+    #define TEA_ENUM_PPCG       4
     int tea_solver;
-
-    // TODO could be used by all - precalculate diagonal + scale Kx/Ky
-    cl::Kernel tea_leaf_init_diag_device;
 
     // tea leaf
     cl::Kernel tea_leaf_cg_init_u_device;
@@ -202,8 +202,12 @@ private:
     cl::Kernel tea_leaf_cheby_solve_init_p_device;
     cl::Kernel tea_leaf_cheby_solve_calc_u_device;
     cl::Kernel tea_leaf_cheby_solve_calc_p_device;
-    cl::Kernel tea_leaf_cheby_solve_calc_resid_device;
-    //cl::Kernel tea_leaf_cheby_solve_loop_calc_u_device;
+    cl::Kernel tea_leaf_cheby_calc_2norm_device;
+
+    cl::Kernel tea_leaf_ppcg_solve_init_sd_device;
+    cl::Kernel tea_leaf_ppcg_solve_calc_sd_device;
+    cl::Kernel tea_leaf_ppcg_solve_update_r_device;
+    cl::Kernel tea_leaf_ppcg_solve_init_p_device;
 
     // used to hold the alphas/beta used in chebyshev solver - different from CG ones!
     cl::Buffer ch_alphas_device, ch_betas_device;
@@ -215,6 +219,9 @@ private:
 
     cl::Buffer u, u0;
     cl::Kernel tea_leaf_finalise_device;
+    // TODO could be used by all - precalculate diagonal + scale Kx/Ky
+    cl::Kernel tea_leaf_init_diag_device;
+    cl::Kernel tea_leaf_calc_residual_device;
 
     // tolerance specified in tea.in
     float tolerance;
@@ -295,6 +302,7 @@ private:
     cl::Buffer work_array_5;
     cl::Buffer work_array_6;
     cl::Buffer work_array_7;
+    cl::Buffer work_array_8;
 
     // for reduction in PdV
     cl::Buffer PdV_reduce_buf;
@@ -459,7 +467,14 @@ public:
     (const double * ch_alphas, const double * ch_betas, int n_coefs,
      const double rx, const double ry, const double rz, const int cheby_calc_steps);
 
+    void ppcg_init(const double * ch_alphas, const double * ch_betas,
+        const double theta, const int n);
+    void ppcg_init_sd();
+    void ppcg_init_p(double * rro);
+    void ppcg_inner(int);
+
     void tea_leaf_finalise();
+    void tea_leaf_calc_residual(void);
 
     // ctor
     CloverChunk
@@ -511,7 +526,6 @@ public:
     ~KernelCompileError() throw(){}
     const char* what() const throw() {return this->_err.c_str();}
 };
-
 
 #endif
 

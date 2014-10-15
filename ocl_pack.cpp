@@ -217,8 +217,6 @@ void CloverChunk::packUnpackAllBuffers
             CASE_BUF(pressure); break;
             CASE_BUF(viscosity); break;
             CASE_BUF(soundspeed); break;
-            CASE_BUF(u); break;
-            CASE_BUF(work_array_1); break;
             CASE_BUF(xvel0); break;
             CASE_BUF(xvel1); break;
             CASE_BUF(yvel0); break;
@@ -231,6 +229,9 @@ void CloverChunk::packUnpackAllBuffers
             CASE_BUF(mass_flux_x); break;
             CASE_BUF(mass_flux_y); break;
             CASE_BUF(mass_flux_z); break;
+            CASE_BUF(u); break;
+            CASE_BUF(work_array_1); break;
+            CASE_BUF(work_array_8); break;
             default:
                 DIE("Invalid face %d passed to left/right pack buffer\n", which_field);
             }

@@ -25,8 +25,8 @@
  opencl_type=GPU
  opencl_device=0
 
- !tl_use_chebyshev
- tl_use_cg
+ tl_use_chebyshev
+ !tl_use_cg
 
  tl_max_iters=5000
  tl_eps=0.00000000001

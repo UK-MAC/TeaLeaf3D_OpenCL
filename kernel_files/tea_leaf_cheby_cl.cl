@@ -79,7 +79,7 @@ __kernel void tea_leaf_cheby_solve_calc_p
     }
 }
 
-__kernel void tea_leaf_cheby_solve_calc_resid
+__kernel void tea_leaf_cheby_calc_2norm
 (__global const double * __restrict const r,
  __global       double * __restrict const rro)
 {
@@ -97,4 +97,5 @@ __kernel void tea_leaf_cheby_solve_calc_resid
 
     REDUCTION(rro_shared, rro, SUM)
 }
+
 

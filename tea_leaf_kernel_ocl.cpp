@@ -49,19 +49,19 @@ void CloverChunk::tea_leaf_calc_2norm_kernel
     if (norm_array == 0)
     {
         // norm of u0
-        tea_leaf_cheby_solve_calc_resid_device.setArg(0, u0);
+        tea_leaf_calc_residual_device.setArg(0, u0);
     }
     else if (norm_array == 1)
     {
         // norm of r
-        tea_leaf_cheby_solve_calc_resid_device.setArg(0, work_array_2);
+        tea_leaf_calc_residual_device.setArg(0, work_array_2);
     }
     else
     {
         DIE("Invalid value '%d' for norm_array passed, should be [1, 2]", norm_array);
     }
 
-    ENQUEUE_OFFSET(tea_leaf_cheby_solve_calc_resid_device);
+    ENQUEUE_OFFSET(tea_leaf_calc_residual_device);
     *norm = reduceValue<double>(sum_red_kernels_double, reduce_buf_1);
 }
 
@@ -269,7 +269,7 @@ void CloverChunk::tea_leaf_kernel_jacobi
     ENQUEUE_OFFSET(tea_leaf_jacobi_copy_u_device);
     ENQUEUE_OFFSET(tea_leaf_jacobi_solve_device);
 
-    *error = reduceValue<double>(max_red_kernels_double, reduce_buf_1);
+    *error = reduceValue<double>(sum_red_kernels_double, reduce_buf_1);
 }
 
 /********************/
@@ -281,10 +281,92 @@ extern "C" void tea_leaf_kernel_finalise_ocl_
     chunk.tea_leaf_finalise();
 }
 
+extern "C" void tea_leaf_calc_residual_ocl_
+(void)
+{
+    chunk.tea_leaf_calc_residual();
+}
+
 // both
 void CloverChunk::tea_leaf_finalise
 (void)
 {
+    //ENQUEUE(tea_leaf_finalise_device);
     ENQUEUE_OFFSET(tea_leaf_finalise_device);
+}
+
+void CloverChunk::tea_leaf_calc_residual
+(void)
+{
+    ENQUEUE_OFFSET(tea_leaf_calc_residual_device);
+}
+
+/********************/
+
+extern "C" void tea_leaf_kernel_ppcg_init_ocl_
+(const double * ch_alphas, const double * ch_betas,
+ double* theta, int* n_inner_steps)
+{
+    chunk.ppcg_init(ch_alphas, ch_betas, *theta, *n_inner_steps);
+}
+
+extern "C" void tea_leaf_kernel_ppcg_init_p_ocl_
+(double * rro)
+{
+    chunk.ppcg_init_p(rro);
+}
+
+extern "C" void tea_leaf_kernel_ppcg_init_sd_ocl_
+(void)
+{
+    chunk.ppcg_init_sd();
+}
+
+extern "C" void tea_leaf_kernel_ppcg_inner_ocl_
+(int * ppcg_cur_step)
+{
+    chunk.ppcg_inner(*ppcg_cur_step);
+}
+
+void CloverChunk::ppcg_init
+(const double * ch_alphas, const double * ch_betas,
+ const double theta, const int n_inner_steps)
+{
+    tea_leaf_ppcg_solve_init_sd_device.setArg(3, theta);
+
+    // never going to do more than n_inner_steps steps? XXX
+    size_t ch_buf_sz = n_inner_steps*sizeof(double);
+
+    // upload to device
+    ch_alphas_device = cl::Buffer(context, CL_MEM_READ_ONLY, ch_buf_sz);
+    queue.enqueueWriteBuffer(ch_alphas_device, CL_TRUE, 0, ch_buf_sz, ch_alphas);
+    ch_betas_device = cl::Buffer(context, CL_MEM_READ_ONLY, ch_buf_sz);
+    queue.enqueueWriteBuffer(ch_betas_device, CL_TRUE, 0, ch_buf_sz, ch_betas);
+
+    tea_leaf_ppcg_solve_calc_sd_device.setArg(3, ch_alphas_device);
+    tea_leaf_ppcg_solve_calc_sd_device.setArg(4, ch_betas_device);
+}
+
+void CloverChunk::ppcg_init_p
+(double * rro)
+{
+    ENQUEUE_OFFSET(tea_leaf_ppcg_solve_init_p_device);
+
+    *rro = reduceValue<double>(sum_red_kernels_double, reduce_buf_1);
+}
+
+void CloverChunk::ppcg_init_sd
+(void)
+{
+    ENQUEUE_OFFSET(tea_leaf_ppcg_solve_init_sd_device);
+}
+
+void CloverChunk::ppcg_inner
+(int ppcg_cur_step)
+{
+    ENQUEUE_OFFSET(tea_leaf_ppcg_solve_update_r_device);
+
+    tea_leaf_ppcg_solve_calc_sd_device.setArg(5, ppcg_cur_step - 1);
+    ENQUEUE_OFFSET(tea_leaf_ppcg_solve_calc_sd_device);
 }
 

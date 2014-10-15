@@ -33,3 +33,28 @@ __kernel void tea_leaf_finalise
     }
 }
 
+__kernel void tea_leaf_calc_residual
+(__global const double * __restrict const u,
+ __global const double * __restrict const u0,
+ __global       double * __restrict const r,
+ __global const double * __restrict const Kx,
+ __global const double * __restrict const Ky,
+ __global const double * __restrict const Kz)
+{
+    __kernel_indexes;
+
+    if (/*slice >= (y_min + 1) - 1 &&*/ slice <= (z_max + 1) + 0
+    && /*row >= (y_min + 1) - 0 &&*/ row <= (y_max + 1) + 0
+    && /*column >= (x_min + 1) - 0 &&*/ column <= (x_max + 1) + 0)
+    {
+        const double smvp = (1.0
+            + (Kx[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)])
+            + (Ky[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)])
+            + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*u[THARR3D(0, 0, 0, 0, 0)]
+            - (Kx[THARR3D(1, 0, 0, 0, 0)]*u[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(-1, 0, 0, 0, 0)])
+            - (Ky[THARR3D(0, 1, 0, 0, 0)]*u[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(0, -1, 0, 0, 0)])
+            - (Kz[THARR3D(0, 0, 1, 0, 0)]*u[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(0, 0, -1, 0, 0)]);
+
+        r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - smvp;
+    }
+}
