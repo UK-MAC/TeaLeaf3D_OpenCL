@@ -492,14 +492,16 @@ void CloverChunk::initSizes
     FIND_PADDING_SIZE(generate_chunk_init, -2, 2, -2, 2, -2, 2);
     FIND_PADDING_SIZE(generate_chunk, -2, 2, -2, 2, -2, 2);
 
-    if (tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV)
+    if (tea_solver == TEA_ENUM_CG ||
+    tea_solver == TEA_ENUM_CHEBYSHEV ||
+    tea_solver == TEA_ENUM_PPCG)
     {
-        FIND_PADDING_SIZE(tea_leaf_cg_init_u, -2, 2, -2, 2, -2, 2); 
-        FIND_PADDING_SIZE(tea_leaf_cg_init_directions, 0, 1, 0, 1, 0, 1); 
+        FIND_PADDING_SIZE(tea_leaf_cg_init_u, -2, 2, -2, 2, -2, 2);
+        FIND_PADDING_SIZE(tea_leaf_cg_init_directions, 0, 1, 0, 1, 0, 1);
         FIND_PADDING_SIZE(tea_leaf_cg_init_others, 0, 0, 0, 0, 0, 0);
         FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_w, 0, 0, 0, 0, 0, 0);
         FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_ur, 0, 0, 0, 0, 0, 0);
-        FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_p, 0, 0, 0, 0, 0, 0); 
+        FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_p, 0, 0, 0, 0, 0, 0);
 
         if (tea_solver == TEA_ENUM_CHEBYSHEV)
         {
