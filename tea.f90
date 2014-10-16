@@ -343,11 +343,7 @@ SUBROUTINE tea_leaf()
                     chunks(c)%field%z_max,                       &
                     chunks(c)%field%u,                           &
                     chunks(c)%field%u0,                 &
-                    chunks(c)%field%work_array1,                 &
                     chunks(c)%field%work_array2,                 &
-                    chunks(c)%field%work_array3,                 &
-                    chunks(c)%field%work_array4,                 &
-                    chunks(c)%field%work_array5,                 &
                     chunks(c)%field%work_array6,                 &
                     chunks(c)%field%work_array7,                 &
                     chunks(c)%field%work_array8,                 &

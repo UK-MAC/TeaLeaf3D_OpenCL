@@ -156,7 +156,7 @@ SUBROUTINE tea_leaf_kernel_solve(x_min,       &
     ENDDO
 !$OMP END DO
 
-!$OMP DO REDUCTION(MAX:error)
+!$OMP DO REDUCTION(+:error)
     DO k=y_min, y_max
       DO j=x_min, x_max
         u1(j,k) = (u0(j,k) + rx*(Kx(j+1,k  )*un(j+1,k  ) + Kx(j  ,k  )*un(j-1,k  )) &
@@ -165,7 +165,7 @@ SUBROUTINE tea_leaf_kernel_solve(x_min,       &
                                 + rx*(Kx(j,k)+Kx(j+1,k)) &
                                 + ry*(Ky(j,k)+Ky(j,k+1)))
 
-        error = MAX(error, ABS(u1(j,k)-un(j,k)))
+        error = error +  ABS(u1(j,k)-un(j,k))
       ENDDO
     ENDDO
 !$OMP END DO
@@ -204,6 +204,51 @@ SUBROUTINE tea_leaf_kernel_finalise(x_min,    &
 !$OMP END PARALLEL DO
 
 END SUBROUTINE tea_leaf_kernel_finalise
+
+SUBROUTINE tea_leaf_calc_residual(x_min,       &
+                           x_max,             &
+                           y_min,             &
+                           y_max,             &
+                           z_min,             &
+                           z_max,             &
+                           u ,                &
+                           u0,                &
+                           r,                &
+                           Kx,                &
+                           Ky,                &
+                           Kz,                &
+                           rx, ry, rz)
+
+  IMPLICIT NONE
+
+  INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u0, u, r
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: Kx, ky, kz
+
+  REAL(KIND=8) :: smvp, rx, ry, rz
+
+  INTEGER(KIND=4) :: j,k,l
+
+!$OMP PARALLEL
+!$OMP DO private(smvp)
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+        DO j=x_min,x_max
+            smvp = (1.0_8                                      &
+                + rx*(Kx(j+1, k, l) + Kx(j, k, l)) &
+                + ry*(Ky(j, k+1, l) + Ky(j, k, l))                      &
+                + rz*(Kz(j, k, l+1) + Kz(j, k, l)))*u(j, k, l)             &
+                - rx*(Kx(j+1, k, l)*u(j+1, k, l) + Kx(j, k, l)*u(j-1, k, l)) &
+                - ry*(Ky(j, k+1, l)*u(j, k+1, l) + Ky(j, k, l)*u(j, k-1, l))  &
+                - rz*(Kz(j, k, l+1)*u(j, k, l+1) + Kz(j, k, l)*u(j, k, l-1))
+            r(j, k, l) = u0(j, k, l) - smvp
+        ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+!$OMP END PARALLEL
+
+END SUBROUTINE tea_leaf_calc_residual
 
 END MODULE tea_leaf_kernel_module
 

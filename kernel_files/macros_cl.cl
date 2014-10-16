@@ -97,6 +97,18 @@
 
 #endif
 
+#define SMVP(vec) \
+    ((1.0   \
+        + (Kx[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]) \
+        + (Ky[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]) \
+        + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*vec[THARR3D(0, 0, 0, 0, 0)]    \
+        - (Kx[THARR3D(1, 0, 0, 0, 0)]*vec[THARR3D(1, 0, 0, 0, 0)] \
+         +  Kx[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(-1, 0, 0, 0, 0)]) \
+        - (Ky[THARR3D(0, 1, 0, 0, 0)]*vec[THARR3D(0, 1, 0, 0, 0)] \
+         + Ky[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(0, -1, 0, 0, 0)])    \
+        - (Kz[THARR3D(0, 0, 1, 0, 0)]*vec[THARR3D(0, 0, 1, 0, 0)] \
+         + Kz[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(0, 0, -1, 0, 0)]))
+
 /*
  *  On the xeon phi putting in a barrier after some memory accesses makes the
  *  kernels execute quicker, mostly just the ones which use xvel/yvel/zvel a lot

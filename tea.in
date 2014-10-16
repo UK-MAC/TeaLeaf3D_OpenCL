@@ -25,16 +25,22 @@
  opencl_type=GPU
  opencl_device=0
 
- tl_use_chebyshev
  !tl_use_cg
+ tl_use_chebyshev
+ !tl_use_ppcg
+ tl_ppcg_inner_steps=30
 
- tl_max_iters=5000
- tl_eps=0.00000000001
- tl_ch_cg_errswitch
+ tl_check_result
 
- !hydro_on
- !tea_leaf_off
+ ! Should probably be > 20 steps before switching - depends on problem
+ !tl_ch_cg_errswitch
+ tl_ch_cg_epslim=0.00001
+ tl_ch_cg_presteps=20
 
- !profiler_on=1
+ hydro_off
+ tea_leaf_on
+
+ !profiler_on
+ !profile_solver
 
 *endclover

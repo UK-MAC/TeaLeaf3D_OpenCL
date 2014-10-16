@@ -81,13 +81,7 @@ __kernel void tea_leaf_cg_init_others
     && /*row >= (y_min + 1) - 0 &&*/ row <= (y_max + 1) + 0
     && /*column >= (x_min + 1) - 0 &&*/ column <= (x_max + 1) + 0)
     {
-        w[THARR3D(0, 0, 0, 0, 0)] = (1.0
-            + (Kx[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)])
-            + (Ky[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)])
-            + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*u[THARR3D(0, 0, 0, 0, 0)]
-            - (Kx[THARR3D(1, 0, 0, 0, 0)]*u[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(-1, 0, 0, 0, 0)])
-            - (Ky[THARR3D(0, 1, 0, 0, 0)]*u[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(0, -1, 0, 0, 0)])
-            - (Kz[THARR3D(0, 0, 1, 0, 0)]*u[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*u[THARR3D(0, 0, -1, 0, 0)]);
+        w[THARR3D(0, 0, 0, 0, 0)] = SMVP(u);
 
         r[THARR3D(0, 0, 0, 0, 0)] = u[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
 
@@ -132,13 +126,7 @@ __kernel void tea_leaf_cg_solve_calc_w
     && /*row >= (y_min + 1) - 0 &&*/ row <= (y_max + 1) + 0
     && /*column >= (x_min + 1) - 0 &&*/ column <= (x_max + 1) + 0)
     {
-        w[THARR3D(0, 0, 0, 0, 0)] = (1.0
-            + (Kx[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)])
-            + (Ky[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)])
-            + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*p[THARR3D(0, 0, 0, 0, 0)]
-            - (Kx[THARR3D(1, 0, 0, 0, 0)]*p[THARR3D(1, 0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(-1, 0, 0, 0, 0)])
-            - (Ky[THARR3D(0, 1, 0, 0, 0)]*p[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, -1, 0, 0, 0)])
-            - (Kz[THARR3D(0, 0, 1, 0, 0)]*p[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, 0, -1, 0, 0)]);
+        w[THARR3D(0, 0, 0, 0, 0)] = SMVP(p);
         
         pw_shared[lid] = p[THARR3D(0, 0, 0, 0, 0)]*w[THARR3D(0, 0, 0, 0, 0)];
     }
