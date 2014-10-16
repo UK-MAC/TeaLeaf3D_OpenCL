@@ -174,7 +174,7 @@ void CloverChunk::tea_leaf_init_cg
         DIE("Unknown coefficient %d passed to tea leaf\n", coefficient);
     }
 
-    assert(tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV);
+    assert(tea_solver == TEA_ENUM_CG || tea_solver == TEA_ENUM_CHEBYSHEV || tea_solver == TEA_ENUM_PPCG);
 
     calcrxryrz(dt, rx, ry, rz);
 

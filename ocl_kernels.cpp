@@ -973,7 +973,8 @@ void CloverChunk::initArgs
             tea_leaf_ppcg_solve_update_r_device.setArg(1, work_array_2);
             tea_leaf_ppcg_solve_update_r_device.setArg(2, work_array_5);
             tea_leaf_ppcg_solve_update_r_device.setArg(3, work_array_6);
-            tea_leaf_ppcg_solve_update_r_device.setArg(4, work_array_8);
+            tea_leaf_ppcg_solve_update_r_device.setArg(4, work_array_7);
+            tea_leaf_ppcg_solve_update_r_device.setArg(5, work_array_8);
 
             tea_leaf_ppcg_solve_calc_sd_device.setArg(0, work_array_2);
             tea_leaf_ppcg_solve_calc_sd_device.setArg(1, work_array_4);

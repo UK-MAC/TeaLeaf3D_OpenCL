@@ -26,8 +26,8 @@
  opencl_device=0
 
  !tl_use_cg
- tl_use_chebyshev
- !tl_use_ppcg
+ !tl_use_chebyshev
+ tl_use_ppcg
  tl_ppcg_inner_steps=30
 
  tl_check_result
