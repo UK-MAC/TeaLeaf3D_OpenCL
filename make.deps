@@ -94,9 +94,11 @@ start.o: start.f90 clover_module.mod parse_module.mod \
  update_halo_module.mod ideal_gas_module.mod
 tea.o tea_leaf_module.mod: tea.f90 report_module.mod data_module.mod \
  tea_leaf_kernel_module.mod tea_leaf_kernel_cg_module.mod \
+ tea_leaf_kernel_ppcg_module.mod  \
  tea_leaf_kernel_cheby_module.mod update_halo_module.mod
 tea_leaf_cg.o tea_leaf_kernel_cg_module.mod: tea_leaf_cg.f90
 tea_leaf_cheby.o tea_leaf_kernel_cheby_module.mod: tea_leaf_cheby.f90
+tea_leaf_ppcg.o tea_leaf_kernel_ppcg_module.mod: tea_leaf_ppcg.f90
 tea_leaf.o: tea_leaf.f90 clover_module.mod
 tea_leaf_jacobi.o tea_leaf_kernel_module.mod: tea_leaf_jacobi.f90
 timer.o: timer.f90

@@ -68,6 +68,7 @@ SUBROUTINE update_halo(fields,depth)
                                 chunks(c)%field%mass_flux_z,    &
                                 chunks(c)%field%u,    &
                                 chunks(c)%field%work_array1,    &
+                                chunks(c)%field%work_array9,    &
                                 fields,                         &
                                 depth                           )
       ELSEIF(use_opencl_kernels)THEN

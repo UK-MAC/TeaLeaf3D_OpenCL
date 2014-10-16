@@ -65,7 +65,8 @@ MODULE data_module
                                 ,FIELD_MASS_FLUX_Z=19         &
                                 ,FIELD_U          =20         &
                                 ,FIELD_P          =21         &
-                                ,NUM_FIELDS       =21
+                                ,FIELD_SD         =22         &
+                                ,NUM_FIELDS       =22
 
    INTEGER,         PARAMETER :: CELL_DATA     = 1,        &
                                  VERTEX_DATA   = 2,        &
@@ -89,19 +90,6 @@ MODULE data_module
    INTEGER         ::            g_in           & ! File for input data.
                                 ,g_out
    
-   ! When packing the buffers to send over mpi this would normally be the size
-   ! of one side of the mesh - eg, (x_max+5)*(y_max+5). When using the
-   ! OpenCL kernels, one device buffer is used with multiple sub buffers, one
-   ! per field, which are each
-   ! used to pack data into so that only one memory copy needs to be done from
-   ! host to device per halo exchange which is slow on some platforms. Unfortunately, the
-   ! sub buffers can only be allocated on a device-specific alignment boundary which might
-   ! not be the same as the size we really want the buffer to be (eg, if there is
-   ! a 4K alignment boundary and each buffer is 7K long).
-   ! 
-   ! In this case, the mpi buffers are extended slightly (a few KB at most) to
-   ! still allow for just one host-device memory copy per halo exchange instead of
-   ! one for every field that needs to be exchanged.
    INTEGER :: lr_pack_buffer_size, bt_pack_buffer_size, fb_pack_buffer_size
 
 

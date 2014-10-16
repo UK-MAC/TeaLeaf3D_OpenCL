@@ -42,10 +42,10 @@ ifndef COMPILER
   MESSAGE=select a compiler to compile in OpenMP, e.g. make COMPILER=INTEL
 endif
 
-OMP_INTEL     = -openmp
+OMP_INTEL     = -openmp -fpp
 OMP_SUN       = -xopenmp=parallel -vpara
-OMP_GNU       = -fopenmp
-OMP_CRAY      =
+OMP_GNU       = -fopenmp -cpp
+OMP_CRAY      = -e Z
 OMP_PGI       = -mp=nonuma
 OMP_PATHSCALE = -mp
 OMP_XL        = -qsmp=omp -qthreaded
@@ -112,6 +112,19 @@ MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 CXX_MPI_COMPILER=mpiCC
 
+ifdef PRECONDITION
+FLAGS+=-D USE_PRECONDITIONER
+CFLAGS+=-D USE_PRECONDITIONER
+endif
+
+ifdef PHI_SOURCE_PROFILING
+CXXFLAGS+=-D _PWD_="\"$(shell pwd)/\"" -D PHI_SOURCE_PROFILING
+endif
+
+ifdef VERBOSE
+CXXFLAGS+=-D OCL_VERBOSE
+endif
+
 CXXFLAGS+=$(CFLAGS)
 
 C_FILES=\
@@ -125,6 +138,7 @@ FORTRAN_FILES=\
 	tea_leaf_jacobi.o			\
 	tea_leaf_cg.o			\
 	tea_leaf_cheby.o			\
+	tea_leaf_ppcg.o			\
 	report.o			\
 	timer.o			\
 	parse.o			\
@@ -170,7 +184,6 @@ FORTRAN_FILES=\
 	tea_leaf.o
 
 OCL_FILES=\
-	tea_leaf_kernel_ocl.o \
 	ocl_pack.o \
 	ocl_init.o \
 	ocl_strings.o \
@@ -184,6 +197,7 @@ OCL_FILES=\
 	set_field_kernel_ocl.o \
 	reset_field_kernel_ocl.o \
 	field_summary_kernel_ocl.o \
+	tea_leaf_kernel_ocl.o \
 	PdV_kernel_ocl.o \
 	generate_chunk_kernel_ocl.o \
 	advec_mom_kernel_ocl.o \
@@ -206,13 +220,13 @@ tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 
 include make.deps
 
-%.o: %.cpp Makefile
+%.o: %.cpp Makefile make.deps
 	$(CXX_MPI_COMPILER) $(CXXFLAGS) -c $< -o $*.o
 %.mod %_module.mod %_leaf_module.mod: %.f90 %.o
 	@true
-%.o: %.f90 Makefile
-	$(MPI_COMPILER) -cpp $(FLAGS) -c $< -o $*.o
-%.o: %.c Makefile
+%.o: %.f90 Makefile make.deps
+	$(MPI_COMPILER) $(FLAGS) -c $< -o $*.o
+%.o: %.c Makefile make.deps
 	$(C_MPI_COMPILER) $(CFLAGS) -c $< -o $*.o
 
 clean:

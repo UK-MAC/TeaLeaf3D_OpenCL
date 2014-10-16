@@ -81,6 +81,7 @@ MODULE definitions_module
    LOGICAL      :: use_Hydro
    LOGICAL      :: tl_use_chebyshev
    LOGICAL      :: tl_use_cg
+   LOGICAL      :: tl_use_ppcg
    LOGICAL      :: tl_use_jacobi
    INTEGER      :: max_iters
    REAL(KIND=8) :: eps
@@ -93,6 +94,10 @@ MODULE definitions_module
    REAL(KIND=8) :: tl_ch_cg_epslim
    ! number of steps of cg to run to before switching to ch if tl_ch_cg_errswitch not set
    INTEGER      :: tl_ch_cg_presteps
+   ! do b-Ax after finishing to make sure solver actually converged
+   LOGICAL      :: tl_check_result
+   ! number of inner steps in ppcg solver
+   INTEGER      :: tl_ppcg_inner_steps
 
    LOGICAL      :: use_vector_loops ! Some loops work better in serial depending on the hardware
 
@@ -172,6 +177,7 @@ MODULE definitions_module
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array6 !pre_vol, post_ener
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array7 !post_vol, ener_flux
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array8 !Kz
+     REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: work_array9 !sd
      REAL(KIND=8),    DIMENSION(:,:,:), ALLOCATABLE :: u,u0
 
      INTEGER         :: left            &
