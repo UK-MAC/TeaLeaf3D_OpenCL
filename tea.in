@@ -20,7 +20,7 @@
  end_time=100.0
  end_step=20
 
- !use_opencl_kernels
+ use_opencl_kernels
  opencl_vendor=nvidia
  opencl_type=gpu
  opencl_device=0

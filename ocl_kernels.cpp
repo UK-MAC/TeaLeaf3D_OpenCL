@@ -519,7 +519,7 @@ void CloverChunk::initSizes
     }
     else
     {
-        FIND_PADDING_SIZE(tea_leaf_jacobi_init, -1, 2, -1, 2, -1, 2);
+        FIND_PADDING_SIZE(tea_leaf_jacobi_init, 0, 1, 0, 1, 0, 1);
         FIND_PADDING_SIZE(tea_leaf_jacobi_copy_u, -1, 1, -1, 1, -1, 1);
         FIND_PADDING_SIZE(tea_leaf_jacobi_solve, 0, 0, 0, 0, 0, 0);
     }
