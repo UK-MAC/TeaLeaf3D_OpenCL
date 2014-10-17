@@ -163,6 +163,7 @@ SUBROUTINE tea_leaf()
         ! need to update p when using CG due to matrix/vector multiplication
         fields=0
         fields(FIELD_P) = 1
+        fields(FIELD_U) = 1
         CALL update_halo(fields,1)
 
         ! and globally sum rro
@@ -193,9 +194,6 @@ SUBROUTINE tea_leaf()
         ENDIF
 
       ENDIF
-
-      fields=0
-      fields(FIELD_U) = 1
 
       ! need the original value of u
       IF(use_fortran_kernels) then
@@ -322,6 +320,8 @@ SUBROUTINE tea_leaf()
                     call clover_allsum(error)
                   endif
               endif
+
+              cheby_calc_steps = cheby_calc_steps + 1
           else if (tl_use_ppcg) then
             if (cheby_calc_steps .eq. 0) then
               cheby_calc_steps = 1
@@ -450,8 +450,6 @@ SUBROUTINE tea_leaf()
             error = rrn
             rro = rrn
           endif
-
-          cheby_calc_steps = cheby_calc_steps + 1
         ELSEIF(tl_use_cg .or. tl_use_chebyshev .or. tl_use_ppcg) then
           fields(FIELD_P) = 1
           cg_calc_steps = cg_calc_steps + 1
@@ -726,8 +724,8 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
     call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
           chunks(c)%field%x_max,                       &
           chunks(c)%field%y_min,                       &
-          chunks(c)%field%y_min,                       &
-          chunks(c)%field%z_max,                       &
+          chunks(c)%field%y_max,                       &
+          chunks(c)%field%z_min,                       &
           chunks(c)%field%z_max,                       &
           chunks(c)%field%u0,                 &
           bb)

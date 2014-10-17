@@ -21,7 +21,12 @@ __kernel void tea_leaf_cheby_solve_init_p
         w[THARR3D(0, 0, 0, 0, 0)] = SMVP(u);
 
         r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
+
+#if defined(USE_PRECONDITIONER)
         p[THARR3D(0, 0, 0, 0, 0)] = (Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)])/theta;
+#else
+        p[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]/theta;
+#endif
     }
 }
 
@@ -63,7 +68,11 @@ __kernel void tea_leaf_cheby_solve_calc_p
 
         r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
         p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
-                                  + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
+#if defined(USE_PRECONDITIONER)
+                            + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
+#else
+                            + beta[step]*r[THARR3D(0, 0, 0, 0, 0)];
+#endif
     }
 }
 
