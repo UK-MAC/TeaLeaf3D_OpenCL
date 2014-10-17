@@ -124,7 +124,7 @@ SUBROUTINE tea_leaf()
       fields=0
       fields(FIELD_ENERGY1) = 1
       fields(FIELD_DENSITY1) = 1
-      CALL update_halo(fields,2)
+      CALL update_halo(fields,1)
 
       ! INIT
       IF(profiler_on) kernel_time=timer()
