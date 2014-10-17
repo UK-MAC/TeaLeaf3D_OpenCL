@@ -331,6 +331,11 @@ SUBROUTINE tea_leaf()
                     theta, tl_ppcg_inner_steps)
               ENDIF
 
+              fields(FIELD_U) = 1
+
+              ! update p
+              CALL update_halo(fields,1)
+
               IF(use_fortran_kernels) THEN
                 CALL tea_leaf_calc_residual(chunks(c)%field%x_min,&
                     chunks(c)%field%x_max,                       &
