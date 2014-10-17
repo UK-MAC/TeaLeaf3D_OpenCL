@@ -172,7 +172,6 @@ SUBROUTINE tea_leaf()
         fields=0
         fields(FIELD_U) = 1
 
-        CALL update_halo(fields,1)
         IF (use_fortran_kernels) THEN
           CALL tea_leaf_kernel_init(chunks(c)%field%x_min, &
               chunks(c)%field%x_max,                       &
@@ -192,7 +191,6 @@ SUBROUTINE tea_leaf()
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_init_ocl(coefficient, dt, rx, ry, rz)
         ENDIF
-
       ENDIF
 
       ! need the original value of u
