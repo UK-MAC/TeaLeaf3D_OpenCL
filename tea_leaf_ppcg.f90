@@ -20,18 +20,20 @@ SUBROUTINE tea_leaf_kernel_ppcg_init_sd(x_min,             &
   IMPLICIT NONE
 
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: r, sd
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: r, sd
   REAL(KIND=8) :: theta
 
-  INTEGER :: j,k
+  INTEGER :: j,k,l
 
 !$OMP PARALLEL
 !$OMP DO
+  DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
-            sd(j, k) = r(j, k)/theta
+            sd(j, k, l) = r(j, k, l)/theta
         ENDDO
     ENDDO
+  ENDDO
 !$OMP END DO
 !$OMP END PARALLEL
 
@@ -56,31 +58,37 @@ SUBROUTINE tea_leaf_kernel_ppcg_inner(x_min,             &
   IMPLICIT NONE
 
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: u, r, Kx, Ky, sd, kz
-  INTEGER(KIND=4) :: j,k, step
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u, r, Kx, Ky, sd, kz
+  INTEGER(KIND=4) :: j,k,l, step
   REAL(KIND=8), dimension(:) :: alpha, beta
   REAL(KIND=8) :: smvp, rx, ry, rz
 
 !$OMP PARALLEL
 !$OMP DO
+  DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
             smvp = (1.0_8                                      &
-                + ry*(Ky(j, k+1) + Ky(j, k))                      &
-                + rx*(Kx(j+1, k) + Kx(j, k)))*sd(j, k)             &
-                - ry*(Ky(j, k+1)*sd(j, k+1) + Ky(j, k)*sd(j, k-1))  &
-                - rx*(Kx(j+1, k)*sd(j+1, k) + Kx(j, k)*sd(j-1, k))
-            r(j, k) = r(j, k) - smvp
-            u(j, k) = u(j, k) + sd(j, k)
+                + rx*(Kx(j+1, k, l) + Kx(j, k, l)) &
+                + ry*(Ky(j, k+1, l) + Ky(j, k, l))                      &
+                + rz*(Kz(j, k, l+1) + Kz(j, k, l)))*sd(j, k, l)             &
+                - rx*(Kx(j+1, k, l)*sd(j+1, k, l) + Kx(j, k, l)*sd(j-1, k, l)) &
+                - ry*(Ky(j, k+1, l)*sd(j, k+1, l) + Ky(j, k, l)*sd(j, k-1, l))  &
+                - rz*(Kz(j, k, l+1)*sd(j, k, l+1) + Kz(j, k, l)*sd(j, k, l-1))
+            r(j, k, l) = r(j, k, l) - smvp
+            u(j, k, l) = u(j, k, l) + sd(j, k, l)
         ENDDO
     ENDDO
+  ENDDO
 !$OMP END DO
 !$OMP DO
+  DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
-            sd(j, k) = alpha(step)*sd(j, k) + beta(step)*r(j, k)
+            sd(j, k, l) = alpha(step)*sd(j, k, l) + beta(step)*r(j, k, l)
         ENDDO
     ENDDO
+  ENDDO
 !$OMP END DO
 !$OMP END PARALLEL
 
@@ -99,20 +107,22 @@ SUBROUTINE tea_leaf_kernel_ppcg_init_p(x_min,             &
   IMPLICIT NONE
 
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2) :: p, r
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: p, r
 
-  INTEGER :: j,k
+  INTEGER :: j,k,l
   REAL(KIND=8) ::  rro
 
   rro = 0.0_8
 
 !$OMP PARALLEL
 !$OMP DO reduction(+:rro)
+  DO l=z_min,z_max
   DO k=y_min,y_max
     DO j=x_min,x_max
-      p(j, k) = r(j, k)
-      rro = rro + p(j, k)*r(j, k)
+      p(j, k, l) = r(j, k, l)
+      rro = rro + p(j, k, l)*r(j, k, l)
     ENDDO
+  ENDDO
   ENDDO
 !$OMP END DO
 !$OMP END PARALLEL
