@@ -169,26 +169,26 @@ SUBROUTINE tea_leaf()
         ! and globally sum rro
         call clover_allsum(rro)
       ELSE
+        fields=0
+        fields(FIELD_U) = 1
+
+        CALL update_halo(fields,1)
         IF (use_fortran_kernels) THEN
-          call report_error('tea.f90', 'Fortran/c not implemented')
-          !CALL tea_leaf_kernel_init(chunks(c)%field%x_min, &
-          !    chunks(c)%field%x_max,                       &
-          !    chunks(c)%field%y_min,                       &
-          !    chunks(c)%field%y_max,                       &
-          !    chunks(c)%field%celldx,                      &
-          !    chunks(c)%field%celldy,                      &
-          !    chunks(c)%field%volume,                      &
-          !    chunks(c)%field%density1,                    &
-          !    chunks(c)%field%energy1,                     &
-          !    chunks(c)%field%work_array1,                 &
-          !    chunks(c)%field%u,                           &
-          !    chunks(c)%field%work_array2,                 &
-          !    chunks(c)%field%work_array3,                 &
-          !    chunks(c)%field%work_array4,                 &
-          !    chunks(c)%field%work_array5,                 &
-          !    chunks(c)%field%work_array6,                 &
-          !    chunks(c)%field%work_array7,                 &
-          !    coefficient)
+          CALL tea_leaf_kernel_init(chunks(c)%field%x_min, &
+              chunks(c)%field%x_max,                       &
+              chunks(c)%field%y_min,                       &
+              chunks(c)%field%y_max,                       &
+              chunks(c)%field%z_min,                       &
+              chunks(c)%field%z_max,                       &
+              chunks(c)%field%density1,                    &
+              chunks(c)%field%energy1,                     &
+              chunks(c)%field%u,                           &
+              chunks(c)%field%u0,                 &
+              chunks(c)%field%work_array1,                 &
+              chunks(c)%field%work_array6,                 &
+              chunks(c)%field%work_array7,                 &
+              chunks(c)%field%work_array8,                 &
+              coefficient)
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_init_ocl(coefficient, dt, rx, ry, rz)
         ENDIF
@@ -521,21 +521,59 @@ SUBROUTINE tea_leaf()
           rro = rrn
         ELSE
           IF(use_fortran_kernels) THEN
-            !CALL tea_leaf_kernel_solve(chunks(c)%field%x_min,&
-            !    chunks(c)%field%x_max,                       &
-            !    chunks(c)%field%y_min,                       &
-            !    chunks(c)%field%y_max,                       &
-            !    rx,                                          &
-            !    ry,                                          &
-            !    chunks(c)%field%work_array6,                 &
-            !    chunks(c)%field%work_array7,                 &
-            !    error,                                       &
-            !    chunks(c)%field%work_array1,                 &
-            !    chunks(c)%field%u,                           &
-            !    chunks(c)%field%work_array2)
+            CALL tea_leaf_kernel_solve(chunks(c)%field%x_min,&
+                chunks(c)%field%x_max,                       &
+                chunks(c)%field%y_min,                       &
+                chunks(c)%field%y_max,                       &
+                chunks(c)%field%z_min,                       &
+                chunks(c)%field%z_max,                       &
+                rx,                                          &
+                ry,                                          &
+                rz,                                          &
+                chunks(c)%field%work_array6,                 &
+                chunks(c)%field%work_array7,                 &
+                chunks(c)%field%work_array8,                 &
+                chunks(c)%field%u,                           &
+                chunks(c)%field%u0,                          &
+                chunks(c)%field%work_array1, &
+                error)
           ELSEIF(use_opencl_kernels) THEN
               CALL tea_leaf_kernel_solve_ocl(rx, ry, rz, error)
           ENDIF
+
+          ! error for jacobi is calculated recursively and is not very accurate,
+          ! so do this every so often to see whether it has actually converged
+          if (mod(n, 50) .eq. 0) then
+            ! updates u and possibly p
+            CALL update_halo(fields,1)
+
+            IF(use_fortran_kernels) THEN
+              CALL tea_leaf_calc_residual(chunks(c)%field%x_min,&
+                  chunks(c)%field%x_max,                       &
+                  chunks(c)%field%y_min,                       &
+                  chunks(c)%field%y_max,                       &
+                  chunks(c)%field%z_min,                       &
+                  chunks(c)%field%z_max,                       &
+                  chunks(c)%field%u,                           &
+                  chunks(c)%field%u0,                 &
+                  chunks(c)%field%work_array2,                 &
+                  chunks(c)%field%work_array6,                 &
+                  chunks(c)%field%work_array7,                 &
+                  chunks(c)%field%work_array8,                 &
+                  rx, ry, rz)
+              call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
+                  chunks(c)%field%x_max,                       &
+                  chunks(c)%field%y_min,                       &
+                  chunks(c)%field%y_max,                       &
+                  chunks(c)%field%z_min,                       &
+                  chunks(c)%field%z_max,                       &
+                  chunks(c)%field%work_array2,                 &
+                  error)
+            ELSEIF(use_opencl_kernels) THEN
+              CALL tea_leaf_calc_residual_ocl()
+              call tea_leaf_calc_2norm_kernel_ocl(1, error)
+            ENDIF
+          endif
 
           CALL clover_allsum(error)
         ENDIF

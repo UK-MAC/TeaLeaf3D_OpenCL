@@ -255,7 +255,7 @@ void CloverChunk::tea_leaf_init_jacobi
 
     calcrxryrz(dt, rx, ry, rz);
 
-    tea_leaf_jacobi_init_device.setArg(7, coefficient);
+    tea_leaf_jacobi_init_device.setArg(6, coefficient);
     ENQUEUE_OFFSET(tea_leaf_jacobi_init_device);
 
     tea_leaf_jacobi_solve_device.setArg(0, *rx);

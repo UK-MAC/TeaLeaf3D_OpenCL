@@ -14,20 +14,20 @@
  !visit_frequency 1
  !summary_frequency 1
 
- x_cells=96
- y_cells=96
- z_cells=96
+ x_cells=26
+ y_cells=26
+ z_cells=26
  end_time=100.0
  end_step=20
 
- use_opencl_kernels
+ !use_opencl_kernels
  opencl_vendor=nvidia
  opencl_type=gpu
  opencl_device=0
 
  !tl_use_cg
  !tl_use_chebyshev
- tl_use_ppcg
+ !tl_use_ppcg
  tl_ppcg_inner_steps=30
 
  tl_check_result

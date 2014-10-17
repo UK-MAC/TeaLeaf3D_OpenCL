@@ -995,17 +995,16 @@ void CloverChunk::initArgs
     {
         tea_leaf_jacobi_init_device.setArg(0, density1);
         tea_leaf_jacobi_init_device.setArg(1, energy1);
-        tea_leaf_jacobi_init_device.setArg(2, work_array_3);
-        tea_leaf_jacobi_init_device.setArg(3, u);
-        tea_leaf_jacobi_init_device.setArg(4, work_array_5);
-        tea_leaf_jacobi_init_device.setArg(5, work_array_6);
-        tea_leaf_jacobi_init_device.setArg(6, work_array_7);
+        tea_leaf_jacobi_init_device.setArg(2, u);
+        tea_leaf_jacobi_init_device.setArg(3, work_array_5);
+        tea_leaf_jacobi_init_device.setArg(4, work_array_6);
+        tea_leaf_jacobi_init_device.setArg(5, work_array_7);
 
         tea_leaf_jacobi_copy_u_device.setArg(0, u);
         tea_leaf_jacobi_copy_u_device.setArg(1, work_array_4);
 
-        tea_leaf_jacobi_solve_device.setArg(3, work_array_3);
-        tea_leaf_jacobi_solve_device.setArg(4, u);
+        tea_leaf_jacobi_solve_device.setArg(3, u);
+        tea_leaf_jacobi_solve_device.setArg(4, u0);
         tea_leaf_jacobi_solve_device.setArg(5, work_array_4);
         tea_leaf_jacobi_solve_device.setArg(6, work_array_5);
         tea_leaf_jacobi_solve_device.setArg(7, work_array_6);
