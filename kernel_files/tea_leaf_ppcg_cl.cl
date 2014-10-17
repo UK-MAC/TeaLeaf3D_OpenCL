@@ -1,8 +1,8 @@
 #include <kernel_files/macros_cl.cl>
 
 __kernel void tea_leaf_ppcg_solve_init_sd
-(__global       double * __restrict const r,
- __global       double * __restrict const Mi,
+(__global const double * __restrict const r,
+ __global const double * __restrict const Mi,
  __global       double * __restrict const sd,
  double theta)
 {
@@ -26,7 +26,7 @@ __kernel void tea_leaf_ppcg_solve_update_r
  __global const double * __restrict const Kx,
  __global const double * __restrict const Ky,
  __global const double * __restrict const Kz,
- __global       double * __restrict const sd)
+ __global const double * __restrict const sd)
 {
     __kernel_indexes;
 

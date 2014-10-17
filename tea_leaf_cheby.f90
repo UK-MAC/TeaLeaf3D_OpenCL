@@ -107,8 +107,12 @@ SUBROUTINE tea_leaf_kernel_cheby_init(x_min,             &
                 - ry*(Ky(j, k+1, l)*u(j, k+1, l) + Ky(j, k, l)*u(j, k-1, l))  &
                 - rz*(Kz(j, k, l+1)*u(j, k, l+1) + Kz(j, k, l)*u(j, k, l-1))
             r(j, k, l) = u0(j, k, l) - w(j, k, l)
-            !z(j, k, l) = Mi(j, k, l)*r(j, k, l)
-          p(j, k, l) = (Mi(j, k, l)*r(j, k, l))/theta
+
+#if defined(USE_PRECONDITIONER)
+            p(j, k, l) = (Mi(j, k, l)*r(j, k, l))/theta
+#else
+            p(j, k, l) = r(j, k, l)/theta
+#endif
         ENDDO
     ENDDO
   ENDDO

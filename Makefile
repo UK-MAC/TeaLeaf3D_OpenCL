@@ -100,7 +100,7 @@ endif
 MPICXX_LIB=-lmpi_cxx
 
 LDLIBS+=-lOpenCL -lstdc++ $(MPICXX_LIB)
-CXXFLAGS+=-D CL_USE_DEPRECATED_OPENCL_1_1_APIS -D __CL_ENABLE_EXCEPTIONS -DMPI_HDR
+CXXFLAGS+=-D CL_USE_DEPRECATED_OPENCL_1_1_APIS -D __CL_ENABLE_EXCEPTIONS -D MPI_HDR
 
 ifdef VERBOSE
 CXXFLAGS+=-D OCL_VERBOSE
@@ -131,6 +131,7 @@ C_FILES=\
     timer_c.o
 
 FORTRAN_FILES=\
+	clover.o \
 	pack_kernel.o \
 	data.o			\
 	definitions.o			\
@@ -180,7 +181,6 @@ FORTRAN_FILES=\
 	set_field.o			\
 	hydro.o			\
 	visit.o			\
-	clover.o \
 	tea_leaf.o
 
 OCL_FILES=\
@@ -231,4 +231,3 @@ include make.deps
 
 clean:
 	rm -f *.o *.mod *genmod* *.lst *.cub *.ptx tea_leaf
-
