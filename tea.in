@@ -18,11 +18,11 @@
  y_cells=96
  z_cells=96
  end_time=100.0
- end_step=100
+ end_step=10
 
  use_opencl_kernels
  opencl_vendor=nvidia
- opencl_type=GPU
+ opencl_type=gpu
  opencl_device=0
 
  !tl_use_cg
