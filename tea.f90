@@ -544,7 +544,6 @@ SUBROUTINE tea_leaf()
           ! error for jacobi is calculated recursively and is not very accurate,
           ! so do this every so often to see whether it has actually converged
           if (mod(n, 50) .eq. 0) then
-            ! updates u and possibly p
             CALL update_halo(fields,1)
 
             IF(use_fortran_kernels) THEN
