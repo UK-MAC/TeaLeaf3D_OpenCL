@@ -217,8 +217,8 @@ SUBROUTINE tea_leaf()
             ! either the error has got below tolerance, or it's already going
             ch_switch_check = (cheby_calc_steps .gt. 0) .or. (error .le. tl_ch_cg_epslim)
         ELSE
-            ! enough steps have passed
-            ch_switch_check = n .ge. tl_ch_cg_presteps
+            ! enough steps have passed and error < 1, otherwise it's nowhere near converging on eigenvalues
+            ch_switch_check = (n .ge. tl_ch_cg_presteps) .and. (error .le. 1.0_8)
         ENDIF
 
         IF ((tl_use_chebyshev .or. tl_use_ppcg) .and. ch_switch_check) then
