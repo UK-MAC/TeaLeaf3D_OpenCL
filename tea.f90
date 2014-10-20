@@ -841,15 +841,15 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
 
   call clover_allsum(error)
 
-  it_alpha = eps*bb/(4.0_8*error)
+  it_alpha = epsilon(1.0_8)*bb/(4.0_8*error)
   gamm = (sqrt(cn) - 1.0_8)/(sqrt(cn) + 1.0_8)
   est_itc = nint(log(it_alpha)/(2.0_8*log(gamm)))
 
   ! This will never really give a super accurate answer due to the fact that the
   ! eigenvalues will not be completely accurate - overestimating the estimated
   ! iteration count is better than underestimating it because it reduces the
-  ! amount of global synchronisation needed, so multiply by 2.5
-  est_itc = int(est_itc * 2.5)
+  ! amount of global synchronisation needed
+  est_itc = int(est_itc * 1.25)
 
   if (parallel%boss) then
       write(g_out,'(a11)')"est itc"
