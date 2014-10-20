@@ -266,7 +266,7 @@ SUBROUTINE tea_leaf()
 
               if (cheby_calc_steps .eq. 0) then
                 call tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
-                    error, rx, ry, rz, theta, cn, max_cheby_iters)
+                    error, rx, ry, rz, theta, cn, max_cheby_iters, est_itc)
 
                 cheby_calc_steps = 2
 
@@ -301,7 +301,7 @@ SUBROUTINE tea_leaf()
                   ! total time spent much if at all (number of steps spent in
                   ! chebyshev is typically O(300+)) but will greatly reduce global
                   ! synchronisations needed
-                  if ((n-switch_step .ge. est_itc) .and. (mod(n, 10) .eq. 0)) then
+                  if ((n .ge. est_itc) .and. (mod(n, 10) .eq. 0)) then
                     IF(use_fortran_kernels) THEN
                       call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
                             chunks(c)%field%x_max,                       &
@@ -750,7 +750,7 @@ subroutine tea_leaF_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
 end subroutine
 
 subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
-    error, rx, ry, rz, theta, cn, max_cheby_iters)
+    error, rx, ry, rz, theta, cn, max_cheby_iters, est_itc)
 
   IMPLICIT NONE
 
@@ -844,12 +844,6 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
   it_alpha = epsilon(1.0_8)*bb/(4.0_8*error)
   gamm = (sqrt(cn) - 1.0_8)/(sqrt(cn) + 1.0_8)
   est_itc = nint(log(it_alpha)/(2.0_8*log(gamm)))
-
-  ! This will never really give a super accurate answer due to the fact that the
-  ! eigenvalues will not be completely accurate - overestimating the estimated
-  ! iteration count is better than underestimating it because it reduces the
-  ! amount of global synchronisation needed
-  est_itc = int(est_itc * 1.25)
 
   if (parallel%boss) then
       write(g_out,'(a11)')"est itc"
