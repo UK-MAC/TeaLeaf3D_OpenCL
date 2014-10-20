@@ -8,8 +8,7 @@
 __kernel void tea_leaf_jacobi_init
 (__global const double * __restrict const density1,
  __global const double * __restrict const energy1,
- __global       double * __restrict const u0,
- __global       double * __restrict const u1,
+ __global       double * __restrict const u,
  __global       double * __restrict const Kx,
  __global       double * __restrict const Ky,
  __global       double * __restrict const Kz,
@@ -21,12 +20,12 @@ __kernel void tea_leaf_jacobi_init
     && /*row >= (y_min + 1) - 1 &&*/ row <= (y_max + 1) + 1
     && /*column >= (x_min + 1) - 1 &&*/ column <= (x_max + 1) + 1)
     {
-        u0[THARR3D(0, 0, 0, 0, 0)] = energy1[THARR3D(0, 0, 0, 0, 0)]*density1[THARR3D(0, 0, 0, 0, 0)];
-        u1[THARR3D(0, 0, 0, 0, 0)] = energy1[THARR3D(0, 0, 0, 0, 0)]*density1[THARR3D(0, 0, 0, 0, 0)];
+        u[THARR3D(0, 0, 0, 0, 0)] = energy1[THARR3D(0, 0, 0, 0, 0)]*density1[THARR3D(0, 0, 0, 0, 0)];
 
         // don't do this bit in second row/column
-        if (row >= (y_min + 1)
-        && column >= (x_min + 1))
+        //if (slice > (z_min + 1)
+        //&& row >= (y_min + 1)
+        //&& column >= (x_min + 1))
         {
             double dens_centre, dens_left, dens_up, dens_front;
 
@@ -53,8 +52,8 @@ __kernel void tea_leaf_jacobi_init
 }
 
 __kernel void tea_leaf_jacobi_copy_u
-(__global const double * __restrict const u1,
- __global       double * __restrict const un)
+(__global const double * __restrict const u,
+ __global       double * __restrict const u_old)
 {
     __kernel_indexes;
 
@@ -62,15 +61,15 @@ __kernel void tea_leaf_jacobi_copy_u
     && /*row >= (y_min + 1) - 1 &&*/ row <= (y_max + 1) + 1
     && /*column >= (x_min + 1) - 1 &&*/ column <= (x_max + 1) + 1)
     {
-        un[THARR3D(0, 0, 0, 0, 0)] = u1[THARR3D(0, 0, 0, 0, 0)];
+        u_old[THARR3D(0, 0, 0, 0, 0)] = u[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 
 __kernel void tea_leaf_jacobi_solve
 (double rx, double ry, double rz,
+ __global       double * __restrict const u,
  __global const double * __restrict const u0,
- __global       double * __restrict const u1,
- __global const double * __restrict const un,
+ __global const double * __restrict const u_old,
  __global const double * __restrict const Kx,
  __global const double * __restrict const Ky,
  __global const double * __restrict const Kz,
@@ -81,21 +80,21 @@ __kernel void tea_leaf_jacobi_solve
     __local double error_local[BLOCK_SZ];
     error_local[lid] = 0;
 
-    if (/*slice >= (y_min + 1) - 1 &&*/ slice <= (z_max + 1) + 1
+    if (/*slice >= (y_min + 1) - 1 &&*/ slice <= (z_max + 1)
     && /*row >= (y_min + 1) &&*/ row <= (y_max + 1)
     && /*column >= (x_min + 1) &&*/ column <= (x_max + 1))
     {
-        u1[THARR3D(0, 0, 0, 0, 0)] = (u0[THARR3D(0, 0, 0, 0, 0)]
-            + Kx[THARR3D(1, 0, 0, 0, 0)]*rx*un[THARR3D( 1,  0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*rx*un[THARR3D(-1,  0, 0, 0, 0)]
-            + Ky[THARR3D(0, 1, 0, 0, 0)]*ry*un[THARR3D( 0,  1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*ry*un[THARR3D( 0, -1, 0, 0, 0)]
-            + Kz[THARR3D(0, 0, 1, 0, 0)]*rz*un[THARR3D( 0,  0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*rz*un[THARR3D( 0, 0, -1, 0, 0)])
+        u[THARR3D(0, 0, 0, 0, 0)] = (u0[THARR3D(0, 0, 0, 0, 0)]
+            + Kx[THARR3D(1, 0, 0, 0, 0)]*rx*u_old[THARR3D( 1,  0, 0, 0, 0)] + Kx[THARR3D(0, 0, 0, 0, 0)]*rx*u_old[THARR3D(-1,  0, 0, 0, 0)]
+            + Ky[THARR3D(0, 1, 0, 0, 0)]*ry*u_old[THARR3D( 0,  1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]*ry*u_old[THARR3D( 0, -1, 0, 0, 0)]
+            + Kz[THARR3D(0, 0, 1, 0, 0)]*rz*u_old[THARR3D( 0,  0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]*rz*u_old[THARR3D( 0, 0, -1, 0, 0)])
             /(1.0 + (Kx[THARR3D(0, 0, 0, 0, 0)] + Kx[THARR3D(1, 0, 0, 0, 0)])*rx
                   + (Ky[THARR3D(0, 0, 0, 0, 0)] + Ky[THARR3D(0, 1, 0, 0, 0)])*ry
                   + (Kz[THARR3D(0, 0, 0, 0, 0)] + Kz[THARR3D(0, 0, 1, 0, 0)])*rz);
         
-        error_local[lid] = fabs(u1[THARR3D(0, 0, 0, 0, 0)] - un[THARR3D(0, 0, 0, 0, 0)]);
+        error_local[lid] = fabs(u[THARR3D(0, 0, 0, 0, 0)] - u_old[THARR3D(0, 0, 0, 0, 0)]);
     }
 
-    REDUCTION(error_local, error, MAX);
+    REDUCTION(error_local, error, SUM);
 }
 

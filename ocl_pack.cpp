@@ -195,6 +195,7 @@ void CloverChunk::packUnpackAllBuffers
             case FIELD_soundspeed:
             case FIELD_u:
             case FIELD_p:
+            case FIELD_sd:
                 break;
             default:
                 DIE("Invalid field number %d in choosing _inc values\n", which_field);
