@@ -34,8 +34,6 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
                            u0,                &
                            u1,                &
                            un,                &
-                           Kx_tmp,            &
-                           Ky_tmp,            &
                            Kx,                &
                            Ky,                &
                            Kz,                &
@@ -47,7 +45,7 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
                                 ,RECIP_CONDUCTIVITY  = 2
 
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density, energy, u0, Kx, Ky, Kz, u, u_old
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density, energy, u0, Kx, Ky, Kz, u1, un
 
   INTEGER(KIND=4) :: coef
 
@@ -61,7 +59,7 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
   DO l=z_min-1,z_max+2
     DO k=y_min-1,y_max+2
       DO j=x_min-1,x_max+2
-         u_old(j, k, l)=1.0_8/density(j, k, l)
+         un(j, k, l)=1.0_8/density(j, k, l)
       ENDDO
     ENDDO
   ENDDO
@@ -71,7 +69,7 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
   DO l=z_min-1,z_max+2
     DO k=y_min-1,y_max+2
       DO j=x_min-1,x_max+2
-         u_old(j, k, l)=density(j, k, l)
+         un(j, k, l)=density(j, k, l)
       ENDDO
     ENDDO
   ENDDO
@@ -82,9 +80,9 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
   DO l=z_min,z_max+1
   DO k=y_min,y_max+1
     DO j=x_min,x_max+1
-         Kx(j, k, l)=(u_old(j-1,k  ,l)+u_old(j, k, l))/(2.0_8*u_old(j-1,k  ,l)*u_old(j, k, l))
-         Ky(j, k, l)=(u_old(j  ,k-1,l)+u_old(j, k, l))/(2.0_8*u_old(j,  k-1,l)*u_old(j, k, l))
-         Kz(j, k, l)=(u_old(j, k, l-1)+u_old(j, k, l))/(2.0_8*u_old(j,  k,l-1)*u_old(j, k, l))
+         Kx(j, k, l)=(un(j-1,k  ,l)+un(j, k, l))/(2.0_8*un(j-1,k  ,l)*un(j, k, l))
+         Ky(j, k, l)=(un(j  ,k-1,l)+un(j, k, l))/(2.0_8*un(j,  k-1,l)*un(j, k, l))
+         Kz(j, k, l)=(un(j, k, l-1)+un(j, k, l))/(2.0_8*un(j,  k,l-1)*un(j, k, l))
     ENDDO
   ENDDO
   ENDDO
@@ -95,7 +93,7 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
   DO k=y_min-1, y_max+1
     DO j=x_min-1, x_max+1
       u0(j, k, l) = energy(j, k, l) * density(j, k, l)
-      u(j, k, l) = u0(j, k, l)
+      u1(j, k, l) = u0(j, k, l)
     ENDDO
   ENDDO
   ENDDO
@@ -117,16 +115,16 @@ SUBROUTINE tea_leaf_kernel_solve(x_min,       &
                            Kx,                &
                            Ky,                &
                            Kz,                &
-                           u,                &
+                           error,           &
                            u0,                &
-                           u_old, &
-                           error)
+                           u1,                &
+                           un)
 
 
   IMPLICIT NONE
 
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u0, u_old, u, Kx, Ky, Kz
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u0, un, u1, Kx, Ky, Kz
 
   REAL(KIND=8) :: ry,rx, rz,error
 
@@ -139,7 +137,7 @@ SUBROUTINE tea_leaf_kernel_solve(x_min,       &
   DO l=z_min-1,z_max+1
     DO k=y_min-1, y_max+1
       DO j=x_min-1, x_max+1
-        u_old(j, k, l) = u(j, k, l)
+        un(j, k, l) = u1(j, k, l)
       ENDDO
     ENDDO
   ENDDO
@@ -149,15 +147,15 @@ SUBROUTINE tea_leaf_kernel_solve(x_min,       &
   DO l=z_min,z_max
     DO k=y_min, y_max
       DO j=x_min, x_max
-        u(j, k, l) = (u0(j, k, l) + rx*(Kx(j+1,k  ,l)*u_old(j+1,k  ,l) + Kx(j, k, l)*u_old(j-1,k  ,l)) &
-                                  + ry*(Ky(j  ,k+1,l)*u_old(j  ,k+1,l) + Ky(j, k, l)*u_old(j  ,k-1,l)) &
-                                  + rz*(Kz(j  ,k,l+1)*u_old(j  ,k,l+1) + Kz(j, k, l)*u_old(j  ,k,l-1))) &
+        u1(j, k, l) = (u0(j, k, l) + rx*(Kx(j+1,k  ,l)*un(j+1,k  ,l) + Kx(j, k, l)*un(j-1,k  ,l)) &
+                                  + ry*(Ky(j  ,k+1,l)*un(j  ,k+1,l) + Ky(j, k, l)*un(j  ,k-1,l)) &
+                                  + rz*(Kz(j  ,k,l+1)*un(j  ,k,l+1) + Kz(j, k, l)*un(j  ,k,l-1))) &
                              /(1.0_8 &
                                 + rx*(Kx(j, k, l)+Kx(j+1,k,l)) &
                                 + ry*(Ky(j, k, l)+Ky(j,k+1,l)) &
                                 + rz*(Kz(j, k, l)+Kz(j,k,l+1)))
 
-        error = error +  ABS(u(j, k, l)-u_old(j, k, l))
+        error = error +  ABS(u1(j, k, l)-un(j, k, l))
       ENDDO
     ENDDO
   ENDDO

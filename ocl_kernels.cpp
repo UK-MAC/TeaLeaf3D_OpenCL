@@ -501,9 +501,6 @@ void CloverChunk::initArgs
     // generate chunk
     generate_chunk_init_device.setArg(0, density);
     generate_chunk_init_device.setArg(1, energy0);
-    generate_chunk_init_device.setArg(2, xvel0);
-    generate_chunk_init_device.setArg(3, yvel0);
-    generate_chunk_init_device.setArg(4, zvel0);
 
     generate_chunk_device.setArg(0, vertexx);
     generate_chunk_device.setArg(1, vertexy);
@@ -513,10 +510,7 @@ void CloverChunk::initArgs
     generate_chunk_device.setArg(5, cellz);
     generate_chunk_device.setArg(6, density);
     generate_chunk_device.setArg(7, energy0);
-    generate_chunk_device.setArg(8, xvel0);
-    generate_chunk_device.setArg(9, yvel0);
-    generate_chunk_device.setArg(10, zvel0);
-    generate_chunk_device.setArg(11, u);
+    generate_chunk_device.setArg(8, u);
 
 
     // field summary

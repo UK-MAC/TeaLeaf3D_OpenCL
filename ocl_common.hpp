@@ -169,6 +169,8 @@ private:
 
     // tolerance specified in tea.in
     float tolerance;
+    // whether preconditioner is enabled in input file
+    bool preconditioner_on;
 
     // calculate rx/ry to pass back to fortran
     void calcrxryrz
@@ -392,6 +394,7 @@ public:
 
     // enqueue a kernel
     void enqueueKernel
+
     (cl::Kernel const& kernel,
      int line, const char* file,
      const cl::NDRange offset,

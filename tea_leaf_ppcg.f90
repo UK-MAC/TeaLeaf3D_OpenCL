@@ -60,7 +60,7 @@ SUBROUTINE tea_leaf_kernel_ppcg_inner(x_min,             &
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max,z_min,z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u, r, Kx, Ky, sd, kz
   INTEGER(KIND=4) :: j,k,l, step
-  REAL(KIND=8), dimension(:) :: alpha, beta
+  REAL(KIND=8), DIMENSION(:) :: alpha, beta
   REAL(KIND=8) :: smvp, rx, ry, rz
 
 !$OMP PARALLEL
@@ -115,7 +115,7 @@ SUBROUTINE tea_leaf_kernel_ppcg_init_p(x_min,             &
   rro = 0.0_8
 
 !$OMP PARALLEL
-!$OMP DO reduction(+:rro)
+!$OMP DO REDUCTION(+:rro)
   DO l=z_min,z_max
   DO k=y_min,y_max
     DO j=x_min,x_max
@@ -129,9 +129,8 @@ SUBROUTINE tea_leaf_kernel_ppcg_init_p(x_min,             &
 
 END SUBROUTINE
 
-! TODO move into another file with fortran implementations of kernels
 SUBROUTINE tea_calc_ls_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
-    theta, ppcg_inner_steps)
+                             theta, ppcg_inner_steps)
 
   INTEGER :: n, ppcg_inner_steps
   REAL(KIND=8), DIMENSION(ppcg_inner_steps) :: ch_alphas, ch_betas
@@ -140,10 +139,11 @@ SUBROUTINE tea_calc_ls_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
   REAL(KIND=8) :: theta, delta, sigma, rho_old, rho_new, cur_alpha, cur_beta
 
   ! TODO
-  call tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
-    theta, ppcg_inner_steps)
+  CALL tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
+                         theta, ppcg_inner_steps)
 
-end subroutine
+END SUBROUTINE
 
-end module
+END MODULE
+
 

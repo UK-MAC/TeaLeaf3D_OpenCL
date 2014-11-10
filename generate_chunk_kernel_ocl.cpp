@@ -9,6 +9,8 @@ const double* state_xmin,
 const double* state_xmax,
 const double* state_ymin,
 const double* state_ymax,
+const double* state_zmin,
+const double* state_zmax,
 const double* state_radius,
 const int* state_geometry,
 

@@ -109,17 +109,7 @@ SUBROUTINE visit
       ENDDO
       WRITE(u,'(a)')'FIELD FieldData 3'
       WRITE(u,'(a,i20,a)')'x_vel 1 ',nxv*nyv*nzv,' double'
-      DO l=chunks(c)%field%z_min,chunks(c)%field%z_max+1
-        DO k=chunks(c)%field%y_min,chunks(c)%field%y_max+1
-          DO j=chunks(c)%field%x_min,chunks(c)%field%x_max+1
-            temp_var=0.0
-            IF(ABS(chunks(c)%field%xvel0(j,k,l)).GT.0.00000001) temp_var=chunks(c)%field%xvel0(j,k,l)
-            WRITE(u,'(e12.4)') temp_var
-          ENDDO
-        ENDDO
-      ENDDO
       WRITE(u,'(a,i20,a)')'y_vel 1 ',nxv*nyv*nzv,' double'
-      ENDDO
       CLOSE(u)
     ENDIF
   ENDDO

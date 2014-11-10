@@ -34,22 +34,24 @@ SUBROUTINE tea_leaf_kernel_init_cg_fortran(x_min,             &
                            density,           &
                            energy,            &
                            u,                 &
-                           p,           & ! 1
-                           r,           & ! 2
-                           Mi,          & ! 3
-                           w,           & ! 4
-                           z,           & ! 5
-                           Kx,          & ! 6
-                           Ky,          & ! 7
-                           Kz,          & ! 8??
+                           p,           &
+                           r,           &
+                           Mi,          &
+                           w,           &
+                           z,           &
+                           Kx,          &
+                           Ky,          &
+                           Kz,          &
                            rx,          &
                            ry,          &
                            rz,          &
                            rro,         &
-                           coef)
+                           coef,        &
+                           preconditioner_on)
 
   IMPLICIT NONE
 
+  LOGICAL :: preconditioner_on
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max, z_min, z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy
@@ -120,7 +122,7 @@ SUBROUTINE tea_leaf_kernel_init_cg_fortran(x_min,             &
   ENDDO
 !$OMP END DO
 
-!$OMP DO REDUCTION(+:rro)
+!$OMP DO
   DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
@@ -133,8 +135,15 @@ SUBROUTINE tea_leaf_kernel_init_cg_fortran(x_min,             &
                 - rz*(Kz(j, k, l+1)*u(j, k, l+1) + Kz(j, k, l)*u(j, k, l-1))
 
             r(j, k, l) = u(j, k, l) - w(j, k, l)
+        ENDDO
+    ENDDO
+  ENDDO
 
-#if defined(USE_PRECONDITIONER)
+  IF (preconditioner_on) then
+!$OMP DO REDUCTION(+:rro)
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+        DO j=x_min,x_max
             ! inverse diagonal used as preconditioner
             Mi(j, k, l) = (1.0_8                                     &
                 + rx*(Kx(j+1, k, l) + Kx(j, k, l))  &
@@ -144,15 +153,25 @@ SUBROUTINE tea_leaf_kernel_init_cg_fortran(x_min,             &
 
             z(j, k, l) = Mi(j, k, l)*r(j, k, l)
             p(j, k, l) = z(j, k, l)
-#else
-            p(j, k, l) = r(j, k, l)
-#endif
 
             rro = rro + r(j, k, l)*p(j, k, l);
         ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
+  ELSE
+!$OMP DO REDUCTION(+:rro)
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+        DO j=x_min,x_max
+            p(j, k, l) = r(j, k, l)
+
+            rro = rro + r(j, k, l)*p(j, k, l);
+        ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+  ENDIF
 !$OMP END PARALLEL
 
 END SUBROUTINE tea_leaf_kernel_init_cg_fortran
@@ -222,10 +241,12 @@ SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_ur(x_min,             &
                            w,     &
                            z,     &
                            alpha, &
-                           rrn)
+                           rrn, &
+                           preconditioner_on)
 
   IMPLICIT NONE
 
+  LOGICAL :: preconditioner_on
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max, z_min, z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: p
@@ -240,22 +261,32 @@ SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_ur(x_min,             &
     rrn = 0.0_08
 
 !$OMP PARALLEL
+  IF (preconditioner_on) THEN
 !$OMP DO REDUCTION(+:rrn)
   DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
             u(j, k, l) = u(j, k, l) + alpha*p(j, k, l)
             r(j, k, l) = r(j, k, l) - alpha*w(j, k, l)
-#if defined(USE_PRECONDITIONER)
             z(j, k, l) = Mi(j, k, l)*r(j, k, l)
             rrn = rrn + r(j, k, l)*z(j, k, l)
-#else
-            rrn = rrn + r(j, k, l)*r(j, k, l)
-#endif
         ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
+  ELSE
+!$OMP DO REDUCTION(+:rrn)
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+        DO j=x_min,x_max
+            u(j, k, l) = u(j, k, l) + alpha*p(j, k, l)
+            r(j, k, l) = r(j, k, l) - alpha*w(j, k, l)
+            rrn = rrn + r(j, k, l)*r(j, k, l)
+        ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+  ENDIF
 !$OMP END PARALLEL
 
 END SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_ur
@@ -269,10 +300,12 @@ SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_p(x_min,             &
                            p,            &
                            r,            &
                            z,     &
-                           beta)
+                           beta, &
+                           preconditioner_on)
 
   IMPLICIT NONE
 
+  LOGICAL :: preconditioner_on
   INTEGER(KIND=4):: x_min,x_max,y_min,y_max, z_min, z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: p, r, z
 
@@ -282,19 +315,27 @@ SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_p(x_min,             &
     REAL(kind=8) :: beta
 
 !$OMP PARALLEL
+  IF (preconditioner_on) THEN
 !$OMP DO
   DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
-#if defined(USE_PRECONDITIONER)
             p(j, k, l) = z(j, k, l) + beta*p(j, k, l)
-#else
-            p(j, k, l) = r(j, k, l) + beta*p(j, k, l)
-#endif
         ENDDO
     ENDDO
   ENDDO
 !$OMP END DO
+  ELSE
+!$OMP DO
+  DO l=z_min,z_max
+    DO k=y_min,y_max
+        DO j=x_min,x_max
+            p(j, k, l) = r(j, k, l) + beta*p(j, k, l)
+        ENDDO
+    ENDDO
+  ENDDO
+!$OMP END DO
+  ENDIF
 !$OMP END PARALLEL
 
 END SUBROUTINE tea_leaf_kernel_solve_cg_fortran_calc_p

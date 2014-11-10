@@ -119,7 +119,7 @@ SUBROUTINE tea_leaf()
               chunks(c)%field%vector_Kx,                 &
               chunks(c)%field%vector_Ky,                 &
               chunks(c)%field%vector_Kz,                 &
-              rx, ry, rz, rro, coefficient)
+              rx, ry, rz, rro, coefficient, tl_preconditioner_on)
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_init_cg_ocl(coefficient, dt, rx, ry, rz, rro)
         ENDIF
@@ -147,7 +147,7 @@ SUBROUTINE tea_leaf()
               chunks(c)%field%energy1,                     &
               chunks(c)%field%u0,                 &
               chunks(c)%field%u,                           &
-              chunks(c)%field%vector_p,                 &
+              chunks(c)%field%vector_r,                 &
               chunks(c)%field%vector_Kx,                 &
               chunks(c)%field%vector_Ky,                 &
               chunks(c)%field%vector_Kz,                 &
@@ -155,6 +155,9 @@ SUBROUTINE tea_leaf()
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_init_ocl(coefficient, dt, rx, ry, rz)
         ENDIF
+
+        fields=0
+        fields(FIELD_U) = 1
       ENDIF
 
       ! need the original value of u
@@ -167,75 +170,78 @@ SUBROUTINE tea_leaf()
           chunks(c)%field%z_max,                       &
           chunks(c)%field%u0,                &
           chunks(c)%field%u)
-      elseif(use_opencl_kernels) then
-        call tea_leaf_kernel_cheby_copy_u_ocl()
-      endif
+      ELSEIF(use_opencl_kernels) THEN
+        CALL tea_leaf_kernel_cheby_copy_u_ocl()
+      ENDIF
+
+      IF (profiler_on) profiler%tea_init = profiler%tea_init + (timer() - init_time)
+      IF (profiler_on) solve_time = timer()
 
       DO n=1,max_iters
 
-        if (profile_solver) solve_timer=timer()
+        iteration_time = timer()
 
-        IF (tl_ch_cg_errswitch) then
-            ! either the error has got below tolerance, or it's already going
-            ch_switch_check = (cheby_calc_steps .gt. 0) .or. (error .le. tl_ch_cg_epslim)
+        IF (tl_ch_cg_errswitch) THEN
+            ! either the error has got below tolerance, or it's already going - minimum 20 steps to converge eigenvalues
+            ch_switch_check = (cheby_calc_steps .GT. 0) .OR. (error .LE. tl_ch_cg_epslim) .AND. (n .GE. 20)
         ELSE
             ! enough steps have passed and error < 1, otherwise it's nowhere near converging on eigenvalues
-            ch_switch_check = (n .ge. tl_ch_cg_presteps) .and. (error .le. 1.0_8)
+            ch_switch_check = (n .GE. tl_ch_cg_presteps) .AND. (error .le. 1.0_8)
         ENDIF
 
-        IF ((tl_use_chebyshev .or. tl_use_ppcg) .and. ch_switch_check) then
+        IF ((tl_use_chebyshev .OR. tl_use_ppcg) .AND. ch_switch_check) THEN
           ! on the first chebyshev steps, find the eigenvalues, coefficients,
           ! and expected number of iterations
-          IF (cheby_calc_steps .eq. 0) then
+          IF (cheby_calc_steps .EQ. 0) THEN
             ! maximum number of iterations in chebyshev solver
             max_cheby_iters = max_iters - n + 2
             rro = error
 
             ! calculate eigenvalues
-            call tea_calc_eigenvalues(cg_alphas, cg_betas, eigmin, eigmax, &
+            CALL tea_calc_eigenvalues(cg_alphas, cg_betas, eigmin, eigmax, &
                 max_iters, n-1, info)
+
+            IF (info .NE. 0) CALL report_error('tea_leaf', 'Error in calculating eigenvalues')
 
             eigmin = eigmin*0.95
             eigmax = eigmax*1.05
 
-            if (info .ne. 0) CALL report_error('tea_leaf', 'Error in calculating eigenvalues')
-
-            if (tl_use_chebyshev) then
+            IF (tl_use_chebyshev) THEN
               ! calculate chebyshev coefficients
-              call tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
+              CALL tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
                   theta, max_cheby_iters)
-            else if (tl_use_ppcg) then
-              ! also calculate chebyshev coefficients
-              ! TODO least squares
-              call tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
-                  theta, tl_ppcg_inner_steps)
-            endif
 
-            cn = eigmax/eigmin
-
-            if (parallel%boss) then
-              write(g_out,'(a,i3,a,e15.7)') "Switching after ",n," steps, error ",rro
-              write(g_out,'(4a11)')"eigmin", "eigmax", "cn", "error"
-              write(g_out,'(2f11.5,2e11.4)')eigmin, eigmax, cn, error
-              write(0,'(a,i3,a,e15.7)') "Switching after ",n," steps, error ",rro
-              write(0,'(4a11)')"eigmin", "eigmax", "cn", "error"
-              write(0,'(2f11.5,2e11.4)')eigmin, eigmax, cn, error
-            endif
-          endif
-
-          if (tl_use_chebyshev) then
               ! don't need to update p any more
               fields = 0
               fields(FIELD_U) = 1
+            ELSE IF (tl_use_ppcg) THEN
+              ! currently also calculate chebyshev coefficients
+              ! TODO least squares
+              CALL tea_calc_ch_coefs(ch_alphas, ch_betas, eigmin, eigmax, &
+                  theta, tl_ppcg_inner_steps)
+            ENDIF
 
-              if (cheby_calc_steps .eq. 0) then
-                call tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
+            cn = eigmax/eigmin
+
+            IF (parallel%boss) THEN
+              WRITE(g_out,'(a,i3,a,e15.7)') "Switching after ",n," steps, error ",rro
+              WRITE(g_out,'(4a11)')"eigmin", "eigmax", "cn", "error"
+              WRITE(g_out,'(2f11.5,2e11.4)')eigmin, eigmax, cn, error
+              WRITE(0,'(a,i3,a,e15.7)') "Switching after ",n," steps, error ",rro
+              WRITE(0,'(4a11)')"eigmin", "eigmax", "cn", "error"
+              WRITE(0,'(2f11.5,2e11.4)')eigmin, eigmax, cn, error
+            ENDIF
+          ENDIF
+
+          IF (tl_use_chebyshev) THEN
+              IF (cheby_calc_steps .EQ. 0) THEN
+                CALL tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
                     error, rx, ry, rz, theta, cn, max_cheby_iters, est_itc)
 
-                cheby_calc_steps = 2
+                cheby_calc_steps = 1
 
                 switch_step = n
-              else
+              ELSE
                   IF(use_fortran_kernels) THEN
                       call tea_leaf_kernel_cheby_iterate(chunks(c)%field%x_min,&
                           chunks(c)%field%x_max,                       &
@@ -254,9 +260,9 @@ SUBROUTINE tea_leaf()
                           chunks(c)%field%vector_Ky,                 &
                           chunks(c)%field%vector_Kz,                 &
                           ch_alphas, ch_betas, max_cheby_iters,        &
-                          rx, ry, rz, cheby_calc_steps)
+                          rx, ry, rz, cheby_calc_steps, tl_preconditioner_on)
                   ELSEIF(use_opencl_kernels) THEN
-                      call tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
+                      CALL tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
                         rx, ry, rz, cheby_calc_steps)
                   ENDIF
 
@@ -265,7 +271,7 @@ SUBROUTINE tea_leaf()
                   ! total time spent much if at all (number of steps spent in
                   ! chebyshev is typically O(300+)) but will greatly reduce global
                   ! synchronisations needed
-                  if ((n .ge. est_itc) .and. (mod(n, 10) .eq. 0)) then
+                  IF ((n .GE. est_itc) .AND. (MOD(n, 10) .eq. 0)) THEN
                     IF(use_fortran_kernels) THEN
                       call tea_leaf_calc_2norm_kernel(chunks(c)%field%x_min,        &
                             chunks(c)%field%x_max,                       &
@@ -279,24 +285,17 @@ SUBROUTINE tea_leaf()
                       call tea_leaf_calc_2norm_kernel_ocl(1, error)
                     ENDIF
 
-                    call clover_allsum(error)
-                  endif
-              endif
-
-              cheby_calc_steps = cheby_calc_steps + 1
-          else if (tl_use_ppcg) then
-            if (cheby_calc_steps .eq. 0) then
+                    CALL tea_allsum(error)
+                  ENDIF
+              ENDIF
+          ELSE IF (tl_use_ppcg) THEN
+            IF (cheby_calc_steps .EQ. 0) THEN
               cheby_calc_steps = 1
 
               IF(use_opencl_kernels) THEN
                 call tea_leaf_kernel_ppcg_init_ocl(ch_alphas, ch_betas, &
                     theta, tl_ppcg_inner_steps)
               ENDIF
-
-              fields(FIELD_U) = 1
-
-              ! update p
-              CALL update_halo(fields,1)
 
               IF(use_fortran_kernels) THEN
                 CALL tea_leaf_calc_residual(chunks(c)%field%x_min,&
@@ -316,28 +315,14 @@ SUBROUTINE tea_leaf()
                 CALL tea_leaf_calc_residual_ocl()
               ENDIF
 
-              call tea_leaf_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
-                  rx, ry, rz, tl_ppcg_inner_steps, c)
-
-              IF(use_fortran_kernels) THEN
-                call tea_leaf_kernel_ppcg_init_p(chunks(c)%field%x_min,&
-                    chunks(c)%field%x_max,                       &
-                    chunks(c)%field%y_min,                       &
-                    chunks(c)%field%y_max,                       &
-                    chunks(c)%field%z_min,                       &
-                    chunks(c)%field%z_max,                       &
-                    chunks(c)%field%vector_p,                 &
-                    chunks(c)%field%vector_r,                 &
-                    rro)
-              ELSEIF(use_opencl_kernels) THEN
-                call tea_leaf_kernel_ppcg_init_p_ocl(rro)
-              ENDIF
-
+              IF (profiler_on) halo_time = timer()
               ! update p
               CALL update_halo(fields,1)
+              IF (profiler_on) profiler%halo_exchange = profiler%halo_exchange + (timer() - halo_time)
+              IF (profiler_on) solve_time = solve_time + (timer()-halo_time)
 
-              CALL clover_allsum(rro)
-            endif
+              CALL tea_allsum(rro)
+            ENDIF
 
             IF(use_fortran_kernels) THEN
               CALL tea_leaf_kernel_solve_cg_fortran_calc_w(chunks(c)%field%x_min,&
@@ -356,7 +341,7 @@ SUBROUTINE tea_leaf()
               CALL tea_leaf_kernel_solve_cg_ocl_calc_w(rx, ry, rz, pw)
             ENDIF
 
-            CALL clover_allsum(pw)
+            CALL tea_allsum(pw)
             alpha = rro/pw
 
             IF(use_fortran_kernels) THEN
@@ -372,14 +357,14 @@ SUBROUTINE tea_leaf()
                   chunks(c)%field%vector_Mi,                 &
                   chunks(c)%field%vector_w,                 &
                   chunks(c)%field%vector_z,                 &
-                  alpha, rrn)
+                  alpha, rrn, tl_preconditioner_on)
             ELSEIF(use_opencl_kernels) THEN
               CALL tea_leaf_kernel_solve_cg_ocl_calc_ur(alpha, rrn)
             ENDIF
 
-            ! not using rrn, so don't do a clover_allsum
+            ! not using rrn, so don't do a tea_allsum
 
-            call tea_leaf_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
+            CALL tea_leaf_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
                 rx, ry, rz, tl_ppcg_inner_steps, c)
 
             IF(use_fortran_kernels) THEN
@@ -395,7 +380,7 @@ SUBROUTINE tea_leaf()
               call tea_leaf_calc_2norm_kernel_ocl(1, rrn)
             ENDIF
 
-            CALL clover_allsum(rrn)
+            CALL tea_allsum(rrn)
 
             beta = rrn/rro
 
@@ -409,15 +394,17 @@ SUBROUTINE tea_leaf()
                   chunks(c)%field%vector_p,                 &
                   chunks(c)%field%vector_r,                 &
                   chunks(c)%field%vector_z,                 &
-                  beta)
+                  beta, tl_preconditioner_on)
             ELSEIF(use_opencl_kernels) THEN
               CALL tea_leaf_kernel_solve_cg_ocl_calc_p(beta)
             ENDIF
 
             error = rrn
             rro = rrn
-          endif
-        ELSEIF(tl_use_cg .or. tl_use_chebyshev .or. tl_use_ppcg) then
+          ENDIF
+
+          cheby_calc_steps = cheby_calc_steps + 1
+        ELSEIF(tl_use_cg .OR. tl_use_chebyshev .OR. tl_use_ppcg) THEN
           fields(FIELD_P) = 1
           cg_calc_steps = cg_calc_steps + 1
 
@@ -438,9 +425,9 @@ SUBROUTINE tea_leaf()
             CALL tea_leaf_kernel_solve_cg_ocl_calc_w(rx, ry, rz, pw)
           ENDIF
 
-          CALL clover_allsum(pw)
+          CALL tea_allsum(pw)
           alpha = rro/pw
-          if(tl_use_chebyshev .or. tl_use_ppcg) cg_alphas(n) = alpha
+          IF(tl_use_chebyshev .OR. tl_use_ppcg) cg_alphas(n) = alpha
 
           IF(use_fortran_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_fortran_calc_ur(chunks(c)%field%x_min,&
@@ -455,14 +442,14 @@ SUBROUTINE tea_leaf()
                 chunks(c)%field%vector_Mi,                 &
                 chunks(c)%field%vector_w,                 &
                 chunks(c)%field%vector_z,                 &
-                alpha, rrn)
+                alpha, rrn, tl_preconditioner_on)
           ELSEIF(use_opencl_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_ocl_calc_ur(alpha, rrn)
           ENDIF
 
-          CALL clover_allsum(rrn)
+          CALL tea_allsum(rrn)
           beta = rrn/rro
-          if(tl_use_chebyshev .or. tl_use_ppcg) cg_betas(n) = beta
+          IF(tl_use_chebyshev .OR. tl_use_ppcg) cg_betas(n) = beta
 
           IF(use_fortran_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_fortran_calc_p(chunks(c)%field%x_min,&
@@ -474,14 +461,14 @@ SUBROUTINE tea_leaf()
                 chunks(c)%field%vector_p,                 &
                 chunks(c)%field%vector_r,                 &
                 chunks(c)%field%vector_z,                 &
-                beta)
+                beta, tl_preconditioner_on)
           ELSEIF(use_opencl_kernels) THEN
             CALL tea_leaf_kernel_solve_cg_ocl_calc_p(beta)
           ENDIF
 
           error = rrn
           rro = rrn
-        ELSE
+        ELSEIF(tl_use_jacobi) THEN
           IF(use_fortran_kernels) THEN
             CALL tea_leaf_kernel_solve(chunks(c)%field%x_min,&
                 chunks(c)%field%x_max,                       &
@@ -495,10 +482,10 @@ SUBROUTINE tea_leaf()
                 chunks(c)%field%vector_Kx,                 &
                 chunks(c)%field%vector_Ky,                 &
                 chunks(c)%field%vector_Kz,                 &
-                chunks(c)%field%u,                           &
+                error, &
                 chunks(c)%field%u0,                          &
-                chunks(c)%field%vector_p, &
-                error)
+                chunks(c)%field%u,                           &
+                chunks(c)%field%vector_r)
           ELSEIF(use_opencl_kernels) THEN
               CALL tea_leaf_kernel_solve_ocl(rx, ry, rz, error)
           ENDIF
@@ -536,26 +523,28 @@ SUBROUTINE tea_leaf()
             ENDIF
           endif
 
-          CALL clover_allsum(error)
+          CALL tea_allsum(error)
         ENDIF
 
         ! updates u and possibly p
+        IF (profiler_on) halo_time = timer()
         CALL update_halo(fields,1)
+        IF (profiler_on) profiler%halo_exchange = profiler%halo_exchange + (timer() - halo_time)
+        IF (profiler_on) solve_time = solve_time + (timer()-halo_time)
 
-        if (profile_solver) then
-          IF (tl_use_chebyshev .and. ch_switch_check) then
-              ch_time=ch_time+(timer()-solve_timer)
-          else
-              cg_time=cg_time+(timer()-solve_timer)
-          endif
-          total_solve_time = total_solve_time + (timer() - solve_timer)
-        endif
+        IF (profiler_on) THEN
+          IF (tl_use_chebyshev .AND. ch_switch_check) THEN
+            ch_time=ch_time+(timer()-iteration_time)
+          ELSE
+            cg_time=cg_time+(timer()-iteration_time)
+          ENDIF
+        ENDIF
 
         IF (abs(error) .LT. eps) EXIT
 
       ENDDO
 
-      if (tl_check_result) then
+      IF (tl_check_result) THEN
         IF(use_fortran_kernels) THEN
           CALL tea_leaf_calc_residual(chunks(c)%field%x_min,&
               chunks(c)%field%x_max,                       &
@@ -580,21 +569,23 @@ SUBROUTINE tea_leaf()
               exact_error)
         ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_calc_residual_ocl()
-          call tea_leaf_calc_2norm_kernel_ocl(1, exact_error)
+          CALL tea_leaf_calc_2norm_kernel_ocl(1, exact_error)
         ENDIF
 
-        call clover_allsum(exact_error)
-      endif
+        CALL tea_allsum(exact_error)
+      ENDIF
+
+      IF (profiler_on) profiler%tea_solve = profiler%tea_solve + (timer() - solve_time)
 
       IF (parallel%boss) THEN
 !$      IF(OMP_GET_THREAD_NUM().EQ.0) THEN
           WRITE(g_out,"('Conduction error ',e14.7)") error
           WRITE(0,"('Conduction error ',e14.7)") error
 
-          if (tl_check_result) then
-            write(0,"('EXACT error calculated as', e14.7)") exact_error
-            write(g_out,"('EXACT error calculated as', e14.7)") exact_error
-          endif
+          IF (tl_check_result) THEN
+            WRITE(0,"('EXACT error calculated as', e14.7)") exact_error
+            WRITE(g_out,"('EXACT error calculated as', e14.7)") exact_error
+          ENDIF
 
           WRITE(g_out,"('Iteration count ',i8)") n-1
           WRITE(0,"('Iteration count ', i8)") n-1
@@ -602,6 +593,7 @@ SUBROUTINE tea_leaf()
       ENDIF
 
       ! RESET
+      reset_time=timer()
       IF(use_fortran_kernels) THEN
           CALL tea_leaf_kernel_finalise(chunks(c)%field%x_min, &
               chunks(c)%field%x_max,                           &
@@ -615,51 +607,54 @@ SUBROUTINE tea_leaf()
       ELSEIF(use_opencl_kernels) THEN
           CALL tea_leaf_kernel_finalise_ocl()
       ENDIF
+      IF (profiler_on) profiler%tea_reset = profiler%tea_reset + (timer() - halo_time)
 
+      halo_time=timer()
       fields=0
       fields(FIELD_ENERGY1) = 1
       CALL update_halo(fields,1)
+      IF (profiler_on) profiler%halo_exchange = profiler%halo_exchange + (timer() - halo_time)
 
     ENDIF
 
   ENDDO
-  IF(profile_solver) profiler%tea=profiler%tea+(timer()-kernel_time)
 
-  IF (profile_solver .and. parallel%boss) then
-    write(0, "(a16, a7, a16)") "Time", "Steps", "Per it"
-    write(0, "(f16.10, i7, f16.10, f7.2)") total_solve_time, n, total_solve_time/n
-    write(g_out, "(a16, a7, a16)") "Time", "Steps", "Per it"
-    write(g_out, "(f16.10, i7, f16.10, f7.2)") total_solve_time, n, total_solve_time/n
-  endif
+  IF (profiler_on .AND. parallel%boss) THEN
+    total_solve_time = (timer() - total_solve_time)
+    WRITE(0, "(a16, a7, a16)") "Time", "Steps", "Per it"
+    WRITE(0, "(f16.10, i7, f16.10, f7.2)") total_solve_time, n, total_solve_time/n
+    WRITE(g_out, "(a16, a7, a16)") "Time", "Steps", "Per it"
+    WRITE(g_out, "(f16.10, i7, f16.10, f7.2)") total_solve_time, n, total_solve_time/n
+  ENDIF
 
-  IF (profile_solver .and. tl_use_chebyshev) THEN
-    call clover_sum(ch_time)
-    call clover_sum(cg_time)
-    if (parallel%boss) then
-      cg_per_it = merge((cg_time/cg_calc_steps)/parallel%max_task, 0.0_8, cg_calc_steps .gt. 0)
-      ch_per_it = merge((ch_time/cheby_calc_steps)/parallel%max_task, 0.0_8, cheby_calc_steps .gt. 0)
+  IF (profiler_on .AND. tl_use_chebyshev) THEN
+    CALL tea_sum(ch_time)
+    CALL tea_sum(cg_time)
+    IF (parallel%boss) THEN
+      cg_per_it = MERGE((cg_time/cg_calc_steps)/parallel%max_task, 0.0_8, cg_calc_steps .GT. 0)
+      ch_per_it = MERGE((ch_time/cheby_calc_steps)/parallel%max_task, 0.0_8, cheby_calc_steps .GT. 0)
 
-      write(0, "(a3, a16, a7, a16, a7)") "", "Time", "Steps", "Per it", "Ratio"
-      write(0, "(a3, f16.10, i7, f16.10, f7.2)") &
+      WRITE(0, "(a3, a16, a7, a16, a7)") "", "Time", "Steps", "Per it", "Ratio"
+      WRITE(0, "(a3, f16.10, i7, f16.10, f7.2)") &
           "CG", cg_time + 0.0_8, cg_calc_steps, cg_per_it, 1.0_8
-      write(0, "(a3, f16.10, i7, f16.10, f7.2)") "CH", ch_time + 0.0_8, cheby_calc_steps, &
-          ch_per_it, merge(ch_per_it/cg_per_it, 0.0_8, cheby_calc_steps .gt. 0)
-      write(0, "('Chebyshev actually took ', i6, ' (' i6, ' off guess)')") &
+      WRITE(0, "(a3, f16.10, i7, f16.10, f7.2)") "CH", ch_time + 0.0_8, cheby_calc_steps, &
+          ch_per_it, MERGE(ch_per_it/cg_per_it, 0.0_8, cheby_calc_steps .GT. 0)
+      WRITE(0, "('Chebyshev actually took ', i6, ' (' i6, ' off guess)')") &
           cheby_calc_steps, cheby_calc_steps-est_itc
 
-      write(g_out, "(a3, a16, a7, a16, a7)") "", "Time", "Steps", "Per it", "Ratio"
-      write(g_out, "(a3, f16.10, i7, f16.10, f7.2)") &
+      WRITE(g_out, "(a3, a16, a7, a16, a7)") "", "Time", "Steps", "Per it", "Ratio"
+      WRITE(g_out, "(a3, f16.10, i7, f16.10, f7.2)") &
           "CG", cg_time + 0.0_8, cg_calc_steps, cg_per_it, 1.0_8
-      write(g_out, "(a3, f16.10, i7, f16.10, f7.2)") "CH", ch_time + 0.0_8, cheby_calc_steps, &
-          ch_per_it, merge(ch_per_it/cg_per_it, 0.0_8, cheby_calc_steps .gt. 0)
-      write(g_out, "('Chebyshev actually took ', i6, ' (' i6, ' off guess)')") &
+      WRITE(g_out, "(a3, f16.10, i7, f16.10, f7.2)") "CH", ch_time + 0.0_8, cheby_calc_steps, &
+          ch_per_it, MERGE(ch_per_it/cg_per_it, 0.0_8, cheby_calc_steps .GT. 0)
+      WRITE(g_out, "('Chebyshev actually took ', i6, ' (' i6, ' off guess)')") &
           cheby_calc_steps, cheby_calc_steps-est_itc
-    endif
-  endif
+    ENDIF
+  ENDIF
 
 END SUBROUTINE tea_leaf
 
-subroutine tea_leaF_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
+SUBROUTINE tea_leaF_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
     rx, ry, rz, tl_ppcg_inner_steps, c)
 
   INTEGER :: fields(NUM_FIELDS)
@@ -711,9 +706,10 @@ subroutine tea_leaF_run_ppcg_inner_steps(ch_alphas, ch_betas, theta, &
 
   fields = 0
   fields(FIELD_P) = 1
-end subroutine
 
-subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
+END SUBROUTINE tea_leaF_run_ppcg_inner_steps
+
+SUBROUTINE tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
     error, rx, ry, rz, theta, cn, max_cheby_iters, est_itc)
 
   IMPLICIT NONE
@@ -737,7 +733,7 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
     call tea_leaf_calc_2norm_kernel_ocl(0, bb)
   ENDIF
 
-  call clover_allsum(bb)
+  CALL tea_allsum(bb)
 
   ! initialise 'p' array
   IF(use_fortran_kernels) THEN
@@ -758,7 +754,7 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
           chunks(c)%field%vector_Ky,                 &
           chunks(c)%field%vector_Kz,                 &
           ch_alphas, ch_betas, max_cheby_iters, &
-          rx, ry, rz, theta, error)
+          rx, ry, rz, theta, error, tl_preconditioner_on)
   ELSEIF(use_opencl_kernels) THEN
     call tea_leaf_kernel_cheby_init_ocl(ch_alphas, ch_betas, &
       max_cheby_iters, rx, ry, rz, theta, error)
@@ -784,9 +780,9 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
           chunks(c)%field%vector_Ky,                 &
           chunks(c)%field%vector_Kz,                 &
           ch_alphas, ch_betas, max_cheby_iters,        &
-          rx, ry, rz, 1)
+          rx, ry, rz, 1, tl_preconditioner_on)
   ELSEIF(use_opencl_kernels) THEN
-      call tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
+      CALL tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, max_cheby_iters, &
         rx, ry, rz, 1)
   ENDIF
 
@@ -800,22 +796,22 @@ subroutine tea_leaf_cheby_first_step(c, ch_alphas, ch_betas, fields, &
           chunks(c)%field%vector_r,                 &
           error)
   ELSEIF(use_opencl_kernels) THEN
-    call tea_leaf_calc_2norm_kernel_ocl(1, error)
+    CALL tea_leaf_calc_2norm_kernel_ocl(1, error)
   ENDIF
 
-  call clover_allsum(error)
+  CALL tea_allsum(error)
 
-  it_alpha = epsilon(1.0_8)*bb/(4.0_8*error)
-  gamm = (sqrt(cn) - 1.0_8)/(sqrt(cn) + 1.0_8)
-  est_itc = nint(log(it_alpha)/(2.0_8*log(gamm)))
+  it_alpha = EPSILON(1.0_8)*bb/(4.0_8*error)
+  gamm = (SQRT(cn) - 1.0_8)/(SQRT(cn) + 1.0_8)
+  est_itc = NINT(LOG(it_alpha)/(2.0_8*LOG(gamm)))
 
-  if (parallel%boss) then
-      write(g_out,'(a11)')"est itc"
-      write(g_out,'(11i11)')est_itc
-      write(0,'(a11)')"est itc"
-      write(0,'(11i11)')est_itc
-  endif
+  IF (parallel%boss) THEN
+      WRITE(g_out,'(a11)')"est itc"
+      WRITE(g_out,'(11i11)')est_itc
+      WRITE(0,'(a11)')"est itc"
+      WRITE(0,'(11i11)')est_itc
+  ENDIF
 
-end subroutine tea_leaf_cheby_first_step
+END SUBROUTINE tea_leaf_cheby_first_step
 
 END MODULE tea_leaf_module
