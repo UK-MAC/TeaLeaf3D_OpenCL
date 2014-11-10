@@ -236,47 +236,11 @@ CloverChunk::~CloverChunk
              *  Underestimating it and assuming perfect caching is about as
              *  sensible as possible
              */
-            kernel_params["PdV_not_predict"] = 16;
-            kernel_params["PdV_predict"] = 13;
-            kernel_params["accelerate"] = 13;
-            kernel_params["advec_cell_ener_flux_x"] = 6;
-            kernel_params["advec_cell_ener_flux_y"] = 6;
-            kernel_params["advec_cell_ener_flux_z"] = 6;
-            kernel_params["advec_cell_pre_vol_x"] = 4.5;
-            kernel_params["advec_cell_pre_vol_y"] = 4.5;
-            kernel_params["advec_cell_pre_vol_z"] = 4.5;
-            kernel_params["advec_cell_x"] = 6;
-            kernel_params["advec_cell_y"] = 6;
-            kernel_params["advec_cell_z"] = 6;
-            kernel_params["advec_mom_flux_x"] = 4;
-            kernel_params["advec_mom_flux_y"] = 4;
-            kernel_params["advec_mom_flux_z"] = 4;
-            kernel_params["advec_mom_node_flux_post_x_1"] = 2;
-            kernel_params["advec_mom_node_flux_post_x_2"] = 3;
-            kernel_params["advec_mom_node_flux_post_y_1"] = 2;
-            kernel_params["advec_mom_node_flux_post_y_2"] = 3;
-            kernel_params["advec_mom_node_flux_post_z_1"] = 2;
-            kernel_params["advec_mom_node_flux_post_z_2"] = 3;
-            kernel_params["advec_mom_node_pre_x"] = 3;
-            kernel_params["advec_mom_node_pre_y"] = 3;
-            kernel_params["advec_mom_node_pre_z"] = 3;
-            kernel_params["advec_mom_vol"] = 6;
-            kernel_params["advec_mom_xvel"] = 4;
-            kernel_params["advec_mom_yvel"] = 4;
-            kernel_params["advec_mom_zvel"] = 4;
-            kernel_params["calc_dt"] = 10;
             kernel_params["field_summary"] = 7;
-            kernel_params["flux_calc_x"] = 4;
-            kernel_params["flux_calc_y"] = 4;
-            kernel_params["flux_calc_z"] = 4;
-            kernel_params["generate_chunk"] = 5;
-            kernel_params["generate_chunk_init"] = 5;
-            kernel_params["ideal_gas"] = 4;
+            kernel_params["generate_chunk"] = 3;
+            kernel_params["generate_chunk_init"] = 2;
             kernel_params["initialise_chunk_first"] = 1;
             kernel_params["initialise_chunk_second"] = 4;
-            kernel_params["reset_field"] = 10;
-            kernel_params["revert"] = 4;
-            kernel_params["viscosity"] = 6;
             // 6 <= (avg depth) * 2 for writing and reading 2 slices of array
             //   <= ((1+2)/2) * 2
             kernel_params["update_halo_left"] = 3.0/(x_max);
@@ -289,7 +253,7 @@ CloverChunk::~CloverChunk
             kernel_params["reduction"] = 1.0/(LOCAL_X*LOCAL_Y*LOCAL_Z);
 
             // TL specific
-            kernel_params["set_field"] = 4;
+            kernel_params["set_field"] = 2;
             kernel_params["tea_leaf_init_diag"] = 3;
             kernel_params["tea_leaf_finalise"] = 2;
             kernel_params["tea_leaf_jacobi_init"] = 7;
@@ -304,7 +268,8 @@ CloverChunk::~CloverChunk
             kernel_params["tea_leaf_cheby_solve_init_p"] = 9; // with preconditioner!
             kernel_params["tea_leaf_cheby_solve_calc_u"] = 2;
             kernel_params["tea_leaf_cheby_solve_calc_p"] = 9; // with preconditioner!
-            kernel_params["tea_leaf_cheby_solve_calc_resid"] = 1;
+            kernel_params["tea_leaf_cheby_calc_2norm"] = 1;
+            kernel_params["tea_leaf_calc_residual"] = 6;
 
             double total_transferred = 0.0;
             double total_kernel_time = 0.0;
