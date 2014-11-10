@@ -9,5 +9,7 @@ clover.out
 clover.in.tmp
 *.xf
 *.ap2
-clover_leaf
+tea_leaf
 *.swp
+*.tmp
+*.out
