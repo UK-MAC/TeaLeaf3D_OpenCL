@@ -290,6 +290,7 @@ void CloverChunk::initSizes
     const size_t red_z = z_max +
         (((z_max)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max)%LOCAL_Z)));
     reduced_cells = red_x*red_y*red_z;
+    fprintf(stdout, "%d %d %d\n", x_max, y_max, z_max);
 
     /*
      *  update halo kernels need specific work group sizes - not doing a
@@ -511,7 +512,6 @@ void CloverChunk::initArgs
     generate_chunk_device.setArg(6, density);
     generate_chunk_device.setArg(7, energy0);
     generate_chunk_device.setArg(8, u);
-
 
     // field summary
     field_summary_device.setArg(0, volume);

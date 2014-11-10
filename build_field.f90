@@ -145,6 +145,7 @@ SUBROUTINE build_field(chunk,x_cells,y_cells)
        chunks(chunk)%field%vector_Ky(j,k,l)=0.0
        chunks(chunk)%field%vector_Kz(j,k,l)=0.0
        chunks(chunk)%field%vector_sd(j,k,l)=0.0
+       chunks(chunk)%field%volume(j,k,l)=0.0
 
        chunks(chunk)%field%density(j,k,l)=0.0
        chunks(chunk)%field%energy0(j,k,l)=0.0
