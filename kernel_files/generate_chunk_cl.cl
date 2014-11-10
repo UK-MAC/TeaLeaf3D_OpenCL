@@ -6,18 +6,12 @@ __kernel void generate_chunk
  __global const double * __restrict const cellx,
  __global const double * __restrict const celly,
  __global const double * __restrict const cellz,
- __global double * __restrict const density0,
- __global double * __restrict const energy0,
- __global double * __restrict const xvel0,
- __global double * __restrict const yvel0,
- __global double * __restrict const zvel0,
- __global double * __restrict const u,
+ __global       double * __restrict const density0,
+ __global       double * __restrict const energy0,
+ __global       double * __restrict const u,
 
  __global const double * __restrict const state_density,
  __global const double * __restrict const state_energy,
- __global const double * __restrict const state_xvel,
- __global const double * __restrict const state_yvel,
- __global const double * __restrict const state_zvel,
  __global const double * __restrict const state_xmin,
  __global const double * __restrict const state_xmax,
  __global const double * __restrict const state_ymin,
@@ -25,7 +19,7 @@ __kernel void generate_chunk
  __global const double * __restrict const state_zmin,
  __global const double * __restrict const state_zmax,
  __global const double * __restrict const state_radius,
- __global const int * __restrict const state_geometry,
+ __global const int    * __restrict const state_geometry,
 
  const int g_rect,
  const int g_circ,
@@ -54,40 +48,6 @@ __kernel void generate_chunk
             {
                 energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
                 density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
-
-                //unrolled do loop
-                xvel0[THARR3D(0, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,0, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-
-                //for z
-                xvel0[THARR3D(0, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,1, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
             }
         }
         else if (state_geometry[state] == g_circ)
@@ -101,40 +61,6 @@ __kernel void generate_chunk
             {
                 energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
                 density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
-
-                //unrolled do loop
-                xvel0[THARR3D(0, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,0, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-
-                //for z
-                xvel0[THARR3D(0, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,1, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
             }
         }
         else if (state_geometry[state] == g_point)
@@ -143,40 +69,6 @@ __kernel void generate_chunk
             {
                 energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
                 density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
-
-                //unrolled do loop
-                xvel0[THARR3D(0, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,0, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,0, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,0, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,0, 1,1)] = state_yvel[state];
-
-                //for z
-                xvel0[THARR3D(0, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 0,1, 1,1)] = state_zvel[state];
-
-                xvel0[THARR3D(1, 0,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 0,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(0, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(0, 1,1, 1,1)] = state_yvel[state];
-
-                xvel0[THARR3D(1, 1,1, 1,1)] = state_xvel[state];
-                yvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
-                zvel0[THARR3D(1, 1,1, 1,1)] = state_yvel[state];
             }
         }
     }
@@ -192,14 +84,8 @@ __kernel void generate_chunk
 __kernel void generate_chunk_init
 (__global double * density0,
  __global double * energy0,
- __global double * xvel0,
- __global double * yvel0,
- __global double * zvel0,
  __global const double * state_density,
- __global const double * state_energy,
- __global const double * state_xvel,
- __global const double * state_yvel,
- __global const double * state_zvel)
+ __global const double * state_energy)
 {
     __kernel_indexes;
 
@@ -209,8 +95,5 @@ __kernel void generate_chunk_init
     {
         energy0[THARR3D(0, 0, 0,0,0)] = state_energy[0];
         density0[THARR3D(0, 0, 0,0,0)] = state_density[0];
-        xvel0[THARR3D(0, 0, 0,1,1)] = state_xvel[0];
-        yvel0[THARR3D(0, 0, 0,1,1)] = state_yvel[0];
-        zvel0[THARR3D(0, 0, 0,1,1)] = state_zvel[0];
     }
 }

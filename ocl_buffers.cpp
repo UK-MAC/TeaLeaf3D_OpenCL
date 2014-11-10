@@ -37,34 +37,14 @@ void CloverChunk::initBuffers
     #define BUF3D_ALLOC(name, x_e, y_e,z_e) \
         BUF_ALLOC(name, (x_max+4+x_e) * (y_max+4+y_e) *(z_max+4+z_e) * sizeof(double))
 
-    BUF3D_ALLOC(density0, 0, 0,0);
-    BUF3D_ALLOC(density1, 0, 0,0);
+    BUF3D_ALLOC(density, 0, 0,0);
     BUF3D_ALLOC(energy0, 0, 0,0);
     BUF3D_ALLOC(energy1, 0, 0,0);
 
-    BUF3D_ALLOC(pressure, 0, 0,0);
-    BUF3D_ALLOC(soundspeed, 0, 0,0);
-    BUF3D_ALLOC(viscosity, 0, 0,0);
-    BUF3D_ALLOC(volume, 0, 0,0);
-
-    BUF3D_ALLOC(xvel0, 1, 1,1);
-    BUF3D_ALLOC(xvel1, 1, 1,1);
-    BUF3D_ALLOC(yvel0, 1, 1,1);
-    BUF3D_ALLOC(yvel1, 1, 1,1);
-    BUF3D_ALLOC(zvel0, 1, 1,1);
-    BUF3D_ALLOC(zvel1, 1, 1,1);
-
-    BUF3D_ALLOC(xarea, 1, 0,0);
-    BUF3D_ALLOC(vol_flux_x, 1, 0,0);
-    BUF3D_ALLOC(mass_flux_x, 1, 0,0);
-
-    BUF3D_ALLOC(yarea, 0, 1,0);
-    BUF3D_ALLOC(vol_flux_y, 0, 1,0);
-    BUF3D_ALLOC(mass_flux_y, 0, 1,0);
-
-    BUF3D_ALLOC(zarea, 0, 0,1);
-    BUF3D_ALLOC(vol_flux_z, 0, 0,1);
-    BUF3D_ALLOC(mass_flux_z, 0, 0,1);
+    BUF3D_ALLOC(volume, 0, 0, 0);
+    BUF3D_ALLOC(xarea, 1, 0, 0);
+    BUF3D_ALLOC(yarea, 0, 1, 0);
+    BUF3D_ALLOC(zarea, 0, 0, 1);
 
     BUF1DX_ALLOC(cellx, 0);
     BUF1DX_ALLOC(celldx, 0);

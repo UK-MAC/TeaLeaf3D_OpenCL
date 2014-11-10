@@ -179,4 +179,3 @@ void CloverChunk::initReduction
     fprintf(DBGOUT, "---- Reduction ----\n\n");
 }
 
-

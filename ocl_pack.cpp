@@ -166,33 +166,9 @@ void CloverChunk::packUnpackAllBuffers
             // set x/y/z inc for array
             switch (which_field)
             {
-            case FIELD_xvel0:
-            case FIELD_yvel0:
-            case FIELD_zvel0:
-            case FIELD_xvel1:
-            case FIELD_yvel1:
-            case FIELD_zvel1:
-                x_inc = y_inc = z_inc = 1;
-                break;
-            case FIELD_mass_flux_x:
-            case FIELD_vol_flux_x:
-                x_inc = 1;
-                break;
-            case FIELD_mass_flux_y:
-            case FIELD_vol_flux_y:
-                y_inc = 1;
-                break;
-            case FIELD_mass_flux_z:
-            case FIELD_vol_flux_z:
-                z_inc = 1;
-                break;
-            case FIELD_density0:
-            case FIELD_density1:
+            case FIELD_density:
             case FIELD_energy0:
             case FIELD_energy1:
-            case FIELD_pressure:
-            case FIELD_viscosity:
-            case FIELD_soundspeed:
             case FIELD_u:
             case FIELD_p:
             case FIELD_sd:
@@ -211,25 +187,9 @@ void CloverChunk::packUnpackAllBuffers
 
             switch (which_field)
             {
-            CASE_BUF(density0); break;
-            CASE_BUF(density1); break;
+            CASE_BUF(density); break;
             CASE_BUF(energy0); break;
             CASE_BUF(energy1); break;
-            CASE_BUF(pressure); break;
-            CASE_BUF(viscosity); break;
-            CASE_BUF(soundspeed); break;
-            CASE_BUF(xvel0); break;
-            CASE_BUF(xvel1); break;
-            CASE_BUF(yvel0); break;
-            CASE_BUF(yvel1); break;
-            CASE_BUF(zvel0); break;
-            CASE_BUF(zvel1); break;
-            CASE_BUF(vol_flux_x); break;
-            CASE_BUF(vol_flux_y); break;
-            CASE_BUF(vol_flux_z); break;
-            CASE_BUF(mass_flux_x); break;
-            CASE_BUF(mass_flux_y); break;
-            CASE_BUF(mass_flux_z); break;
             CASE_BUF(u); break;
             CASE_BUF(work_array_1); break;
             CASE_BUF(work_array_8); break;

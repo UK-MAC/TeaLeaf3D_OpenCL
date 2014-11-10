@@ -1,14 +1,7 @@
 #include "ocl_common.hpp"
 
 // types of array data
-
 const static cell_info_t CELL(    0, 0, 0, 1, 1, 1, 0, 0,0, CELL_DATA);
-const static cell_info_t VERTEX_X(1, 1, 1,-1, 1, 1, 0, 0, 0, VERTEX_DATA);
-const static cell_info_t VERTEX_Y(1, 1, 1, 1,-1, 1, 0, 0, 0, VERTEX_DATA);
-const static cell_info_t VERTEX_Z(1, 1, 1, 1, 1,-1, 0, 0, 0, VERTEX_DATA);
-const static cell_info_t X_FACE(  1, 0, 0,-1, 1, 1, 1, 0, 0, X_FACE_DATA);
-const static cell_info_t Y_FACE(  0, 1, 0, 1,-1, 1, 0, 1, 0, Y_FACE_DATA);
-const static cell_info_t Z_FACE(  0, 0, 1, 1, 1,-1, 0, 0, 1, Z_FACE_DATA);
 
 extern "C" void update_halo_kernel_ocl_
 (const int* chunk_neighbours,
@@ -49,12 +42,12 @@ int depth)
             update_##dir##_local_size[depth-1]); \
     }
 
-    CHECK_LAUNCH(left, lr)
-    CHECK_LAUNCH(right, lr)
-    CHECK_LAUNCH(bottom, ud)
-    CHECK_LAUNCH(top, ud)
     CHECK_LAUNCH(back, fb)
     CHECK_LAUNCH(front, fb)
+    CHECK_LAUNCH(bottom, ud)
+    CHECK_LAUNCH(top, ud)
+    CHECK_LAUNCH(left, lr)
+    CHECK_LAUNCH(right, lr)
 }
 
 void CloverChunk::update_halo_kernel
@@ -68,32 +61,11 @@ const int* chunk_neighbours)
         update_array(arr, type, chunk_neighbours, depth);   \
     }
 
-    HALO_UPDATE_RESIDENT(density0, CELL);
-    HALO_UPDATE_RESIDENT(density1, CELL);
+    HALO_UPDATE_RESIDENT(density, CELL);
     HALO_UPDATE_RESIDENT(energy0, CELL);
     HALO_UPDATE_RESIDENT(energy1, CELL);
-    HALO_UPDATE_RESIDENT(pressure, CELL);
-    HALO_UPDATE_RESIDENT(viscosity, CELL);
 
-    HALO_UPDATE_RESIDENT(xvel0, VERTEX_X);
-    HALO_UPDATE_RESIDENT(xvel1, VERTEX_X);
-
-    HALO_UPDATE_RESIDENT(yvel0, VERTEX_Y);
-    HALO_UPDATE_RESIDENT(yvel1, VERTEX_Y);
-
-    HALO_UPDATE_RESIDENT(zvel0, VERTEX_Z);
-    HALO_UPDATE_RESIDENT(zvel1, VERTEX_Z);
-
-    HALO_UPDATE_RESIDENT(vol_flux_x, X_FACE);
-    HALO_UPDATE_RESIDENT(mass_flux_x, X_FACE);
-
-    HALO_UPDATE_RESIDENT(vol_flux_y, Y_FACE);
-    HALO_UPDATE_RESIDENT(mass_flux_y, Y_FACE);
-
-    HALO_UPDATE_RESIDENT(vol_flux_z, Z_FACE);
-    HALO_UPDATE_RESIDENT(mass_flux_z, Z_FACE);
-
-    HALO_UPDATE_RESIDENT(work_array_1, CELL);
     HALO_UPDATE_RESIDENT(u, CELL);
+    HALO_UPDATE_RESIDENT(work_array_1, CELL);
     HALO_UPDATE_RESIDENT(work_array_8, CELL);
 }

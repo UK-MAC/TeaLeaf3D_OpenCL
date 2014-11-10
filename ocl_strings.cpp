@@ -175,4 +175,3 @@ int preferredDevice
     return preferred_device;
 }
 
-
