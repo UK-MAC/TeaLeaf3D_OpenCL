@@ -1,15 +1,15 @@
 *tea
  state 1 density=0.2 energy=1.0
  state 2 density=1.0 energy=2.5 geometry=cuboid xmin=0.0 xmax=5.0 ymin=0.0 ymax=2.0 zmin=0.0 zmax=2.0
- x_cells=0
+ x_cells=30
  y_cells=30
  z_cells=30
  xmin=0.0
  ymin=0.0
  zmin=0.0
  xmax=10.0
- ymax=2.0
- zmax=2.0
+ ymax=10.0
+ zmax=10.0
 
  end_time=100.0
  end_step=20
@@ -32,10 +32,6 @@
  tl_ch_cg_epslim=0.00001
  tl_ch_cg_presteps=20
 
- hydro_off
- tea_leaf_on
-
- !profiler_on
- !profile_solver
+ profiler_on
 
 *tea
