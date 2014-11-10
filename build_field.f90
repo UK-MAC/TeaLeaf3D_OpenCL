@@ -20,7 +20,7 @@
 !>  @details The data fields for the mesh chunk are allocated based on the mesh
 !>  size.
 
-SUBROUTINE build_field(chunk,x_cells,y_cells)
+SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
 
    USE tea_module
 

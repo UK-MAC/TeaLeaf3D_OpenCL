@@ -68,6 +68,8 @@ void CloverChunk::initProgram
     compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_bottom", update_halo_bottom_device);
     compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_left", update_halo_left_device);
     compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_right", update_halo_right_device);
+    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_back", update_halo_back_device);
+    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_front", update_halo_front_device);
 
     compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_left_buffer", pack_left_buffer_device);
     compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_left_buffer", unpack_left_buffer_device);
@@ -290,7 +292,6 @@ void CloverChunk::initSizes
     const size_t red_z = z_max +
         (((z_max)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max)%LOCAL_Z)));
     reduced_cells = red_x*red_y*red_z;
-    fprintf(stdout, "%d %d %d\n", x_max, y_max, z_max);
 
     /*
      *  update halo kernels need specific work group sizes - not doing a
@@ -492,12 +493,9 @@ void CloverChunk::initArgs
     initialise_chunk_second_device.setArg(20, yarea);
     initialise_chunk_second_device.setArg(21, zarea);
 
-
-
     // set field
-    set_field_device.setArg(0, density);
-    set_field_device.setArg(1, energy0);
-    set_field_device.setArg(2, energy1);
+    set_field_device.setArg(0, energy0);
+    set_field_device.setArg(1, energy1);
 
     // generate chunk
     generate_chunk_init_device.setArg(0, density);

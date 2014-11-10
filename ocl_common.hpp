@@ -25,7 +25,7 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 #define FIELD_work_array_1 FIELD_p
 #define FIELD_work_array_8 FIELD_sd
 
-#define NUM_BUFFERED_FIELDS 3
+#define NUM_BUFFERED_FIELDS 5
 
 // which side to pack - keep the same as in fortran file
 #define CHUNK_LEFT 1
