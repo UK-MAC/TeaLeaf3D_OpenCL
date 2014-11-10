@@ -20,7 +20,7 @@
 !>  @details Invokes the user specified kernel for the heat conduction
 
 MODULE tea_leaf_module
- 
+
   USE report_module
   USE data_module
   USE tea_leaf_kernel_module
@@ -30,52 +30,6 @@ MODULE tea_leaf_module
   USE update_halo_module
 
   IMPLICIT NONE
-
-  interface
-    subroutine tea_leaf_kernel_cheby_copy_u_ocl()
-    end subroutine
-
-    subroutine tea_leaf_calc_residual_ocl()
-    end subroutine
-
-    subroutine tea_leaf_calc_2norm_kernel_ocl(initial, norm)
-      integer :: initial
-      real(kind=8) :: norm
-    end subroutine
-
-    subroutine tea_leaf_kernel_cheby_init_ocl(ch_alphas, ch_betas, n_coefs, &
-        rx, ry, rz, theta, error)
-      real(kind=8) :: rx, ry, rz, theta, error
-      integer :: n_coefs
-      real(kind=8), dimension(n_coefs) :: ch_alphas, ch_betas
-    end subroutine
-
-    subroutine tea_leaf_kernel_ppcg_init_ocl(ch_alphas, ch_betas, &
-        theta, n_coefs)
-      integer :: n_coefs
-      real(kind=8) :: theta
-      real(kind=8), dimension(n_coefs) :: ch_alphas, ch_betas
-    end subroutine
-
-    subroutine tea_leaf_kernel_ppcg_init_p_ocl(rro)
-      real(kind=8) :: rro
-    end subroutine
-
-    subroutine tea_leaf_kernel_ppcg_init_sd_ocl()
-    end subroutine
-
-    subroutine tea_leaf_kernel_ppcg_inner_ocl(n)
-      integer :: n
-    end subroutine
-
-    subroutine tea_leaf_kernel_cheby_iterate_ocl(ch_alphas, ch_betas, n_coefs, &
-        rx, ry, rz, cheby_calc_step)
-      real(kind=8) :: rx, ry, rz
-      integer :: cheby_calc_step
-      integer :: n_coefs
-      real(kind=8), dimension(n_coefs) :: ch_alphas, ch_betas
-    end subroutine
-  end interface
 
 CONTAINS
 
@@ -89,7 +43,7 @@ SUBROUTINE tea_leaf()
 
   INTEGER :: fields(NUM_FIELDS)
 
-  REAL(KIND=8) :: kernel_time,timer
+  REAL(KIND=8) :: timer,halo_time,solve_time,init_time,reset_time
 
   ! For CG solver
   REAL(KIND=8) :: rro, pw, rrn, alpha, beta
@@ -103,39 +57,49 @@ SUBROUTINE tea_leaf()
 
   INTEGER :: cg_calc_steps
 
-  REAL(KIND=8) :: cg_time, ch_time, solve_timer, total_solve_time, ch_per_it, cg_per_it
+  REAL(KIND=8) :: cg_time, ch_time, total_solve_time, ch_per_it, cg_per_it, iteration_time
 
   cg_time = 0.0_8
   ch_time = 0.0_8
   cg_calc_steps = 0
-  total_solve_time = 0.0_8
 
-  IF(coefficient .nE. RECIP_CONDUCTIVITY .and. coefficient .ne. conductivity) THEN
+  total_solve_time = 0.0_8
+  init_time = 0.0_8
+  halo_time = 0.0_8
+  solve_time = 0.0_8
+
+  IF(coefficient .NE. RECIP_CONDUCTIVITY .AND. coefficient .NE. conductivity) THEN
     CALL report_error('tea_leaf', 'unknown coefficient option')
-  endif
+  ENDIF
 
   error = 1e10
   cheby_calc_steps = 0
+  cg_calc_steps = 0
+
+  total_solve_time = timer()
 
   DO c=1,chunks_per_task
 
     IF(chunks(c)%task.EQ.parallel%task) THEN
 
+      ! INIT
+
+      IF (profiler_on) halo_time=timer()
       fields=0
       fields(FIELD_ENERGY1) = 1
-      fields(FIELD_DENSITY1) = 1
-      CALL update_halo(fields,1)
+      fields(FIELD_DENSITY) = 1
+      CALL update_halo(fields,2)
+      IF (profiler_on) profiler%halo_exchange = profiler%halo_exchange + (timer() - halo_time)
 
-      ! INIT
-      IF(profiler_on) kernel_time=timer()
+      IF (profiler_on) init_time=timer()
 
-      if (use_fortran_kernels) then
+      IF (use_fortran_kernels) THEN
         rx = dt/(chunks(c)%field%celldx(chunks(c)%field%x_min)**2)
         ry = dt/(chunks(c)%field%celldy(chunks(c)%field%y_min)**2)
         rz = dt/(chunks(c)%field%celldz(chunks(c)%field%z_min)**2)
-      endif
+      ENDIF
 
-      IF(tl_use_cg .or. tl_use_chebyshev .or. tl_use_ppcg) then
+      IF(tl_use_cg .OR. tl_use_chebyshev .OR. tl_use_ppcg) THEN
         ! All 3 of these solvers use the CG kernels
         IF(use_fortran_kernels) THEN
           CALL tea_leaf_kernel_init_cg_fortran(chunks(c)%field%x_min, &
@@ -162,16 +126,16 @@ SUBROUTINE tea_leaf()
 
         ! need to update p when using CG due to matrix/vector multiplication
         fields=0
-        fields(FIELD_P) = 1
         fields(FIELD_U) = 1
+        fields(FIELD_P) = 1
+        IF (profiler_on) halo_time=timer()
         CALL update_halo(fields,1)
+        IF (profiler_on) profiler%halo_exchange = profiler%halo_exchange + (timer() - halo_time)
+        init_time=init_time+(timer()-halo_time)
 
         ! and globally sum rro
-        call clover_allsum(rro)
-      ELSE
-        fields=0
-        fields(FIELD_U) = 1
-
+        CALL tea_allsum(rro)
+      ELSEIF(tl_use_jacobi) THEN
         IF (use_fortran_kernels) THEN
           CALL tea_leaf_kernel_init(chunks(c)%field%x_min, &
               chunks(c)%field%x_max,                       &
@@ -179,10 +143,10 @@ SUBROUTINE tea_leaf()
               chunks(c)%field%y_max,                       &
               chunks(c)%field%z_min,                       &
               chunks(c)%field%z_max,                       &
-              chunks(c)%field%density1,                    &
+              chunks(c)%field%density,                    &
               chunks(c)%field%energy1,                     &
-              chunks(c)%field%u,                           &
               chunks(c)%field%u0,                 &
+              chunks(c)%field%u,                           &
               chunks(c)%field%work_array1,                 &
               chunks(c)%field%work_array6,                 &
               chunks(c)%field%work_array7,                 &

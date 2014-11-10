@@ -1,25 +1,25 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief String manipulation utilities
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Provides utilities to manipulate and parse Fortran strings.
 
-MODULE clover_case_change
+MODULE tea_case_change
 
 USE data_module
 
@@ -28,7 +28,7 @@ CONTAINS
 FUNCTION tolower(string) RESULT (tolower_result)
 
   IMPLICIT NONE
-  CHARACTER (LEN=*), INTENT(IN) :: string
+  CHARACTER (LEN=*), INTENt(IN) :: string
   CHARACTER (LEN=LEN(string)) :: tolower_result
   INTEGER         :: i,ii
 
@@ -63,9 +63,9 @@ FUNCTION toupper(string) RESULT (toupper_result)
 
 END FUNCTION toupper
 
-END MODULE clover_case_change
+END MODULE tea_case_change
 
-MODULE clover_isitanint_mod
+MODULE tea_isitanint_mod
 
 CONTAINS
 
@@ -94,7 +94,7 @@ FUNCTION isitanint(instring) RESULT(isitanint_result)
 
 END FUNCTION isitanint
 
-END MODULE clover_isitanint_mod
+END MODULE tea_isitanint_mod
 
 MODULE parse_module
 
@@ -151,7 +151,7 @@ FUNCTION parse_getline(dummy)
   CHARACTER(LEN=len_max) :: l,nugget,string_temp1,string_temp2
 
   DO 
-    READ(UNIT=iu,IOSTAT=ios,FMT='(a150)') l ! Read in next line.
+    READ(UNIT=iu,IOSTAT=ios,FMT='(a100)') l ! Read in next line.
 
     parse_getline=ios
 
@@ -278,7 +278,7 @@ FUNCTION parse_getline(dummy)
 
   FUNCTION parse_getival(word)
 
-    USE clover_module
+    USE tea_module
 
     CHARACTER(LEN=*)  :: word
     INTEGER         :: temp,parse_getival
@@ -289,7 +289,7 @@ FUNCTION parse_getline(dummy)
 
     IF(ios.NE.0)THEN
        CALL report_error('parse_getival','Error attempting to convert to integer:'//word)
-       CALL clover_abort
+       CALL tea_abort
     ENDIF
 
     parse_getival=temp
@@ -298,7 +298,7 @@ FUNCTION parse_getline(dummy)
 
   FUNCTION parse_getlval(word)
 
-    USE clover_module
+    USE tea_module
 
     CHARACTER(LEN=*)  :: word
     LOGICAL :: temp,parse_getlval
@@ -322,7 +322,7 @@ FUNCTION parse_getline(dummy)
 
     IF(ios.NE.0)THEN
        CALL report_error('parse_getlval','Error attempting to convert to logical:'//word)
-       CALL clover_abort
+       CALL tea_abort
     ENDIF
 
     parse_getlval=temp
@@ -331,7 +331,7 @@ FUNCTION parse_getline(dummy)
 
   FUNCTION parse_getrval(word)
 
-    USE clover_module
+    USE tea_module
 
     CHARACTER(LEN=*) :: word
     REAL(KIND=8)   :: temp,parse_getrval
@@ -346,7 +346,7 @@ FUNCTION parse_getline(dummy)
 
     IF(ios.NE.0)THEN
        CALL report_error('parse_getrval','Error attempting to convert to real:'//word)
-       CALL clover_abort
+       CALL tea_abort
     ENDIF
 
     parse_getrval=temp

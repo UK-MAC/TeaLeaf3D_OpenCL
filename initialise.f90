@@ -1,22 +1,22 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Top level initialisation routine
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Checks for the user input and either invokes the input reader or
 !>  switches to the internal test problem. It processes the input and strips
 !>  comments before writing a final input file.
@@ -24,7 +24,7 @@
 
 SUBROUTINE initialise
 
-  USE clover_module
+  USE tea_module
   USE parse_module
   USE report_module
 
@@ -49,7 +49,7 @@ SUBROUTINE initialise
   IF(parallel%boss)THEN
 !$  IF(OMP_GET_THREAD_NUM().EQ.0) THEN
       WRITE(g_out,*)
-      WRITE(g_out,'(a15,f8.3)') 'Clover Version ',g_version
+      WRITE(g_out,'(a15,f8.3)') 'Tea Version ',g_version
       WRITE(g_out,'(a18)') 'MPI Version'
 !$    WRITE(g_out,'(a18)') 'OpenMP Version'
       WRITE(g_out,'(a14,i6)') 'Task Count ',parallel%max_task !MPI
@@ -60,10 +60,10 @@ SUBROUTINE initialise
   ENDIF
 !$OMP END PARALLEL
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   IF(parallel%boss)THEN
-    WRITE(g_out,*) 'Clover will run from the following input:-'
+    WRITE(g_out,*) 'Tea will run from the following input:-'
     WRITE(g_out,*)
   ENDIF
 
@@ -74,7 +74,7 @@ SUBROUTINE initialise
     IF(ios.NE.0) THEN
       out_unit=get_unit(dummy)
       OPEN(FILE='tea.in',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
-      WRITE(out_unit,'(A)')'*clover'
+      WRITE(out_unit,'(A)')'*tea'
       WRITE(out_unit,'(A)')' state 1 density=0.2 energy=1.0'
       WRITE(out_unit,'(A)')' state 2 density=1.0 energy=2.5 geometry=cuboid xmin=0.0 xmax=5.0 ymin=0.0 ymax=2.0 zmin=0.0 zmax=2.0'
       WRITE(out_unit,'(A)')' x_cells=10'
@@ -90,11 +90,14 @@ SUBROUTINE initialise
       WRITE(out_unit,'(A)')' max_timestep=0.04'
       WRITE(out_unit,'(A)')' end_step=75'
       WRITE(out_unit,'(A)')' test_problem 1'
-      WRITE(out_unit,'(A)')'*endclover'
+      WRITE(out_unit,'(A)')'tl_use_jacobi'
+      WRITE(out_unit,'(A)')'tl_eps=1.0e-15'
+      WRITE(out_unit,'(A)')'*endtea'
       CLOSE(out_unit)
       uin=get_unit(dummy)
       OPEN(FILE='tea.in',ACTION='READ',STATUS='OLD',UNIT=uin,IOSTAT=ios)
     ENDIF
+    IF(ios.NE.0) CALL report_error('initialise','Error opening tea.in')
 
     out_unit=get_unit(dummy)
     OPEN(FILE='tea.in.tmp',UNIT=out_unit,STATUS='REPLACE',ACTION='WRITE',IOSTAT=ios)
@@ -108,21 +111,21 @@ SUBROUTINE initialise
     CLOSE(out_unit)
   ENDIF
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   g_in=get_unit(dummy)
   OPEN(FILE='tea.in.tmp',ACTION='READ',STATUS='OLD',UNIT=g_in,IOSTAT=ios)
 
   IF(ios.NE.0) CALL report_error('initialise','Error opening tea.in.tmp file')
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   IF(parallel%boss)THEN
      REWIND(uin)
      DO 
-        READ(UNIT=uin,IOSTAT=ios,FMT='(a150)') ltmp ! Read in next line.
+        READ(UNIT=uin,IOSTAT=ios,FMT='(a100)') ltmp ! Read in next line.
         IF(ios.NE.0)EXIT
-        WRITE(g_out,FMT='(a150)') ltmp
+        WRITE(g_out,FMT='(a100)') ltmp
      ENDDO
   ENDIF
 
@@ -134,13 +137,13 @@ SUBROUTINE initialise
 
   CALL read_input()
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   step=0
 
   CALL start
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   IF(parallel%boss)THEN
      WRITE(g_out,*) 'Starting the calculation'

@@ -1,23 +1,23 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
-! the terms of the GNU General Public License as published by the 
-! Free Software Foundation, either version 3 of the License, or (at your option) 
+! TeaLeaf is free software: you can redistribute it and/or modify it under
+! the terms of the GNU General Public License as published by the
+! Free Software Foundation, either version 3 of the License, or (at your option)
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
-! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+! TeaLeaf is distributed in the hope that it will be useful, but
+! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 ! details.
 !
-! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! You should have received a copy of the GNU General Public License along with
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Holds parameters definitions
-!>  @author Wayne Gaudin
-!>  @details Parameters used in the CloverLeaf are defined here.
+!>  @author David Beckingsale, Wayne Gaudin
+!>  @details Parameters used in the TeaLeaf are defined here.
 
 MODULE data_module
 
@@ -44,29 +44,13 @@ MODULE data_module
                              ,CHUNK_FRONT  =6    &
                              ,EXTERNAL_FACE=-1
 
-   INTEGER,         PARAMETER :: FIELD_DENSITY0   = 1         &
-                                ,FIELD_DENSITY1   = 2         &
-                                ,FIELD_ENERGY0    = 3         &
-                                ,FIELD_ENERGY1    = 4         &
-                                ,FIELD_PRESSURE   = 5         &
-                                ,FIELD_VISCOSITY  = 6         &
-                                ,FIELD_SOUNDSPEED = 7         &
-                                ,FIELD_XVEL0      = 8         &
-                                ,FIELD_XVEL1      = 9         &
-                                ,FIELD_YVEL0      =10         &
-                                ,FIELD_YVEL1      =11         &
-                                ,FIELD_ZVEL0      =12         &
-                                ,FIELD_ZVEL1      =13         &
-                                ,FIELD_VOL_FLUX_X =14         &
-                                ,FIELD_VOL_FLUX_Y =15         &
-                                ,FIELD_VOL_FLUX_Z =16         &
-                                ,FIELD_MASS_FLUX_X=17         &
-                                ,FIELD_MASS_FLUX_Y=18         &
-                                ,FIELD_MASS_FLUX_Z=19         &
-                                ,FIELD_U          =20         &
-                                ,FIELD_P          =21         &
-                                ,FIELD_SD         =22         &
-                                ,NUM_FIELDS       =22
+   INTEGER,         PARAMETER :: FIELD_DENSITY    = 1         &
+                                ,FIELD_ENERGY0    = 2         &
+                                ,FIELD_ENERGY1    = 3         &
+                                ,FIELD_U          = 4         &
+                                ,FIELD_P          = 5         &
+                                ,FIELD_SD         = 6         &
+                                ,NUM_FIELDS       = 6
 
    INTEGER,         PARAMETER :: CELL_DATA     = 1,        &
                                  VERTEX_DATA   = 2,        &
@@ -76,22 +60,14 @@ MODULE data_module
 
 
    ! Time step control constants
-   INTEGER,        PARAMETER ::  SOUND = 1     &
-                                ,X_VEL = 2     &
-                                ,Y_VEL = 3     &
-                                ,Z_VEL = 4     &
-                                ,DIVERG= 5
+   INTEGER,        PARAMETER ::  FIXED = 1
 
    INTEGER,                      PARAMETER :: g_rect=1 &
-                                ,g_circ=2 &
-                                ,g_point=3
-
+                                             ,g_circ=2 &
+                                             ,g_point=3
 
    INTEGER         ::            g_in           & ! File for input data.
                                 ,g_out
-   
-   INTEGER :: lr_pack_buffer_size, bt_pack_buffer_size, fb_pack_buffer_size
-
 
    INTEGER         ::            CONDUCTIVITY        = 1 &
                                 ,RECIP_CONDUCTIVITY  = 2
@@ -104,11 +80,12 @@ MODULE data_module
                                ,boss_task
 
    END TYPE parallel_type
-   
-   TYPE(parallel_type) :: parallel
-     
-   INTEGER,        PARAMETER ::g_len_max=500
 
-   INTEGER,        PARAMETER :: chunks_per_task = 1
+   TYPE(parallel_type) :: parallel
+
+   INTEGER,        PARAMETER ::g_len_max=500
+   INTEGER,        PARAMETER ::chunks_per_task=1
+
+   INTEGER                   ::lr_pack_buffer_size,bt_pack_buffer_size,fb_pack_buffer_size
 
 END MODULE data_module

@@ -2,9 +2,9 @@
 !
 ! This file is part of TeaLeaf.
 !
-! TeaLeaf is free software: you can redistribute it and/or modify it u_oldder 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
-! Free Software Fou_olddation, either version 3 of the License, or (at your option) 
+! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
 ! TeaLeaf is distributed in the hope that it will be useful, but 
@@ -31,9 +31,11 @@ SUBROUTINE tea_leaf_kernel_init(x_min,             &
                            z_max,             &
                            density,           &
                            energy,            &
-                           u,                &
                            u0,                &
-                           u_old,                &
+                           u1,                &
+                           un,                &
+                           Kx_tmp,            &
+                           Ky_tmp,            &
                            Kx,                &
                            Ky,                &
                            Kz,                &

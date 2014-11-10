@@ -1,29 +1,29 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Reads the user input
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Reads and parses the user input from the processed file and sets
 !>  the variables used in the generation phase. Default values are also set
 !>  here.
 
 SUBROUTINE read_input()
 
-  USE clover_module
+  USE tea_module
   USE parse_module
   USE report_module
 
@@ -57,56 +57,39 @@ SUBROUTINE read_input()
   visit_frequency=0
   summary_frequency=10
 
-  dtinit=0.1_8
-  dtmax=1.0_8
-  dtmin=0.0000001_8
-  dtrise=1.5_8
-  dtc_safe=0.7_8
-  dtu_safe=0.5_8
-  dtv_safe=0.5_8
-  dtw_safe=0.5_8
-  dtdiv_safe=0.7_8
+  dtinit=0.1
 
-  use_fortran_kernels=.TRUE.
-  use_opencl_kernels=.FALSE.
-  use_vector_loops=.FALSE.
-  use_Hydro = .FALSE.
-  use_Tealeaf=.TRUE.
+  max_iters=1000
+  eps=1.0e-10
+
+  use_fortran_kernels=.FALSE.
+  use_opencl_kernels=.TRUE.
   coefficient = CONDUCTIVITY
   profiler_on=.FALSE.
-  profile_solver=.false.
   profiler%timestep=0.0
-  profiler%acceleration=0.0
-  profiler%PdV=0.0
-  profiler%cell_advection=0.0
-  profiler%mom_advection=0.0
-  profiler%viscosity=0.0
-  profiler%ideal_gas=0.0
   profiler%visit=0.0
   profiler%summary=0.0
-  profiler%reset=0.0
-  profiler%revert=0.0
-  profiler%flux=0.0
   profiler%halo_exchange=0.0
+  profiler%tea_init=0.0
+  profiler%tea_solve=0.0
+  profiler%tea_reset=0.0
 
-  eps = 1e-10
-  max_iters = 1000
-
-  tl_ch_cg_errswitch = .false.
+  tl_ch_cg_errswitch = .FALSE.
   tl_ch_cg_presteps = 30
   tl_ch_cg_epslim = 1e-5
-  tl_check_result = .false.
+  tl_check_result = .FALSE.
   tl_ppcg_inner_steps = 10
+  tl_preconditioner_on = .FALSE.
 
-  tl_use_chebyshev = .false.
-  tl_use_cg = .false.
-  tl_use_ppcg = .false.
-  tl_use_jacobi = .true.
+  tl_use_chebyshev = .FALSE.
+  tl_use_cg = .FALSE.
+  tl_use_ppcg = .FALSE.
+  tl_use_jacobi = .TRUE.
 
   IF(parallel%boss)WRITE(g_out,*) 'Reading input file'
   IF(parallel%boss)WRITE(g_out,*)
 
-  stat=parse_init(g_in,'*clover')
+  stat=parse_init(g_in,'*tea')
 
   DO
     stat=parse_getline(dummy)
@@ -125,7 +108,7 @@ SUBROUTINE read_input()
 
   IF(number_of_states.LT.1) CALL report_error('read_input','No states defined.')
 
-  stat=parse_init(g_in,'*clover')
+  stat=parse_init(g_in,'*tea')
 
   ALLOCATE(states(number_of_states))
   states(:)%defined=.FALSE.
@@ -148,12 +131,6 @@ SUBROUTINE read_input()
       CASE('initial_timestep')
         dtinit=parse_getrval(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'initial_timestep ',dtinit
-      CASE('max_timestep')
-        dtmax=parse_getrval(parse_getword(.TRUE.))
-        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'max_timestep',dtinit
-      CASE('timestep_rise')
-        dtrise=parse_getrval(parse_getword(.TRUE.))
-        IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'timestep_rise',dtrise
       CASE('end_time')
         end_time=parse_getrval(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'end_time',end_time
@@ -203,58 +180,44 @@ SUBROUTINE read_input()
         tl_ch_cg_epslim=parse_getrval(parse_getword(.TRUE.))
         IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'tl_ch_cg_epslim',tl_ch_cg_epslim
       CASE('tl_check_result')
-        tl_check_result = .true.
+        tl_check_result = .TRUE.
       CASE('tl_ch_cg_errswitch')
-        tl_ch_cg_errswitch = .true.
+        tl_ch_cg_errswitch = .TRUE.
+      CASE('tl_preconditioner_on')
+        tl_preconditioner_on = .TRUE.
       CASE('use_fortran_kernels')
         use_fortran_kernels=.TRUE.
+        use_opencl_kernels=.FALSE.
       CASE('use_opencl_kernels')
         use_fortran_kernels=.FALSE.
         use_opencl_kernels=.TRUE.
       CASE('tl_use_jacobi')
-        tl_use_chebyshev = .false.
-        tl_use_cg = .false.
-        tl_use_ppcg=.false.
-        tl_use_jacobi = .true.
+        tl_use_chebyshev = .FALSE.
+        tl_use_cg = .FALSE.
+        tl_use_ppcg=.FALSE.
+        tl_use_jacobi = .TRUE.
       CASE('tl_use_cg')
-        tl_use_chebyshev = .false.
-        tl_use_cg = .true.
-        tl_use_ppcg=.false.
-        tl_use_jacobi = .false.
+        tl_use_chebyshev = .FALSE.
+        tl_use_cg = .TRUE.
+        tl_use_ppcg=.FALSE.
+        tl_use_jacobi = .FALSE.
       CASE('tl_use_ppcg')
-        tl_use_chebyshev = .false.
-        tl_use_cg = .false.
-        tl_use_ppcg=.true.
-        tl_use_jacobi = .false.
+        tl_use_chebyshev = .FALSE.
+        tl_use_cg = .FALSE.
+        tl_use_ppcg=.TRUE.
+        tl_use_jacobi = .FALSE.
       CASE('tl_use_chebyshev')
-        tl_use_chebyshev = .true.
-        tl_use_cg = .false.
-        tl_use_ppcg=.false.
-        tl_use_jacobi = .false.
-      CASE('use_vector_loops')
-        use_vector_loops=.TRUE.
-      CASE('profile_solver')
-        profile_solver=.TRUE.
-        IF(parallel%boss)WRITE(g_out,"(1x,a25)")'Timing iteration time of linear solver'
+        tl_use_chebyshev = .TRUE.
+        tl_use_cg = .FALSE.
+        tl_use_ppcg=.FALSE.
+        tl_use_jacobi = .FALSE.
       CASE('profiler_on')
         profiler_on=.TRUE.
         IF(parallel%boss)WRITE(g_out,"(1x,a25)")'Profiler on'
-      CASE('tea_leaf_off')
-        use_Tealeaf=.FALSE.
-        IF(parallel%boss)WRITE(g_out,"(1x,a17)")'Conduction is off'
-      CASE('tea_leaf_on')
-        use_Tealeaf=.TRUE.
-        IF(parallel%boss)WRITE(g_out,"(1x,a16)")'Conduction is on'
       CASE('tl_max_iters')
         max_iters = parse_getival(parse_getword(.TRUE.))
       CASE('tl_eps')
         eps = parse_getrval(parse_getword(.TRUE.))
-      CASE('hydro_off')
-        use_Hydro = .FALSE.
-        IF(parallel%boss)WRITE(g_out,"(1x,a12)")'Hydro is off'
-      CASE('hydro_on')
-        use_Hydro = .TRUE.
-        IF(parallel%boss)WRITE(g_out,"(1x,a11)")'Hydro is on'
       CASE('tl_coefficient_density')
         coefficient = CONDUCTIVITY
         IF(parallel%boss)WRITE(g_out,"(1x,a29)")'Diffusion coefficient density'
@@ -279,15 +242,6 @@ SUBROUTINE read_input()
 
           SELECT CASE(word)
 
-          CASE('xvel')
-            states(state)%xvel=parse_getrval(parse_getword(.TRUE.))
-            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'xvel ',states(state)%xvel
-          CASE('yvel')
-            states(state)%yvel=parse_getrval(parse_getword(.TRUE.))
-            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'yvel ',states(state)%yvel
-          CASE('zvel')
-            states(state)%zvel=parse_getrval(parse_getword(.TRUE.))
-            IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'zvel ',states(state)%zvel
           CASE('xmin')
             states(state)%xmin=parse_getrval(parse_getword(.TRUE.))
             IF(parallel%boss)WRITE(g_out,"(1x,a25,e12.4)")'state xmin ',states(state)%xmin
@@ -318,12 +272,12 @@ SUBROUTINE read_input()
           CASE('geometry')
             word=TRIM(parse_getword(.TRUE.))
             SELECT CASE(word)
-            CASE("cuboid")
+            CASE("rectangle")
               states(state)%geometry=g_rect
-              IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry cuboid'
-            CASE("sphere")
+              IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry rectangular'
+            CASE("circle")
               states(state)%geometry=g_circ
-              IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry sphere'
+              IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry circular'
             CASE("point")
               states(state)%geometry=g_point
               IF(parallel%boss)WRITE(g_out,"(1x,a25)")'state geometry point'
@@ -338,10 +292,10 @@ SUBROUTINE read_input()
   IF(parallel%boss) THEN
     WRITE(g_out,*)
     IF(use_fortran_kernels) THEN
-      WRITE(g_out,"(1x,a25)")'Using Fortran Kernels'
-    ELSEIF(use_opencl_kernels) THEN
-      WRITE(g_out,"(1x,a25)")'Using OpenCL Kernels'
+      WRITE(g_out,"(1x,a)")'Using Fortran Kernels'
     ENDIF
+    ELSEIF(use_opencl_kernels) THEN
+      WRITE(g_out,"(1x,a)")'Using OpenCL Kernels'
     WRITE(g_out,*)
     WRITE(g_out,*) 'Input read finished.'
     WRITE(g_out,*)

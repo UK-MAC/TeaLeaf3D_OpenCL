@@ -25,9 +25,8 @@ CONTAINS
 
 SUBROUTINE set_field()
 
-  USE clover_module
+  USE tea_module
   USE set_field_kernel_module
-  use report_module
 
   IMPLICIT NONE
 

@@ -1,34 +1,31 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Main set up routine
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Invokes the mesh decomposer and sets up chunk connectivity. It then
 !>  allocates the communication buffers and call the chunk initialisation and
-!>  generation routines. It calls the equation of state to calculate initial
-!>  pressure before priming the halo cells and writing an initial field summary.
+!>  generation routines and primes the halo cells and writes an initial field summary.
 
 SUBROUTINE start
 
-  USE clover_module
+  USE tea_module
   USE parse_module
   USE update_halo_module
-  USE ideal_gas_module
-  USE build_field_module
 
   IMPLICIT NONE
 
@@ -37,23 +34,22 @@ SUBROUTINE start
   INTEGER :: x_cells,y_cells,z_cells
   INTEGER, ALLOCATABLE :: right(:),left(:),top(:),bottom(:),back(:),front(:)
 
-  INTEGER :: fields(NUM_FIELDS) !, chunk_task_responsible_for 
+  INTEGER :: fields(NUM_FIELDS)
 
   LOGICAL :: profiler_off
 
   IF(parallel%boss)THEN
-     WRITE(g_out,*) 'Setting up initial geometry'
-     WRITE(g_out,*)
+    WrITE(g_out,*) 'Setting up initial geometry'
+    WRITE(g_out,*)
   ENDIF
 
   time  = 0.0
   step  = 0
-  dtold = dtinit
   dt    = dtinit
 
-  CALL clover_barrier
+  CALL tea_barrier
 
-  CALL clover_get_num_chunks(number_of_chunks)
+  CALL tea_get_num_chunks(number_of_chunks)
 
   ALLOCATE(chunks(1:number_of_chunks))
 
@@ -64,7 +60,7 @@ SUBROUTINE start
   ALLOCATE(back(1:number_of_chunks))
   ALLOCATE(front(1:number_of_chunks))
 
-  CALL clover_decompose(grid%x_cells,grid%y_cells,grid%z_cells,left,right,bottom,top,back,front)
+  CALL tea_decompose(grid%x_cells,grid%y_cells,left,right,bottom,top)
 
   DO c=1,chunks_per_task
       
@@ -103,11 +99,11 @@ SUBROUTINE start
 
   DEALLOCATE(left,right,bottom,top,back,front)
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   DO c=1,chunks_per_task
     IF(chunks(c)%task.EQ.parallel%task)THEN
-      CALL clover_allocate_buffers(c)
+      CALL tea_allocate_buffers(c)
     ENDIF
   ENDDO
 
@@ -127,33 +123,18 @@ SUBROUTINE start
     ENDIF
   ENDDO
 
-  advect_x=.TRUE.
-
-  CALL clover_barrier
+  CALL tea_barrier
 
   ! Do no profile the start up costs otherwise the total times will not add up
   ! at the end
   profiler_off=profiler_on
   profiler_on=.FALSE.
 
-  DO c = 1, chunks_per_task
-    CALL ideal_gas(c,.FALSE.)
-  END DO
-
   ! Prime all halo data for the first step
   fields=0
-  fields(FIELD_DENSITY0)=1
+  fields(FIELD_DENSITY)=1
   fields(FIELD_ENERGY0)=1
-  fields(FIELD_PRESSURE)=1
-  fields(FIELD_VISCOSITY)=1
-  fields(FIELD_DENSITY1)=1
   fields(FIELD_ENERGY1)=1
-  fields(FIELD_XVEL0)=1
-  fields(FIELD_YVEL0)=1
-  fields(FIELD_ZVEL0)=1
-  fields(FIELD_XVEL1)=1
-  fields(FIELD_YVEL1)=1
-  fields(FIELD_ZVEL1)=1
 
   CALL update_halo(fields,2)
 
@@ -166,7 +147,7 @@ SUBROUTINE start
 
   IF(visit_frequency.NE.0) CALL visit()
 
-  CALL clover_barrier
+  CALL tea_barrier
 
   profiler_on=profiler_off
 

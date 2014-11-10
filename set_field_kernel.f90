@@ -18,15 +18,13 @@
 !>  @brief Fortran set field kernel.
 !>  @author David Beckingsale, Wayne Gaudin
 !>  @details Copies all of the final start of step filed data to the end of
-!>  step data. Need for no hydro case
+!>  step data.
 
 MODULE set_field_kernel_module
 
 CONTAINS
 
 SUBROUTINE set_field_kernel(x_min,x_max,y_min,y_max,z_min, z_max, &
-                              density0,           &
-                              density1,           &
                               energy0,            &
                               energy1)
 
@@ -39,15 +37,6 @@ SUBROUTINE set_field_kernel(x_min,x_max,y_min,y_max,z_min, z_max, &
   INTEGER :: j,k,l
 
 !$OMP PARALLEL
-!$OMP DO
-  DO l=z_min,z_max
-    DO k=y_min,y_max
-       DO j=x_min,x_max
-         density1(j,k,l)=density0(j,k,l)
-       ENDDO
-    ENDDO
-  ENDDO
-!$OMP END DO
 
 !$OMP DO
   DO l=z_min,z_max

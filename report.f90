@@ -1,28 +1,28 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Controls error reporting 
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Outputs error messages and aborts the calculation.
 
 MODULE report_module
 
   USE data_module
-  USE clover_module
+  USE tea_module
  
 CONTAINS
 
@@ -44,14 +44,14 @@ SUBROUTINE report_error(location, error)
   WRITE(*    ,*)
   WRITE(g_out,*)
   WRITE(0    ,*)
-  WRITE(*    ,*) 'CLOVER is terminating.'
+  WRITE(*    ,*) 'TEA is terminating.'
   WRITE(*,    *)
-  WRITE(g_out,*) 'CLOVER is terminating.'
+  WRITE(g_out,*) 'TEA is terminating.'
   WRITE(g_out,*)
-  WRITE(0    ,*) 'CLOVER is terminating.'
+  WRITE(0    ,*) 'TEA is terminating.'
   WRITE(0    ,*)
 
-  CALL clover_abort
+  CALL tea_abort
 
 END SUBROUTINE report_error
 

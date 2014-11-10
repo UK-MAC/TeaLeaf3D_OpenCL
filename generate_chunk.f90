@@ -1,27 +1,27 @@
-!Crown Copyright 2012 AWE.
+!Crown Copyright 2014 AWE.
 !
-! This file is part of CloverLeaf.
+! This file is part of TeaLeaf.
 !
-! CloverLeaf is free software: you can redistribute it and/or modify it under 
+! TeaLeaf is free software: you can redistribute it and/or modify it under 
 ! the terms of the GNU General Public License as published by the 
 ! Free Software Foundation, either version 3 of the License, or (at your option) 
 ! any later version.
 !
-! CloverLeaf is distributed in the hope that it will be useful, but 
+! TeaLeaf is distributed in the hope that it will be useful, but 
 ! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
 ! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
 ! details.
 !
 ! You should have received a copy of the GNU General Public License along with 
-! CloverLeaf. If not, see http://www.gnu.org/licenses/.
+! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Mesh chunk generation driver
-!>  @author Wayne Gaudin
+!>  @author David Beckingsale, Wayne Gaudin
 !>  @details Invoked the users specified chunk generator.
 
 SUBROUTINE generate_chunk(chunk)
 
-  USE clover_module
+  USE tea_module
   USE generate_chunk_kernel_module
 
   IMPLICIT NONE
@@ -29,16 +29,13 @@ SUBROUTINE generate_chunk(chunk)
   INTEGER         :: chunk
 
   INTEGER         :: state
-  REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy,state_xvel,state_yvel,state_zvel
+  REAL(KIND=8), DIMENSION(number_of_states) :: state_density,state_energy
   REAL(KIND=8), DIMENSION(number_of_states) :: state_xmin,state_xmax,state_ymin,state_ymax,state_zmin,state_zmax,state_radius
   INTEGER,      DIMENSION(number_of_states) :: state_geometry
 
   DO state=1,number_of_states 
    state_density(state)=states(state)%density
    state_energy(state)=states(state)%energy
-   state_xvel(state)=states(state)%xvel
-   state_yvel(state)=states(state)%yvel
-   state_zvel(state)=states(state)%zvel
    state_xmin(state)=states(state)%xmin
    state_xmax(state)=states(state)%xmax
    state_ymin(state)=states(state)%ymin
@@ -62,17 +59,12 @@ SUBROUTINE generate_chunk(chunk)
                                chunks(chunk)%field%cellx,             &
                                chunks(chunk)%field%celly,             &
                                chunks(chunk)%field%cellz,             &
-                               chunks(chunk)%field%density0,          &
+                               chunks(chunk)%field%density,          &
                                chunks(chunk)%field%energy0,           &
-                               chunks(chunk)%field%xvel0,             &
-                               chunks(chunk)%field%yvel0,             &
-                               chunks(chunk)%field%zvel0,             &
+                               chunks(chunk)%field%u,                 &
                                number_of_states,                      &
                                state_density,                         &
                                state_energy,                          &
-                               state_xvel,                            &
-                               state_yvel,                            &
-                               state_zvel,                            &
                                state_xmin,                            &
                                state_xmax,                            &
                                state_ymin,                            &
@@ -88,9 +80,6 @@ SUBROUTINE generate_chunk(chunk)
         CALL generate_chunk_kernel_ocl(number_of_states, &
                                            state_density, &
                                            state_energy, &
-                                           state_xvel, &
-                                           state_yvel, &
-                                           state_zvel, &
                                            state_xmin, &
                                            state_xmax, &
                                            state_ymin, &
