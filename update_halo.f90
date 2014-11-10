@@ -50,8 +50,8 @@ SUBROUTINE update_halo(fields,depth)
                                 chunks(c)%field%energy0,        &
                                 chunks(c)%field%energy1,        &
                                 chunks(c)%field%u,    &
-                                chunks(c)%field%work_array1,    &
-                                chunks(c)%field%work_array9,    &
+                                chunks(c)%field%vector_p,    &
+                                chunks(c)%field%vector_sd,    &
                                 fields,                         &
                                 depth                           )
       ELSEIF(use_opencl_kernels)THEN

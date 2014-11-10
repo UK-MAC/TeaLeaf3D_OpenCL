@@ -34,7 +34,7 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
 
   INTEGER      :: x_min,x_max,y_min,y_max,z_min,z_max
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: volume,u
-  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density0,energy0
+  REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density,energy0
   REAL(KIND=8) :: vol,mass,ie,temp
 
   INTEGER      :: j,k,l
@@ -51,7 +51,7 @@ SUBROUTINE field_summary_kernel(x_min,x_max,y_min,y_max,z_min,z_max,&
     DO k=y_min,y_max
       DO j=x_min,x_max
         cell_vol=volume(j,k,l)
-        cell_mass=cell_vol*density0(j,k,l)
+        cell_mass=cell_vol*density(j,k,l)
         vol=vol+cell_vol
         mass=mass+cell_mass
         ie=ie+cell_mass*energy0(j,k,l)

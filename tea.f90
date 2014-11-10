@@ -513,7 +513,7 @@ SUBROUTINE tea_pack_left(chunk, fields, depth, left_right_offset)
                                     chunks(chunk)%field%y_max,                    &
                                     chunks(chunk)%field%z_min,                    &
                                     chunks(chunk)%field%z_max,                    &
-                                    chunks(chunk)%field%density0,                 &
+                                    chunks(chunk)%field%density,                 &
                                     chunks(chunk)%left_snd_buffer,                &
                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                     depth, CELL_DATA,                             &
@@ -527,7 +527,7 @@ SUBROUTINE tea_pack_left(chunk, fields, depth, left_right_offset)
                                     chunks(chunk)%field%y_max,                    &
                                     chunks(chunk)%field%z_min,                    &
                                     chunks(chunk)%field%z_max,                    &
-                                    chunks(chunk)%field%density1,                 &
+                                    chunks(chunk)%field%density,                 &
                                     chunks(chunk)%left_snd_buffer,                &
                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                     depth, CELL_DATA,                             &
@@ -816,7 +816,7 @@ SUBROUTINE tea_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density0,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%left_rcv_buffer,                &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
@@ -830,7 +830,7 @@ SUBROUTINE tea_unpack_left(fields, chunk, depth,                         &
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density1,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%left_rcv_buffer,                &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA, &
                                       depth, CELL_DATA,                             &
@@ -1093,7 +1093,7 @@ SUBROUTINE tea_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density0,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%right_snd_buffer,               &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -1107,7 +1107,7 @@ SUBROUTINE tea_pack_right(chunk, fields, depth, left_right_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density1,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%right_snd_buffer,               &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -1396,7 +1396,7 @@ SUBROUTINE tea_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%z_min,                    &
                                        chunks(chunk)%field%z_max,                    &
-                                       chunks(chunk)%field%density0,                 &
+                                       chunks(chunk)%field%density,                 &
                                        chunks(chunk)%right_rcv_buffer,               &
                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
@@ -1410,7 +1410,7 @@ SUBROUTINE tea_unpack_right(fields, chunk, depth,                          &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%z_min,                    &
                                        chunks(chunk)%field%z_max,                    &
-                                       chunks(chunk)%field%density1,                 &
+                                       chunks(chunk)%field%density,                 &
                                        chunks(chunk)%right_rcv_buffer,               &
                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
@@ -1672,7 +1672,7 @@ SUBROUTINE tea_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%y_max,                    &
                                    chunks(chunk)%field%z_min,                    &
                                    chunks(chunk)%field%z_max,                    &
-                                   chunks(chunk)%field%density0,                 &
+                                   chunks(chunk)%field%density,                 &
                                    chunks(chunk)%top_snd_buffer,                 &
                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
@@ -1686,7 +1686,7 @@ SUBROUTINE tea_pack_top(chunk, fields, depth, bottom_top_offset)
                                    chunks(chunk)%field%y_max,                    &
                                    chunks(chunk)%field%z_min,                    &
                                    chunks(chunk)%field%z_max,                    &
-                                   chunks(chunk)%field%density1,                 &
+                                   chunks(chunk)%field%density,                 &
                                    chunks(chunk)%top_snd_buffer,                 &
                                    CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                    depth, CELL_DATA,                             &
@@ -1975,7 +1975,7 @@ SUBROUTINE tea_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density0,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%top_rcv_buffer,                 &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -1989,7 +1989,7 @@ SUBROUTINE tea_unpack_top(fields, chunk, depth,                        &
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density1,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%top_rcv_buffer,                 &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -2251,7 +2251,7 @@ SUBROUTINE tea_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density0,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%bottom_snd_buffer,              &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
@@ -2265,7 +2265,7 @@ SUBROUTINE tea_pack_bottom(chunk, fields, depth, bottom_top_offset)
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density1,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%bottom_snd_buffer,              &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
@@ -2553,7 +2553,7 @@ SUBROUTINE tea_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%z_min,                    &
                                         chunks(chunk)%field%z_max,                    &
-                                        chunks(chunk)%field%density0,                 &
+                                        chunks(chunk)%field%density,                 &
                                         chunks(chunk)%bottom_rcv_buffer,              &
                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
@@ -2567,7 +2567,7 @@ SUBROUTINE tea_unpack_bottom(fields, chunk, depth,                        &
                                         chunks(chunk)%field%y_max,                    &
                                         chunks(chunk)%field%z_min,                    &
                                         chunks(chunk)%field%z_max,                    &
-                                        chunks(chunk)%field%density1,                 &
+                                        chunks(chunk)%field%density,                 &
                                         chunks(chunk)%bottom_rcv_buffer,              &
                                         CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                         depth, CELL_DATA,                             &
@@ -2829,7 +2829,7 @@ SUBROUTINE tea_pack_back(chunk, fields, depth, back_front_offset)
                                     chunks(chunk)%field%y_max,                    &
                                     chunks(chunk)%field%z_min,                    &
                                     chunks(chunk)%field%z_max,                    &
-                                    chunks(chunk)%field%density0,                 &
+                                    chunks(chunk)%field%density,                 &
                                     chunks(chunk)%back_snd_buffer,                &
                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                     depth, CELL_DATA,                             &
@@ -2843,7 +2843,7 @@ SUBROUTINE tea_pack_back(chunk, fields, depth, back_front_offset)
                                     chunks(chunk)%field%y_max,                    &
                                     chunks(chunk)%field%z_min,                    &
                                     chunks(chunk)%field%z_max,                    &
-                                    chunks(chunk)%field%density1,                 &
+                                    chunks(chunk)%field%density,                 &
                                     chunks(chunk)%back_snd_buffer,                &
                                     CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                     depth, CELL_DATA,                             &
@@ -3131,7 +3131,7 @@ SUBROUTINE tea_unpack_back(fields, chunk, depth,                        &
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density0,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%back_rcv_buffer,                &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
@@ -3145,7 +3145,7 @@ SUBROUTINE tea_unpack_back(fields, chunk, depth,                        &
                                       chunks(chunk)%field%y_max,                    &
                                       chunks(chunk)%field%z_min,                    &
                                       chunks(chunk)%field%z_max,                    &
-                                      chunks(chunk)%field%density1,                 &
+                                      chunks(chunk)%field%density,                 &
                                       chunks(chunk)%back_rcv_buffer,                &
                                       CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                       depth, CELL_DATA,                             &
@@ -3407,7 +3407,7 @@ SUBROUTINE tea_pack_front(chunk, fields, depth, back_front_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density0,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%front_snd_buffer,               &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -3421,7 +3421,7 @@ SUBROUTINE tea_pack_front(chunk, fields, depth, back_front_offset)
                                      chunks(chunk)%field%y_max,                    &
                                      chunks(chunk)%field%z_min,                    &
                                      chunks(chunk)%field%z_max,                    &
-                                     chunks(chunk)%field%density1,                 &
+                                     chunks(chunk)%field%density,                 &
                                      chunks(chunk)%front_snd_buffer,               &
                                      CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                      depth, CELL_DATA,                             &
@@ -3709,7 +3709,7 @@ SUBROUTINE tea_unpack_front(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%z_min,                    &
                                        chunks(chunk)%field%z_max,                    &
-                                       chunks(chunk)%field%density0,                 &
+                                       chunks(chunk)%field%density,                 &
                                        chunks(chunk)%front_rcv_buffer,               &
                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &
@@ -3723,7 +3723,7 @@ SUBROUTINE tea_unpack_front(fields, chunk, depth,                        &
                                        chunks(chunk)%field%y_max,                    &
                                        chunks(chunk)%field%z_min,                    &
                                        chunks(chunk)%field%z_max,                    &
-                                       chunks(chunk)%field%density1,                 &
+                                       chunks(chunk)%field%density,                 &
                                        chunks(chunk)%front_rcv_buffer,               &
                                        CELL_DATA,VERTEX_DATA,X_FACE_DATA,Y_FACE_DATA,Z_FACE_DATA,&
                                        depth, CELL_DATA,                             &

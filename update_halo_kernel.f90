@@ -78,7 +78,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
           DO k=1,depth
-            density0(j,1-k,l)=density0(j,0+k,l)
+            density(j,1-k,l)=density(j,0+k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -89,7 +89,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
           DO k=1,depth
-            density0(j,y_max+k,l)=density0(j,y_max+1-k,l)
+            density(j,y_max+k,l)=density(j,y_max+1-k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -100,7 +100,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            density0(1-j,k,l)=density0(0+j,k,l)
+            density(1-j,k,l)=density(0+j,k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -111,7 +111,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            density0(x_max+j,k,l)=density0(x_max+1-j,k,l)
+            density(x_max+j,k,l)=density(x_max+1-j,k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -122,7 +122,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            density0(j,k,1-l)=density0(j,k,0+l)
+            density(j,k,1-l)=density(j,k,0+l)
           ENDDO
         ENDDO
       ENDDO
@@ -133,7 +133,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            density0(j,k,z_max+l)=density0(j,k,z_max+1-l)
+            density(j,k,z_max+l)=density(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO
@@ -147,7 +147,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
           DO k=1,depth
-            density1(j,1-k,l)=density1(j,0+k,l)
+            density(j,1-k,l)=density(j,0+k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -158,7 +158,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO j=x_min-depth,x_max+depth
           DO k=1,depth
-            density1(j,y_max+k,l)=density1(j,y_max+1-k,l)
+            density(j,y_max+k,l)=density(j,y_max+1-k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -169,7 +169,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            density1(1-j,k,l)=density1(0+j,k,l)
+            density(1-j,k,l)=density(0+j,k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -180,7 +180,7 @@ CONTAINS
       DO l=z_min-depth,z_max+depth
         DO k=y_min-depth,y_max+depth
           DO j=1,depth
-            density1(x_max+j,k,l)=density1(x_max+1-j,k,l)
+            density(x_max+j,k,l)=density(x_max+1-j,k,l)
           ENDDO
         ENDDO
       ENDDO
@@ -191,7 +191,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            density1(j,k,1-l)=density1(j,k,0+l)
+            density(j,k,1-l)=density(j,k,0+l)
           ENDDO
         ENDDO
       ENDDO
@@ -202,7 +202,7 @@ CONTAINS
       DO k=y_min-depth,y_max+depth
         DO j=x_min-depth,x_max+depth
           DO l=1,depth
-            density1(j,k,z_max+l)=density1(j,k,z_max+1-l)
+            density(j,k,z_max+l)=density(j,k,z_max+1-l)
           ENDDO
         ENDDO
       ENDDO

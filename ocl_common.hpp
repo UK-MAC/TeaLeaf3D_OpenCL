@@ -15,34 +15,17 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 
 
 // used in update_halo and for copying back to host for mpi transfers
-#define FIELD_density0      1
-#define FIELD_density1      2
-#define FIELD_energy0       3
-#define FIELD_energy1       4
-#define FIELD_pressure      5
-#define FIELD_viscosity     6
-#define FIELD_soundspeed    7
-#define FIELD_xvel0         8
-#define FIELD_xvel1         9
-#define FIELD_yvel0         10
-#define FIELD_yvel1         11
-#define FIELD_zvel0         12
-#define FIELD_zvel1         13
-#define FIELD_vol_flux_x    14
-#define FIELD_vol_flux_y    15
-#define FIELD_vol_flux_z    16
-#define FIELD_mass_flux_x   17
-#define FIELD_mass_flux_y   18
-#define FIELD_mass_flux_z   19
-#define FIELD_u 20
-#define FIELD_p 21
-#define FIELD_sd 22
-#define NUM_FIELDS          22
-
+#define FIELD_density       1
+#define FIELD_energy0       2
+#define FIELD_energy1       3
+#define FIELD_u             4
+#define FIELD_p             5
+#define FIELD_sd            6
+#define NUM_FIELDS          6
 #define FIELD_work_array_1 FIELD_p
 #define FIELD_work_array_8 FIELD_sd
 
-#define NUM_BUFFERED_FIELDS 15
+#define NUM_BUFFERED_FIELDS 3
 
 // which side to pack - keep the same as in fortran file
 #define CHUNK_LEFT 1
@@ -106,53 +89,14 @@ class CloverChunk
 {
 private:
     // kernels
-    cl::Kernel ideal_gas_device;
-    cl::Kernel accelerate_device;
-    cl::Kernel flux_calc_y_device;
-    cl::Kernel flux_calc_x_device;
-    cl::Kernel flux_calc_z_device;
-    cl::Kernel viscosity_device;
-    cl::Kernel revert_device;
-    cl::Kernel reset_field_device;
     cl::Kernel set_field_device;
     cl::Kernel field_summary_device;
-    cl::Kernel calc_dt_device;
 
     cl::Kernel generate_chunk_device;
     cl::Kernel generate_chunk_init_device;
 
     cl::Kernel initialise_chunk_first_device;
     cl::Kernel initialise_chunk_second_device;
-
-    cl::Kernel PdV_predict_device;
-    cl::Kernel PdV_not_predict_device;
-
-    cl::Kernel advec_mom_vol_device;
-    cl::Kernel advec_mom_node_flux_post_x_1_device;
-    cl::Kernel advec_mom_node_flux_post_x_2_device;
-    cl::Kernel advec_mom_node_pre_x_device;
-    cl::Kernel advec_mom_flux_x_device;
-    cl::Kernel advec_mom_xvel_device;
-    cl::Kernel advec_mom_node_flux_post_y_1_device;
-    cl::Kernel advec_mom_node_flux_post_y_2_device;
-    cl::Kernel advec_mom_node_pre_y_device;
-    cl::Kernel advec_mom_flux_y_device;
-    cl::Kernel advec_mom_yvel_device;
-    cl::Kernel advec_mom_node_flux_post_z_1_device;
-    cl::Kernel advec_mom_node_flux_post_z_2_device;
-    cl::Kernel advec_mom_node_pre_z_device;
-    cl::Kernel advec_mom_flux_z_device;
-    cl::Kernel advec_mom_zvel_device;
-
-    cl::Kernel advec_cell_pre_vol_x_device;
-    cl::Kernel advec_cell_ener_flux_x_device;
-    cl::Kernel advec_cell_x_device;
-    cl::Kernel advec_cell_pre_vol_y_device;
-    cl::Kernel advec_cell_ener_flux_y_device;
-    cl::Kernel advec_cell_y_device;
-    cl::Kernel advec_cell_pre_vol_z_device;
-    cl::Kernel advec_cell_ener_flux_z_device;
-    cl::Kernel advec_cell_z_device;
 
     // halo updates
     cl::Kernel update_halo_top_device;
@@ -254,21 +198,10 @@ private:
     std::string device_type_prepro;
 
     // buffers
-    cl::Buffer density0;
-    cl::Buffer density1;
+    cl::Buffer density;
     cl::Buffer energy0;
     cl::Buffer energy1;
-    cl::Buffer pressure;
-    cl::Buffer soundspeed;
-    cl::Buffer viscosity;
     cl::Buffer volume;
-
-    cl::Buffer vol_flux_x;
-    cl::Buffer vol_flux_y;
-    cl::Buffer vol_flux_z;
-    cl::Buffer mass_flux_x;
-    cl::Buffer mass_flux_y;
-    cl::Buffer mass_flux_z;
 
     cl::Buffer cellx;
     cl::Buffer celly;
@@ -286,13 +219,6 @@ private:
     cl::Buffer xarea;
     cl::Buffer yarea;
     cl::Buffer zarea;
-
-    cl::Buffer xvel0;
-    cl::Buffer xvel1;
-    cl::Buffer yvel0;
-    cl::Buffer yvel1;
-    cl::Buffer zvel0;
-    cl::Buffer zvel1;
 
     // generic work arrays
     cl::Buffer work_array_1;
@@ -400,22 +326,11 @@ private:
     (int line, const char* filename, const char* format, ...);
 
 public:
-    // kernels
-    void calc_dt_kernel(double g_small, double g_big, double dtmin,
-        double dtc_safe, double dtu_safe, double dtv_safe,double dtw_safe,
-        double dtdiv_safe, double* dt_min_val, int* dtl_control,
-        double* xl_pos, double* yl_pos,double* zl_pos, int* jldt, int* kldt,int* lldt, int* small);
-
     void field_summary_kernel(double* vol, double* mass,
-        double* ie, double* ke, double* press, double* temp);
-
-    void PdV_kernel(int* error_condition, int predict, double dbyt);
-
-    void ideal_gas_kernel(int predict);
+        double* ie, double* temp);
 
     void generate_chunk_kernel(const int number_of_states, 
         const double* state_density, const double* state_energy,
-        const double* state_xvel, const double* state_yvel,const double* state_zvel,
         const double* state_xmin, const double* state_xmax,
         const double* state_ymin, const double* state_ymax,
         const double* state_zmin, const double* state_zmax,
@@ -432,20 +347,7 @@ public:
     const int* chunk_neighbours,
     int depth);
 
-    void accelerate_kernel(double dbyt);
-
-    void advec_mom_kernel(int advec_int, int which_vel, int sweep_number, int direction);
-
-    void flux_calc_kernel(double dbyt);
-
-    void advec_cell_kernel(int dr, int swp_nmbr,int advec_int);
-
-    void revert_kernel();
-
     void set_field_kernel();
-    void reset_field_kernel();
-
-    void viscosity_kernel();
 
     // Tea leaf
     void tea_leaf_init_jacobi(int, double, double*, double*, double*);
@@ -528,5 +430,3 @@ public:
 };
 
 #endif
-
-
