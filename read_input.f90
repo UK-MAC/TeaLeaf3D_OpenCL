@@ -114,9 +114,6 @@ SUBROUTINE read_input()
   states(:)%defined=.FALSE.
   states(:)%energy=0.0
   states(:)%density=0.0
-  states(:)%xvel=0.0
-  states(:)%yvel=0.0
-  states(:)%zvel=0.0
 
   DO
     stat=parse_getline(dummy)

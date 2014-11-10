@@ -60,7 +60,7 @@ SUBROUTINE start
   ALLOCATE(back(1:number_of_chunks))
   ALLOCATE(front(1:number_of_chunks))
 
-  CALL tea_decompose(grid%x_cells,grid%y_cells,left,right,bottom,top)
+  CALL tea_decompose(grid%x_cells,grid%y_cells, grid%z_cells,left,right,bottom,top, back, front)
 
   DO c=1,chunks_per_task
       

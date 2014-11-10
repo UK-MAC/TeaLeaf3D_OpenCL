@@ -1,4 +1,25 @@
-# Agnostic, platform independent makefile for the CloverLeaf benchmark code.
+#Crown Copyright 2014 AWE.
+#
+# This file is part of TeaLeaf.
+#
+# TeaLeaf is free software: you can redistribute it and/or modify it under 
+# the terms of the GNU General Public License as published by the 
+# Free Software Foundation, either version 3 of the License, or (at your option) 
+# any later version.
+#
+# TeaLeaf is distributed in the hope that it will be useful, but 
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+# details.
+#
+# You should have received a copy of the GNU General Public License along with 
+# TeaLeaf. If not, see http://www.gnu.org/licenses/.
+
+#  @brief Makefile for CloverLeaf
+#  @author David Beckingsale, Wayne Gaudin
+#  @details Agnostic, platform independent makefile for the TeaLeaf benchmark code.
+
+# Agnostic, platform independent makefile for the TeaLeaf benchmark code.
 # It is not meant to be clever in anyway, just a simple build out of the box script.
 # Just make sure mpif90 is in your path. It uses mpif90 even for all builds because this abstracts the base
 #  name of the compiler. If you are on a system that doesn't use mpif90, just replace mpif90 with the compiler name
@@ -112,11 +133,6 @@ MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
 CXX_MPI_COMPILER=mpiCC
 
-ifdef PRECONDITION
-FLAGS+=-D USE_PRECONDITIONER
-CFLAGS+=-D USE_PRECONDITIONER
-endif
-
 ifdef PHI_SOURCE_PROFILING
 CXXFLAGS+=-D _PWD_="\"$(shell pwd)/\"" -D PHI_SOURCE_PROFILING
 endif
@@ -128,18 +144,13 @@ endif
 CXXFLAGS+=$(CFLAGS)
 
 C_FILES=\
-    timer_c.o
+	timer_c.o
 
 FORTRAN_FILES=\
-	clover.o \
-	pack_kernel.o \
 	data.o			\
 	definitions.o			\
-	tea.o			\
-	tea_leaf_jacobi.o			\
-	tea_leaf_cg.o			\
-	tea_leaf_cheby.o			\
-	tea_leaf_ppcg.o			\
+	pack_kernel.o			\
+	tea.o				\
 	report.o			\
 	timer.o			\
 	parse.o			\
@@ -149,39 +160,24 @@ FORTRAN_FILES=\
 	build_field.o			\
 	update_halo_kernel.o		\
 	update_halo.o			\
-	ideal_gas_kernel.o		\
-	ideal_gas.o			\
 	start.o			\
 	generate_chunk_kernel.o	\
 	generate_chunk.o		\
 	initialise.o			\
 	field_summary_kernel.o	\
 	field_summary.o		\
-	viscosity_kernel.o		\
-	viscosity.o			\
-	calc_dt_kernel.o		\
 	calc_dt.o			\
 	timestep.o			\
-	accelerate_kernel.o		\
-	accelerate.o			\
-	revert_kernel.o		\
-	revert.o			\
-	PdV_kernel.o			\
-	PdV.o				\
-	flux_calc_kernel.o		\
-	flux_calc.o			\
-	advec_cell_kernel.o		\
-	advec_cell_driver.o		\
-	advec_mom_kernel.o		\
-	advec_mom_driver.o		\
-	advection.o			\
-	reset_field_kernel.o		\
-	set_field_kernel.o		\
-	reset_field.o			\
-	set_field.o			\
-	hydro.o			\
+	set_field_kernel.o            \
+	set_field.o                   \
+	tea_leaf_jacobi.o             \
+	tea_leaf_cg.o             	\
+	tea_leaf_cheby.o             	\
+	tea_leaf_ppcg.o             	\
+	tea_solve.o                   \
 	visit.o			\
-	tea_leaf.o
+	tea_leaf.o			\
+	diffuse.o
 
 OCL_FILES=\
 	ocl_pack.o \
@@ -191,22 +187,12 @@ OCL_FILES=\
 	ocl_errors.o \
 	ocl_reduction.o \
 	ocl_kernels.o \
-	ideal_gas_kernel_ocl.o \
-	accelerate_kernel_ocl.o \
-	viscosity_kernel_ocl.o \
 	set_field_kernel_ocl.o \
-	reset_field_kernel_ocl.o \
 	field_summary_kernel_ocl.o \
 	tea_leaf_kernel_ocl.o \
-	PdV_kernel_ocl.o \
 	generate_chunk_kernel_ocl.o \
-	advec_mom_kernel_ocl.o \
 	update_halo_kernel_ocl.o \
-	advec_cell_kernel_ocl.o \
-	calc_dt_kernel_ocl.o \
-	revert_kernel_ocl.o \
-	initialise_chunk_kernel_ocl.o \
-	flux_calc_kernel_ocl.o
+	initialise_chunk_kernel_ocl.o
 
 tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 	$(MPI_COMPILER) $(FLAGS)	\
@@ -222,7 +208,7 @@ include make.deps
 
 %.o: %.cpp Makefile make.deps
 	$(CXX_MPI_COMPILER) $(CXXFLAGS) -c $< -o $*.o
-%.mod %_module.mod %_leaf_module.mod: %.f90 %.o
+%_module.mod: %.f90 %.o
 	@true
 %.o: %.f90 Makefile make.deps
 	$(MPI_COMPILER) $(FLAGS) -c $< -o $*.o

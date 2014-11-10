@@ -43,7 +43,6 @@ CONTAINS
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: density,energy0
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: energy1
   REAL(KIND=8), DIMENSION(x_min-2:x_max+2,y_min-2:y_max+2,z_min-2:z_max+2) :: u, p, sd
-  INTEGER :: fields(:),depth
 
   ! These need to be kept consistent with the data module to avoid use statement
   INTEGER,      PARAMETER :: CHUNK_LEFT   =1    &
@@ -72,76 +71,7 @@ CONTAINS
   ! Even though half of these loops look the wrong way around, it should be noted
   ! that depth is either 1 or 2 so that it is more efficient to always thread
   ! loop along the mesh edge.
-  IF(fields(FIELD_DENSITY0).EQ.1) THEN
-    IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO l=z_min-depth,z_max+depth
-        DO j=x_min-depth,x_max+depth
-          DO k=1,depth
-            density(j,1-k,l)=density(j,0+k,l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-    IF(chunk_neighbours(CHUNK_TOP).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO l=z_min-depth,z_max+depth
-        DO j=x_min-depth,x_max+depth
-          DO k=1,depth
-            density(j,y_max+k,l)=density(j,y_max+1-k,l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-    IF(chunk_neighbours(CHUNK_LEFT).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO l=z_min-depth,z_max+depth
-        DO k=y_min-depth,y_max+depth
-          DO j=1,depth
-            density(1-j,k,l)=density(0+j,k,l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-    IF(chunk_neighbours(CHUNK_RIGHT).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO l=z_min-depth,z_max+depth
-        DO k=y_min-depth,y_max+depth
-          DO j=1,depth
-            density(x_max+j,k,l)=density(x_max+1-j,k,l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-    IF(chunk_neighbours(CHUNK_BACK).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO k=y_min-depth,y_max+depth
-        DO j=x_min-depth,x_max+depth
-          DO l=1,depth
-            density(j,k,1-l)=density(j,k,0+l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-    IF(chunk_neighbours(CHUNK_FRONT).EQ.EXTERNAL_FACE) THEN
-!$OMP DO
-      DO k=y_min-depth,y_max+depth
-        DO j=x_min-depth,x_max+depth
-          DO l=1,depth
-            density(j,k,z_max+l)=density(j,k,z_max+1-l)
-          ENDDO
-        ENDDO
-      ENDDO
-!$OMP END DO
-    ENDIF
-  ENDIF
-
-  IF(fields(FIELD_DENSITY1).EQ.1) THEN
+  IF(fields(FIELD_DENSITY).EQ.1) THEN
     IF(chunk_neighbours(CHUNK_BOTTOM).EQ.EXTERNAL_FACE) THEN
 !$OMP DO
       DO l=z_min-depth,z_max+depth
