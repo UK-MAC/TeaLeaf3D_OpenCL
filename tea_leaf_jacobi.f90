@@ -221,7 +221,7 @@ SUBROUTINE tea_leaf_calc_residual(x_min,       &
   INTEGER(KIND=4) :: j,k,l
 
 !$OMP PARALLEL
-!$OMP DO private(smvp)
+!$OMP DO PRIVATE(smvp)
   DO l=z_min,z_max
     DO k=y_min,y_max
         DO j=x_min,x_max
