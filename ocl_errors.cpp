@@ -270,6 +270,10 @@ CloverChunk::~CloverChunk
             kernel_params["tea_leaf_cheby_solve_calc_p"] = 9; // with preconditioner!
             kernel_params["tea_leaf_cheby_calc_2norm"] = 1;
             kernel_params["tea_leaf_calc_residual"] = 6;
+            kernel_params["tea_leaf_ppcg_solve_init_sd"] = 3;
+            kernel_params["tea_leaf_ppcg_solve_init_p"] = 3;
+            kernel_params["tea_leaf_ppcg_solve_update_r"] = 6;
+            kernel_params["tea_leaf_ppcg_solve_calc_sd"] = 3;
 
             double total_transferred = 0.0;
             double total_kernel_time = 0.0;

@@ -269,7 +269,7 @@ SUBROUTINE read_input()
           CASE('geometry')
             word=TRIM(parse_getword(.TRUE.))
             SELECT CASE(word)
-            CASE("rectangle")
+            CASE("cuboid")
               states(state)%geometry=g_rect
               IF(parallel%boss)WRITE(g_out,"(1x,a26)")'state geometry rectangular'
             CASE("circle")
