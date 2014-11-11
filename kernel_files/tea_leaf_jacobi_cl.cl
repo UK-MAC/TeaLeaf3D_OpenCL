@@ -16,9 +16,9 @@ __kernel void tea_leaf_jacobi_init
 {
     __kernel_indexes;
 
-    if (/*slice >= (y_min + 1) - 1 &&*/ slice <= (z_max + 1) + 1
-    && /*row >= (y_min + 1) - 1 &&*/ row <= (y_max + 1) + 1
-    && /*column >= (x_min + 1) - 1 &&*/ column <= (x_max + 1) + 1)
+    if (/*slice >= (y_min + 1) - 1 &&*/ slice <= (z_max + 1) + 2
+    && /*row >= (y_min + 1) - 1 &&*/ row <= (y_max + 1) + 2
+    && /*column >= (x_min + 1) - 1 &&*/ column <= (x_max + 1) + 2)
     {
         u[THARR3D(0, 0, 0, 0, 0)] = energy1[THARR3D(0, 0, 0, 0, 0)]*density1[THARR3D(0, 0, 0, 0, 0)];
 
