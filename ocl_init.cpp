@@ -13,7 +13,7 @@ CloverChunk chunk;
 extern "C" void initialise_ocl_
 (int* in_x_min, int* in_x_max,
  int* in_y_min, int* in_y_max,
- int* in_z_min, int* in_z_max);
+ int* in_z_min, int* in_z_max)
 {
     chunk = CloverChunk(in_x_min, in_x_max,
                         in_y_min, in_y_max,
@@ -32,7 +32,7 @@ extern "C" void timer_c_(double*);
 CloverChunk::CloverChunk
 (int* in_x_min, int* in_x_max,
  int* in_y_min, int* in_y_max,
- int* in_z_min, int* in_z_max);
+ int* in_z_min, int* in_z_max)
 :x_min(*in_x_min),
  x_max(*in_x_max),
  y_min(*in_y_min),

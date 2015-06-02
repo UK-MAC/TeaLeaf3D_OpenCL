@@ -63,18 +63,21 @@ void CloverChunk::initBuffers
     BUF1DZ_ALLOC(vertexdz, 1);
 
     // work arrays used in various kernels (post_vol, pre_vol, mom_flux, etc)
-    BUF3D_ALLOC(work_array_1, 1, 1,1);
-    BUF3D_ALLOC(work_array_2, 1, 1,1);
-    BUF3D_ALLOC(work_array_3, 1, 1,1);
-    BUF3D_ALLOC(work_array_4, 1, 1,1);
-    BUF3D_ALLOC(work_array_5, 1, 1,1);
-    BUF3D_ALLOC(work_array_6, 1, 1,1);
-    BUF3D_ALLOC(work_array_7, 1, 1,1);
-    BUF3D_ALLOC(work_array_8, 1, 1,1);
+    BUF3D_ALLOC(vector_p, 1, 1, 1);
+    BUF3D_ALLOC(vector_r, 1, 1, 1);
+    BUF3D_ALLOC(vector_w, 1, 1, 1);
+    BUF3D_ALLOC(vector_Mi, 1, 1, 1);
+    BUF3D_ALLOC(vector_Kx, 1, 1, 1);
+    BUF3D_ALLOC(vector_Ky, 1, 1, 1);
+    BUF3D_ALLOC(vector_sd, 1, 1, 1);
 
+    // tealeaf
     BUF3D_ALLOC(u, 0, 0, 0);
     BUF3D_ALLOC(u0, 0, 0, 0);
-    BUF3D_ALLOC(z, 1, 1, 1);
+    BUF3D_ALLOC(vector_z, 1, 1, 1);
+
+    BUF3D_ALLOC(cp, 0, 0, 0);
+    BUF3D_ALLOC(bfp, 0, 0, 0);
 
     // allocate enough for 1 item per work group, and then a bit extra for the reduction
     // 1.5 should work even if wg size is 2

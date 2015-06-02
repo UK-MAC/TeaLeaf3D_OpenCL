@@ -122,21 +122,21 @@ void CloverChunk::packUnpackAllBuffers
     {
     case CHUNK_LEFT:
     case CHUNK_RIGHT:
-        side_size = lr_mpi_buf_sz;
+        side_size = depth*(y_max + 2*depth)*(z_max + 2*depth);
         pack_global = update_lr_global_size[depth];
         pack_local = update_lr_local_size[depth];
         pack_offset = update_lr_offset[depth];
         break;
     case CHUNK_BOTTOM:
     case CHUNK_TOP:
-        side_size = bt_mpi_buf_sz;
+        side_size = depth*(x_max + 2*depth)*(z_max + 2*depth);
         pack_global = update_bt_global_size[depth];
         pack_local = update_bt_local_size[depth];
         pack_offset = update_bt_offset[depth];
         break;
     case CHUNK_BACK:
     case CHUNK_FRONT:
-        side_size = fb_mpi_buf_sz;
+        side_size = depth*(x_max + 2*depth)*(y_max + 2*depth);
         pack_global = update_fb_global_size[depth];
         pack_local = update_fb_local_size[depth];
         pack_offset = update_fb_offset[depth];

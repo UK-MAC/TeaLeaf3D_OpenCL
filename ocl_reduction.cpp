@@ -143,7 +143,7 @@ void CloverChunk::initReduction
                 compileKernel(options,                              \
                     "./kernel_files/reduction_cl.cl",               \
                     "reduction",                                    \
-                    name##_##data_type, 0, 0, 0, 0);                \
+                    name##_##data_type, 0, 0, 0, 0, 0, 0);          \
             }                                                       \
             catch (KernelCompileError err)                          \
             {                                                       \

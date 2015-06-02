@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License along with 
 # TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
-#  @brief Makefile for CloverLeaf
+#  @brief Makefile for TeaLeaf
 #  @author David Beckingsale, Wayne Gaudin
 #  @details Agnostic, platform independent makefile for the TeaLeaf benchmark code.
 
@@ -63,7 +63,7 @@ ifndef COMPILER
   MESSAGE=select a compiler to compile in OpenMP, e.g. make COMPILER=INTEL
 endif
 
-OMP_INTEL     = -openmp -fpp
+OMP_INTEL     = -openmp -ip -align
 OMP_SUN       = -xopenmp=parallel -vpara
 OMP_GNU       = -fopenmp -cpp
 OMP_CRAY      = -e Z
@@ -72,7 +72,7 @@ OMP_PATHSCALE = -mp
 OMP_XL        = -qsmp=omp -qthreaded
 OMP=$(OMP_$(COMPILER))
 
-FLAGS_INTEL     = -O3 -no-prec-div -xhost
+FLAGS_INTEL     = -O3 -fpp -no-prec-div
 FLAGS_SUN       = -fast -xipo=2 -Xlistv4
 FLAGS_GNU       = -O3 -march=native -funroll-loops
 FLAGS_CRAY      = -em -ra -h acc_model=fast_addr:no_deep_copy:auto_async_all
@@ -118,10 +118,11 @@ ifdef IEEE
   I3E=$(I3E_$(COMPILER))
 endif
 
-MPICXX_LIB=-lmpi_cxx
+
+MPICXX_LIB=#-lmpi_cxx
 
 LDLIBS+=-lOpenCL -lstdc++ $(MPICXX_LIB)
-CXXFLAGS+=-D CL_USE_DEPRECATED_OPENCL_1_1_APIS -D __CL_ENABLE_EXCEPTIONS -D MPI_HDR
+CXXFLAGS+=-D CL_USE_DEPRECATED_OPENCL_1_1_APIS -D __CL_ENABLE_EXCEPTIONS -D MPI_HDR -g
 
 ifdef VERBOSE
 CXXFLAGS+=-D OCL_VERBOSE
@@ -131,7 +132,7 @@ FLAGS=$(FLAGS_$(COMPILER)) $(OMP) $(I3E) $(OPTIONS)
 CFLAGS=$(CFLAGS_$(COMPILER)) $(OMP) $(I3E) $(C_OPTIONS) -c
 MPI_COMPILER=mpif90
 C_MPI_COMPILER=mpicc
-CXX_MPI_COMPILER=mpiCC
+CXX_MPI_COMPILER=mpicxx
 
 ifdef PHI_SOURCE_PROFILING
 CXXFLAGS+=-D _PWD_="\"$(shell pwd)/\"" -D PHI_SOURCE_PROFILING
@@ -149,31 +150,22 @@ C_FILES=\
 FORTRAN_FILES=\
 	data.o			\
 	definitions.o			\
-	pack_kernel.o			\
 	tea.o				\
 	report.o			\
 	timer.o			\
 	parse.o			\
 	read_input.o			\
-	initialise_chunk_kernel.o	\
 	initialise_chunk.o		\
 	build_field.o			\
-	update_halo_kernel.o		\
 	update_halo.o			\
 	start.o			\
-	generate_chunk_kernel.o	\
 	generate_chunk.o		\
 	initialise.o			\
-	field_summary_kernel.o	\
 	field_summary.o		\
 	calc_dt.o			\
 	timestep.o			\
-	set_field_kernel.o            \
 	set_field.o                   \
-	tea_leaf_jacobi.o             \
-	tea_leaf_cg.o             	\
 	tea_leaf_cheby.o             	\
-	tea_leaf_ppcg.o             	\
 	tea_solve.o                   \
 	visit.o			\
 	tea_leaf.o			\
@@ -206,7 +198,7 @@ tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 
 include make.deps
 
-%.o: %.cpp Makefile make.deps
+%.o: %.cpp Makefile make.deps ocl_common.hpp
 	$(CXX_MPI_COMPILER) $(CXXFLAGS) -c $< -o $*.o
 %_module.mod: %.f90 %.o
 	@true

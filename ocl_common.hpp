@@ -10,9 +10,10 @@
 #define JACOBI_BLOCK_SIZE 4
 
 // 2 dimensional arrays - use a 2D tile for local group
+const static size_t LOCAL_Z = 1;
 const static size_t LOCAL_Y = JACOBI_BLOCK_SIZE;
 const static size_t LOCAL_X = 128/LOCAL_Y;
-const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y);
+const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y, LOCAL_Z);
 
 // used in update_halo and for copying back to host for mpi transfers
 #define FIELD_density       1
@@ -51,9 +52,9 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y);
 #define Z_FACE_DATA 5
 
 // preconditioners
-#define tl_prec_none        1
-#define tl_prec_jac_diag    2
-#define tl_prec_jac_block   3
+#define TL_PREC_NONE        1
+#define TL_PREC_JAC_DIAG    2
+#define TL_PREC_JAC_BLOCK   3
 
 typedef struct cell_info {
     const int x_extra;
@@ -193,7 +194,7 @@ private:
     std::map< std::string, launch_specs_t > launch_specs;
 
     launch_specs_t findPaddingSize
-    (int vmin, int vmax, int hmin, int hmax);
+    (int smin, int smax, int vmin, int vmax, int hmin, int hmax);
 
     // reduction kernels - need multiple levels
     reduce_info_vec_t min_red_kernels_double;
@@ -241,6 +242,7 @@ private:
     cl::Buffer vector_Mi;
     cl::Buffer vector_Kx;
     cl::Buffer vector_Ky;
+    cl::Buffer vector_Kz;
     cl::Buffer vector_sd;
 
     // for reduction in PdV
@@ -395,7 +397,7 @@ public:
 
     void tea_leaf_finalise();
     void tea_leaf_calc_residual(void);
-    void tea_leaf_init_common(int, double, double*, double*, int*);
+    void tea_leaf_init_common(int, double, double*, double*, double*, int*);
 
     // ctor
     CloverChunk

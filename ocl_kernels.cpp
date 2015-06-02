@@ -58,71 +58,68 @@ void CloverChunk::initProgram
         fflush(stdout);
     }
 
-    compileKernel(options_str, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_first", initialise_chunk_first_device);
-    compileKernel(options_str, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_second", initialise_chunk_second_device);
-    compileKernel(options_str, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init", generate_chunk_init_device);
-    compileKernel(options_str, "./kernel_files/generate_chunk_cl.cl", "generate_chunk", generate_chunk_device);
+    // launch with special work group sizes to cover the whole grid
+    compileKernel(options, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_first", initialise_chunk_first_device, -halo_allocate_depth, halo_allocate_depth, -halo_allocate_depth, halo_allocate_depth, -halo_allocate_depth, halo_allocate_depth);
 
-    compileKernel(options_str, "./kernel_files/set_field_cl.cl", "set_field", set_field_device);
+    compileKernel(options, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_second", initialise_chunk_second_device, -2, 2, -2, 2, -2, 2);
+    compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init", generate_chunk_init_device, -1, 1, -1, 1, -1, 1);
+    compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init_u", generate_chunk_init_u_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk", generate_chunk_device, -2, 2, -2, 2, -2, 2);
 
-    compileKernel(options_str, "./kernel_files/field_summary_cl.cl", "field_summary", field_summary_device);
+    compileKernel(options, "./kernel_files/set_field_cl.cl", "set_field", set_field_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/field_summary_cl.cl", "field_summary", field_summary_device, 0, 0, 0, 0, 0, 0);
 
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_top", update_halo_top_device);
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_bottom", update_halo_bottom_device);
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_left", update_halo_left_device);
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_right", update_halo_right_device);
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_back", update_halo_back_device);
-    compileKernel(options_str, "./kernel_files/update_halo_cl.cl", "update_halo_front", update_halo_front_device);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_top", update_halo_top_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_bottom", update_halo_bottom_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_left", update_halo_left_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_right", update_halo_right_device, 0, 0, 0, 0, 0, 0);
 
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_left_buffer", pack_left_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_left_buffer", unpack_left_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_right_buffer", pack_right_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_right_buffer", unpack_right_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_bottom_buffer", pack_bottom_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_bottom_buffer", unpack_bottom_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_top_buffer", pack_top_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_top_buffer", unpack_top_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_back_buffer", pack_back_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_back_buffer", unpack_back_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "pack_front_buffer", pack_front_buffer_device);
-    compileKernel(options_str, "./kernel_files/pack_kernel_cl.cl", "unpack_front_buffer", unpack_front_buffer_device);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_left_buffer", pack_left_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_left_buffer", unpack_left_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_right_buffer", pack_right_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_right_buffer", unpack_right_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_bottom_buffer", pack_bottom_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_bottom_buffer", unpack_bottom_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_top_buffer", pack_top_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_top_buffer", unpack_top_buffer_device, 0, 0, 0, 0, 0, 0);
 
     if (tea_solver == TEA_ENUM_CG ||
     tea_solver == TEA_ENUM_CHEBYSHEV ||
     tea_solver == TEA_ENUM_PPCG)
     {
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_u", tea_leaf_cg_init_u_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_directions", tea_leaf_cg_init_directions_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_init_others", tea_leaf_cg_init_others_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_w", tea_leaf_cg_solve_calc_w_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_ur", tea_leaf_cg_solve_calc_ur_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_p", tea_leaf_cg_solve_calc_p_device);
+        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_w", tea_leaf_cg_solve_calc_w_device, 0, 0, 0, 0, 0, 0);
+        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_ur", tea_leaf_cg_solve_calc_ur_device, 0, 0, 0, 0, 0, 0);
+        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_p", tea_leaf_cg_solve_calc_p_device, 0, 0, 0, 0, 0, 0);
+        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_init_p", tea_leaf_cg_solve_init_p_device, 0, 0, 0, 0, 0, 0);
 
         if (tea_solver == TEA_ENUM_CHEBYSHEV)
         {
-            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_init_p", tea_leaf_cheby_solve_init_p_device);
-            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_u", tea_leaf_cheby_solve_calc_u_device);
-            compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_p", tea_leaf_cheby_solve_calc_p_device);
+            compileKernel(options, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_init_p", tea_leaf_cheby_solve_init_p_device, 0, 0, 0, 0, 0, 0);
+            compileKernel(options, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_u", tea_leaf_cheby_solve_calc_u_device, 0, 0, 0, 0, 0, 0);
+            compileKernel(options, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_solve_calc_p", tea_leaf_cheby_solve_calc_p_device, 0, 0, 0, 0, 0, 0);
         }
         else if (tea_solver == TEA_ENUM_PPCG)
         {
-            compileKernel(options_str, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_init_sd", tea_leaf_ppcg_solve_init_sd_device);
-            compileKernel(options_str, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_calc_sd", tea_leaf_ppcg_solve_calc_sd_device);
-            compileKernel(options_str, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_update_r", tea_leaf_ppcg_solve_update_r_device);
-            compileKernel(options_str, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_init_p", tea_leaf_ppcg_solve_init_p_device);
+            compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_init_sd", tea_leaf_ppcg_solve_init_sd_device, 0, 0, 0, 0, 0, 0);
+            compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_calc_sd", tea_leaf_ppcg_solve_calc_sd_device, 0, 0, 0, 0, 0, 0);
+            compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_update_r", tea_leaf_ppcg_solve_update_r_device, 0, 0, 0, 0, 0, 0);
         }
     }
     else
     {
-        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_init", tea_leaf_jacobi_init_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_copy_u", tea_leaf_jacobi_copy_u_device);
-        compileKernel(options_str, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_solve", tea_leaf_jacobi_solve_device);
+        compileKernel(options, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_copy_u", tea_leaf_jacobi_copy_u_device, 0, 0, 0, 0, 0, 0);
+        compileKernel(options, "./kernel_files/tea_leaf_jacobi_cl.cl", "tea_leaf_jacobi_solve", tea_leaf_jacobi_solve_device, 0, 0, 0, 0, 0, 0);
     }
 
-    compileKernel(options_str, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_diag", tea_leaf_init_diag_device);
-    compileKernel(options_str, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_finalise", tea_leaf_finalise_device);
-    compileKernel(options_str, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_calc_residual", tea_leaf_calc_residual_device);
-    compileKernel(options_str, "./kernel_files/tea_leaf_cheby_cl.cl", "tea_leaf_cheby_calc_2norm", tea_leaf_cheby_calc_2norm_device);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_finalise", tea_leaf_finalise_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_calc_residual", tea_leaf_calc_residual_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_calc_2norm", tea_leaf_calc_2norm_device, 0, 0, 0, 0, 0, 0);
+
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_block_init", tea_leaf_block_init_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_block_solve", tea_leaf_block_solve_device, 0, 0, 0, 0, 0, 0);
+
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_common", tea_leaf_init_common_device, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_jac_diag", tea_leaf_init_jac_diag_device, -halo_exchange_depth, halo_exchange_depth, -halo_exchange_depth, halo_exchange_depth, -halo_exchange_depth, halo_exchange_depth);
 
     if (!rank)
     {
@@ -132,7 +129,7 @@ void CloverChunk::initProgram
 }
 
 CloverChunk::launch_specs_t CloverChunk::findPaddingSize
-(int smin, int smax, int vmin, int vmax, int hmin, int hmax)
+(int hmin, int hmax, int vmin, int vmax, int smin, int smax)
 {
     size_t global_horz_size = (-(hmin)) + (hmax) + x_max;
     while (global_horz_size % LOCAL_X) global_horz_size++;
@@ -141,7 +138,7 @@ CloverChunk::launch_specs_t CloverChunk::findPaddingSize
     size_t global_slice_size = (-(smin)) + (smax) + z_max;
     while (global_slice_size % LOCAL_Z) global_slice_size++;
     launch_specs_t cur_specs;
-    cur_specs.global = cl::NDRange(global_horz_size, global_vert_size, global_slize_size);
+    cur_specs.global = cl::NDRange(global_horz_size, global_vert_size, global_slice_size);
     cur_specs.offset = cl::NDRange((halo_allocate_depth) + (hmin), (halo_allocate_depth) + (vmin), (halo_allocate_depth) + (smin));
     return cur_specs;
 }
@@ -175,7 +172,7 @@ void CloverChunk::compileKernel
     options_orig << "-D KERNEL_Z_MAX=" << launch_z_max << " ";
 
     std::string kernel_additional = std::string(kernel_name) + std::string("_device");
-    launch_specs[kernel_additional] = findPaddingSize(launch_x_min, launch_x_max, launch_y_min, launch_y_max);
+    launch_specs[kernel_additional] = findPaddingSize(launch_x_min, launch_x_max, launch_y_min, launch_y_max, launch_z_min, launch_z_max);
 
     fprintf(DBGOUT, "Compiling %s...", kernel_name);
     cl::Program program;
@@ -325,7 +322,6 @@ void CloverChunk::initSizes
         (((y_max)%LOCAL_Y == 0) ? 0 : (LOCAL_Y - ((y_max)%LOCAL_Y)));
     const size_t red_z = z_max +
         (((z_max)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max)%LOCAL_Z)));
-
     reduced_cells = red_x*red_y*red_z;
 
     /*
@@ -376,12 +372,12 @@ void CloverChunk::initSizes
     }
 
     // create the local sizes, dividing the last possible dimension if needs be
-    update_lr_local_size[0] = cl::NDRange(1, local_column_size, local_slice_size);
-    update_lr_local_size[1] = cl::NDRange(2, local_column_size, local_slice_size/local_divide);
-    update_ud_local_size[0] = cl::NDRange(local_row_size, 1, local_slice_size);
-    update_ud_local_size[1] = cl::NDRange(local_row_size, 2, local_slice_size/local_divide);
-    update_fb_local_size[0] = cl::NDRange(local_row_size, local_column_size, 1);
-    update_fb_local_size[1] = cl::NDRange(local_row_size, local_column_size/local_divide, 2);
+    update_lr_local_size[1] = cl::NDRange(1, local_column_size, local_slice_size);
+    update_lr_local_size[2] = cl::NDRange(2, local_column_size, local_slice_size/local_divide);
+    update_bt_local_size[1] = cl::NDRange(local_row_size, 1, local_slice_size);
+    update_bt_local_size[2] = cl::NDRange(local_row_size, 2, local_slice_size/local_divide);
+    update_fb_local_size[1] = cl::NDRange(local_row_size, local_column_size, 1);
+    update_fb_local_size[2] = cl::NDRange(local_row_size, local_column_size/local_divide, 2);
 
     // start off doing minimum amount of work
     size_t global_bt_update_size = x_max + 4;
@@ -393,70 +389,61 @@ void CloverChunk::initSizes
         global_bt_update_size++;
     while (global_lr_update_size % local_column_size)
         global_lr_update_size++;
-    while (global_fb_update_size % local_fb_update_size)
+    while (global_fb_update_size % local_slice_size)
         global_fb_update_size++;
 
     // create ndranges
-    update_lr_global_size[0] = cl::NDRange(1, global_column_size, global_slice_size);
-    update_lr_global_size[1] = cl::NDRange(2, global_column_size, global_slice_size);
-    update_ud_global_size[0] = cl::NDRange(global_row_size, 1, global_slice_size);
-    update_ud_global_size[1] = cl::NDRange(global_row_size, 2, global_slice_size);
-    update_fb_global_size[0] = cl::NDRange(global_row_size, global_column_size, 1);
-    update_fb_global_size[1] = cl::NDRange(global_row_size, global_column_size, 2);
+    update_lr_global_size[1] = cl::NDRange(1, global_lr_update_size, global_fb_update_size);
+    update_lr_global_size[2] = cl::NDRange(2, global_lr_update_size, global_fb_update_size);
+    update_bt_global_size[1] = cl::NDRange(global_bt_update_size, 1, global_fb_update_size);
+    update_bt_global_size[2] = cl::NDRange(global_bt_update_size, 2, global_fb_update_size);
+    update_fb_global_size[1] = cl::NDRange(global_bt_update_size, global_lr_update_size, 1);
+    update_fb_global_size[2] = cl::NDRange(global_bt_update_size, global_lr_update_size, 2);
 
-    for (int depth = 0; depth < 2; depth++)
+    size_t global_bt_pack_size = x_max + 2*halo_allocate_depth;
+    size_t global_lr_pack_size = y_max + 2*halo_allocate_depth;
+    size_t global_fb_pack_size = z_max + 2*halo_allocate_depth;
+
+    // increase just to fit in with local work group sizes
+    while (global_bt_pack_size % local_row_size)
+        global_bt_pack_size++;
+    while (global_lr_pack_size % local_column_size)
+        global_lr_pack_size++;
+    while (global_lr_pack_size % local_slice_size)
+        global_lr_pack_size++;
+
+    update_lr_global_size[halo_exchange_depth] = cl::NDRange(halo_exchange_depth, global_lr_pack_size, global_fb_pack_size);
+    update_bt_global_size[halo_exchange_depth] = cl::NDRange(global_bt_pack_size, halo_exchange_depth, global_fb_pack_size);
+    update_fb_global_size[halo_exchange_depth] = cl::NDRange(global_fb_pack_size, global_lr_pack_size, halo_exchange_depth);
+
+    // use same local size as depth 1
+    update_lr_local_size[halo_exchange_depth] = update_lr_local_size[1];
+    update_bt_local_size[halo_exchange_depth] = update_bt_local_size[1];
+
+    //for (int depth = 0; depth < 2; depth++)
+    std::map<int, cl::NDRange>::iterator typedef irangeit;
+    for (irangeit key = update_lr_global_size.begin();
+        key != update_lr_global_size.end(); key++)
     {
+        int depth = key->first;
+
+        update_lr_offset[depth] = cl::NDRange(halo_allocate_depth - depth, halo_allocate_depth - depth, halo_allocate_depth - depth);
+        update_bt_offset[depth] = cl::NDRange(halo_allocate_depth - depth, halo_allocate_depth - depth, halo_allocate_depth - depth);
+        update_fb_offset[depth] = cl::NDRange(halo_allocate_depth - depth, halo_allocate_depth - depth, halo_allocate_depth - depth);
+
         fprintf(DBGOUT, "Depth %d:\n", depth + 1);
         fprintf(DBGOUT, "Left/right update halo size: [%zu %zu %zu] split by [%zu %zu %zu]\n",
             update_lr_global_size[depth][0], update_lr_global_size[depth][1], update_lr_global_size[depth][2],
             update_lr_local_size[depth][0], update_lr_local_size[depth][1], update_lr_local_size[depth][2]);
         fprintf(DBGOUT, "Bottom/top update halo size: [%zu %zu %zu] split by [%zu %zu %zu]\n",
-            update_ud_global_size[depth][0], update_ud_global_size[depth][1], update_ud_global_size[depth][2],
-            update_ud_local_size[depth][0], update_ud_local_size[depth][1], update_ud_local_size[depth][2]);
+            update_bt_global_size[depth][0], update_bt_global_size[depth][1], update_bt_global_size[depth][2],
+            update_bt_local_size[depth][0], update_bt_local_size[depth][1], update_bt_local_size[depth][2]);
         fprintf(DBGOUT, "Front/back update halo size: [%zu %zu %zu] split by [%zu %zu %zu]\n",
             update_fb_global_size[depth][0], update_fb_global_size[depth][1], update_fb_global_size[depth][2],
             update_fb_local_size[depth][0], update_fb_local_size[depth][1], update_fb_local_size[depth][2]);
     }
 
     fprintf(DBGOUT, "Update halo parameters calculated\n");
-
-
-    if (tea_solver == TEA_ENUM_CG ||
-    tea_solver == TEA_ENUM_CHEBYSHEV ||
-    tea_solver == TEA_ENUM_PPCG)
-    {
-        FIND_PADDING_SIZE(tea_leaf_cg_init_u, -2, 2, -2, 2, -2, 2);
-        FIND_PADDING_SIZE(tea_leaf_cg_init_directions, 0, 1, 0, 1, 0, 1);
-        FIND_PADDING_SIZE(tea_leaf_cg_init_others, 0, 0, 0, 0, 0, 0);
-        FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_w, 0, 0, 0, 0, 0, 0);
-        FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_ur, 0, 0, 0, 0, 0, 0);
-        FIND_PADDING_SIZE(tea_leaf_cg_solve_calc_p, 0, 0, 0, 0, 0, 0);
-
-        if (tea_solver == TEA_ENUM_CHEBYSHEV)
-        {
-            FIND_PADDING_SIZE(tea_leaf_cheby_solve_calc_u, 0, 0, 0, 0, 0, 0);
-            FIND_PADDING_SIZE(tea_leaf_cheby_solve_calc_p, 0, 0, 0, 0, 0, 0);
-            FIND_PADDING_SIZE(tea_leaf_cheby_solve_init_p, 0, 0, 0, 0, 0, 0);
-        }
-        else if (tea_solver == TEA_ENUM_PPCG)
-        {
-            FIND_PADDING_SIZE(tea_leaf_ppcg_solve_init_sd, 0, 0, 0, 0, 0, 0);
-            FIND_PADDING_SIZE(tea_leaf_ppcg_solve_calc_sd, 0, 0, 0, 0, 0, 0);
-            FIND_PADDING_SIZE(tea_leaf_ppcg_solve_update_r, 0, 0, 0, 0, 0, 0);
-            FIND_PADDING_SIZE(tea_leaf_ppcg_solve_init_p, 0, 0, 0, 0, 0, 0);
-        }
-    }
-    else
-    {
-        FIND_PADDING_SIZE(tea_leaf_jacobi_init, -1, 2, -1, 2, -1, 2);
-        FIND_PADDING_SIZE(tea_leaf_jacobi_copy_u, -1, 1, -1, 1, -1, 1);
-        FIND_PADDING_SIZE(tea_leaf_jacobi_solve, 0, 0, 0, 0, 0, 0);
-    }
-
-    FIND_PADDING_SIZE(tea_leaf_init_diag, -1, 1, -1, 1, -1, 1);
-    FIND_PADDING_SIZE(tea_leaf_finalise, 0, 0, 0, 0, 0, 0);
-    FIND_PADDING_SIZE(tea_leaf_calc_residual, 0, 0, 0, 0, 0, 0);
-    FIND_PADDING_SIZE(tea_leaf_cheby_calc_2norm, 0, 0, 0, 0, 0, 0);
 }
 
 void CloverChunk::initArgs
@@ -481,23 +468,16 @@ void CloverChunk::initArgs
     initialise_chunk_first_device.setArg(9, vertexdy);
     initialise_chunk_first_device.setArg(10, vertexz);
     initialise_chunk_first_device.setArg(11, vertexdz);
+    initialise_chunk_first_device.setArg(8, cellx);
+    initialise_chunk_first_device.setArg(9, celldx);
+    initialise_chunk_first_device.setArg(9, celldz);
+    initialise_chunk_first_device.setArg(10, celly);
+    initialise_chunk_first_device.setArg(11, celldy);
+    initialise_chunk_first_device.setArg(11, celldz);
 
-    initialise_chunk_second_device.setArg(6, vertexx);
-    initialise_chunk_second_device.setArg(7, vertexdx);
-    initialise_chunk_second_device.setArg(8, vertexy);
-    initialise_chunk_second_device.setArg(9, vertexdy);
-    initialise_chunk_second_device.setArg(10, vertexz);
-    initialise_chunk_second_device.setArg(11, vertexdz);
-    initialise_chunk_second_device.setArg(12, cellx);
-    initialise_chunk_second_device.setArg(13, celldx);
-    initialise_chunk_second_device.setArg(14, celly);
-    initialise_chunk_second_device.setArg(15, celldy);
-    initialise_chunk_second_device.setArg(16, cellz);
-    initialise_chunk_second_device.setArg(17, celldz);
-    initialise_chunk_second_device.setArg(18, volume);
-    initialise_chunk_second_device.setArg(19, xarea);
-    initialise_chunk_second_device.setArg(20, yarea);
-    initialise_chunk_second_device.setArg(21, zarea);
+    initialise_chunk_second_device.setArg(4, volume);
+    initialise_chunk_second_device.setArg(5, xarea);
+    initialise_chunk_second_device.setArg(6, yarea);
 
     // set field
     set_field_device.setArg(0, energy0);
@@ -506,6 +486,10 @@ void CloverChunk::initArgs
     // generate chunk
     generate_chunk_init_device.setArg(0, density);
     generate_chunk_init_device.setArg(1, energy0);
+
+    generate_chunk_init_u_device.setArg(0, density);
+    generate_chunk_init_u_device.setArg(2, u);
+    generate_chunk_init_u_device.setArg(3, u0);
 
     generate_chunk_device.setArg(0, vertexx);
     generate_chunk_device.setArg(1, vertexy);
@@ -520,7 +504,7 @@ void CloverChunk::initArgs
     // field summary
     field_summary_device.setArg(0, volume);
     field_summary_device.setArg(1, density);
-    field_summary_device.setArg(2, energy0);
+    field_summary_device.setArg(2, energy1);
     field_summary_device.setArg(3, u);
 
     field_summary_device.setArg(4, reduce_buf_1);
@@ -536,150 +520,148 @@ void CloverChunk::initArgs
     tea_solver == TEA_ENUM_PPCG)
     {
         /*
-         *  work_array_1 = p
-         *  work_array_2 = r
-         *  work_array_3 = w / d (just for initialisation)
-         *  work_array_4 = Mi
-         *
-         *  work_array_5 = Kx
-         *  work_array_6 = Ky
-         *  work_array_7 = Kz
-         *
          *  reduce_buf_1 = bb
          *  reduce_buf_2 = rro
          *  reduce_buf_3 = pw
          *  reduce_buf_4 = rrn
          */
-        tea_leaf_cg_init_u_device.setArg(0, density);
-        tea_leaf_cg_init_u_device.setArg(1, energy1);
-        tea_leaf_cg_init_u_device.setArg(2, u);
-        tea_leaf_cg_init_u_device.setArg(3, work_array_1);
-        tea_leaf_cg_init_u_device.setArg(4, work_array_2);
-        tea_leaf_cg_init_u_device.setArg(5, work_array_3);
 
-        tea_leaf_cg_init_directions_device.setArg(0, work_array_3);
-        tea_leaf_cg_init_directions_device.setArg(1, work_array_5);
-        tea_leaf_cg_init_directions_device.setArg(2, work_array_6);
-        tea_leaf_cg_init_directions_device.setArg(3, work_array_7);
-
-        tea_leaf_cg_init_others_device.setArg(0, reduce_buf_2);
-        tea_leaf_cg_init_others_device.setArg(1, u);
-        tea_leaf_cg_init_others_device.setArg(2, work_array_1);
-        tea_leaf_cg_init_others_device.setArg(3, work_array_2);
-        tea_leaf_cg_init_others_device.setArg(4, work_array_3);
-        tea_leaf_cg_init_others_device.setArg(5, work_array_4);
-        tea_leaf_cg_init_others_device.setArg(6, work_array_5);
-        tea_leaf_cg_init_others_device.setArg(7, work_array_6);
-        tea_leaf_cg_init_others_device.setArg(8, work_array_7);
-        // used when preconditioner is used
-        tea_leaf_cg_init_others_device.setArg(12, z);
+        tea_leaf_cg_solve_init_p_device.setArg(0, vector_p);
+        tea_leaf_cg_solve_init_p_device.setArg(1, vector_r);
+        tea_leaf_cg_solve_init_p_device.setArg(2, vector_z);
+        tea_leaf_cg_solve_init_p_device.setArg(3, vector_Mi);
+        tea_leaf_cg_solve_init_p_device.setArg(4, reduce_buf_2);
 
         tea_leaf_cg_solve_calc_w_device.setArg(0, reduce_buf_3);
-        tea_leaf_cg_solve_calc_w_device.setArg(1, work_array_1);
-        tea_leaf_cg_solve_calc_w_device.setArg(2, work_array_3);
-        tea_leaf_cg_solve_calc_w_device.setArg(3, work_array_5);
-        tea_leaf_cg_solve_calc_w_device.setArg(4, work_array_6);
-        tea_leaf_cg_solve_calc_w_device.setArg(5, work_array_7);
+        tea_leaf_cg_solve_calc_w_device.setArg(1, vector_p);
+        tea_leaf_cg_solve_calc_w_device.setArg(2, vector_w);
+        tea_leaf_cg_solve_calc_w_device.setArg(3, vector_Kx);
+        tea_leaf_cg_solve_calc_w_device.setArg(4, vector_Ky);
 
-        tea_leaf_cg_solve_calc_ur_device.setArg(1, reduce_buf_4);
-        tea_leaf_cg_solve_calc_ur_device.setArg(2, u);
-        tea_leaf_cg_solve_calc_ur_device.setArg(3, work_array_1);
-        tea_leaf_cg_solve_calc_ur_device.setArg(4, work_array_2);
-        tea_leaf_cg_solve_calc_ur_device.setArg(5, work_array_3);
-        // used when preconditioner is used
-        tea_leaf_cg_solve_calc_ur_device.setArg(6, z);
-        tea_leaf_cg_solve_calc_ur_device.setArg(7, work_array_4);
+        tea_leaf_cg_solve_calc_ur_device.setArg(1, u);
+        tea_leaf_cg_solve_calc_ur_device.setArg(2, vector_p);
+        tea_leaf_cg_solve_calc_ur_device.setArg(3, vector_r);
+        tea_leaf_cg_solve_calc_ur_device.setArg(4, vector_w);
+        tea_leaf_cg_solve_calc_ur_device.setArg(5, vector_z);
+        tea_leaf_cg_solve_calc_ur_device.setArg(6, cp);
+        tea_leaf_cg_solve_calc_ur_device.setArg(7, bfp);
+        tea_leaf_cg_solve_calc_ur_device.setArg(8, vector_Mi);
+        tea_leaf_cg_solve_calc_ur_device.setArg(9, vector_Kx);
+        tea_leaf_cg_solve_calc_ur_device.setArg(10, vector_Ky);
+        tea_leaf_cg_solve_calc_ur_device.setArg(11, reduce_buf_5);
 
-        tea_leaf_cg_solve_calc_p_device.setArg(1, work_array_1);
-        tea_leaf_cg_solve_calc_p_device.setArg(2, work_array_2);
-        tea_leaf_cg_solve_calc_p_device.setArg(3, z);
+        tea_leaf_cg_solve_calc_p_device.setArg(1, vector_p);
+        tea_leaf_cg_solve_calc_p_device.setArg(2, vector_r);
+        tea_leaf_cg_solve_calc_p_device.setArg(3, vector_z);
 
         if (tea_solver == TEA_ENUM_CHEBYSHEV)
         {
             tea_leaf_cheby_solve_init_p_device.setArg(0, u);
             tea_leaf_cheby_solve_init_p_device.setArg(1, u0);
-            tea_leaf_cheby_solve_init_p_device.setArg(2, work_array_1);
-            tea_leaf_cheby_solve_init_p_device.setArg(3, work_array_2);
-            tea_leaf_cheby_solve_init_p_device.setArg(4, work_array_4);
-            tea_leaf_cheby_solve_init_p_device.setArg(5, work_array_3);
-            tea_leaf_cheby_solve_init_p_device.setArg(6, work_array_5);
-            tea_leaf_cheby_solve_init_p_device.setArg(7, work_array_6);
-            tea_leaf_cheby_solve_init_p_device.setArg(8, work_array_7);
+            tea_leaf_cheby_solve_init_p_device.setArg(2, vector_p);
+            tea_leaf_cheby_solve_init_p_device.setArg(3, vector_r);
+            tea_leaf_cheby_solve_init_p_device.setArg(4, vector_w);
+            tea_leaf_cheby_solve_init_p_device.setArg(5, cp);
+            tea_leaf_cheby_solve_init_p_device.setArg(6, bfp);
+            tea_leaf_cheby_solve_init_p_device.setArg(7, vector_Mi);
+            tea_leaf_cheby_solve_init_p_device.setArg(8, vector_Kx);
+            tea_leaf_cheby_solve_init_p_device.setArg(9, vector_Ky);
 
             tea_leaf_cheby_solve_calc_u_device.setArg(0, u);
-            tea_leaf_cheby_solve_calc_u_device.setArg(1, work_array_1);
+            tea_leaf_cheby_solve_calc_u_device.setArg(1, vector_p);
 
             tea_leaf_cheby_solve_calc_p_device.setArg(0, u);
             tea_leaf_cheby_solve_calc_p_device.setArg(1, u0);
-            tea_leaf_cheby_solve_calc_p_device.setArg(2, work_array_1);
-            tea_leaf_cheby_solve_calc_p_device.setArg(3, work_array_2);
-            tea_leaf_cheby_solve_calc_p_device.setArg(4, work_array_4);
-            tea_leaf_cheby_solve_calc_p_device.setArg(5, work_array_3);
-            tea_leaf_cheby_solve_calc_p_device.setArg(6, work_array_5);
-            tea_leaf_cheby_solve_calc_p_device.setArg(7, work_array_6);
-            tea_leaf_cheby_solve_calc_p_device.setArg(8, work_array_7);
+            tea_leaf_cheby_solve_calc_p_device.setArg(2, vector_p);
+            tea_leaf_cheby_solve_calc_p_device.setArg(3, vector_r);
+            tea_leaf_cheby_solve_calc_p_device.setArg(4, vector_w);
+            tea_leaf_cheby_solve_calc_p_device.setArg(5, cp);
+            tea_leaf_cheby_solve_calc_p_device.setArg(6, bfp);
+            tea_leaf_cheby_solve_calc_p_device.setArg(7, vector_Mi);
+            tea_leaf_cheby_solve_calc_p_device.setArg(8, vector_Kx);
+            tea_leaf_cheby_solve_calc_p_device.setArg(9, vector_Ky);
         }
         else if (tea_solver == TEA_ENUM_PPCG)
         {
-            tea_leaf_ppcg_solve_init_sd_device.setArg(0, work_array_2);
-            tea_leaf_ppcg_solve_init_sd_device.setArg(1, work_array_4);
-            tea_leaf_ppcg_solve_init_sd_device.setArg(2, work_array_8);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(0, vector_r);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(1, vector_sd);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(2, vector_z);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(3, cp);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(4, bfp);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(5, vector_Mi);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(6, vector_Kx);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(7, vector_Ky);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(8, u);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(9, u0);
 
             tea_leaf_ppcg_solve_update_r_device.setArg(0, u);
-            tea_leaf_ppcg_solve_update_r_device.setArg(1, work_array_2);
-            tea_leaf_ppcg_solve_update_r_device.setArg(2, work_array_5);
-            tea_leaf_ppcg_solve_update_r_device.setArg(3, work_array_6);
-            tea_leaf_ppcg_solve_update_r_device.setArg(4, work_array_7);
-            tea_leaf_ppcg_solve_update_r_device.setArg(5, work_array_8);
+            tea_leaf_ppcg_solve_update_r_device.setArg(1, vector_r);
+            tea_leaf_ppcg_solve_update_r_device.setArg(2, vector_Kx);
+            tea_leaf_ppcg_solve_update_r_device.setArg(3, vector_Ky);
+            tea_leaf_ppcg_solve_update_r_device.setArg(4, vector_sd);
 
-            tea_leaf_ppcg_solve_calc_sd_device.setArg(0, work_array_2);
-            tea_leaf_ppcg_solve_calc_sd_device.setArg(1, work_array_4);
-            tea_leaf_ppcg_solve_calc_sd_device.setArg(2, work_array_8);
-
-            tea_leaf_ppcg_solve_init_p_device.setArg(0, work_array_1);
-            tea_leaf_ppcg_solve_init_p_device.setArg(1, work_array_2);
-            tea_leaf_ppcg_solve_init_p_device.setArg(2, work_array_4);
-            tea_leaf_ppcg_solve_init_p_device.setArg(3, reduce_buf_1);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(0, vector_r);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(1, vector_sd);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(2, vector_z);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(3, cp);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(4, bfp);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(5, vector_Mi);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(6, vector_Kx);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(7, vector_Ky);
         }
     }
     else
     {
-        tea_leaf_jacobi_init_device.setArg(0, density);
-        tea_leaf_jacobi_init_device.setArg(1, energy1);
-        tea_leaf_jacobi_init_device.setArg(2, u);
-        tea_leaf_jacobi_init_device.setArg(3, work_array_5);
-        tea_leaf_jacobi_init_device.setArg(4, work_array_6);
-        tea_leaf_jacobi_init_device.setArg(5, work_array_7);
-
+        // reusing Mi here as 'un'
         tea_leaf_jacobi_copy_u_device.setArg(0, u);
-        tea_leaf_jacobi_copy_u_device.setArg(1, work_array_4);
+        tea_leaf_jacobi_copy_u_device.setArg(1, vector_Mi);
 
+        tea_leaf_jacobi_solve_device.setArg(0, vector_Kx);
+        tea_leaf_jacobi_solve_device.setArg(1, vector_Ky);
+        tea_leaf_jacobi_solve_device.setArg(2, u0);
         tea_leaf_jacobi_solve_device.setArg(3, u);
-        tea_leaf_jacobi_solve_device.setArg(4, u0);
-        tea_leaf_jacobi_solve_device.setArg(5, work_array_4);
-        tea_leaf_jacobi_solve_device.setArg(6, work_array_5);
-        tea_leaf_jacobi_solve_device.setArg(7, work_array_6);
-        tea_leaf_jacobi_solve_device.setArg(8, work_array_7);
-        tea_leaf_jacobi_solve_device.setArg(9, reduce_buf_1);
+        tea_leaf_jacobi_solve_device.setArg(4, vector_Mi);
+        tea_leaf_jacobi_solve_device.setArg(5, reduce_buf_1);
     }
-
-    tea_leaf_init_diag_device.setArg(0, work_array_5);
-    tea_leaf_init_diag_device.setArg(1, work_array_6);
-    tea_leaf_init_diag_device.setArg(2, work_array_7);
 
     tea_leaf_calc_residual_device.setArg(0, u);
     tea_leaf_calc_residual_device.setArg(1, u0);
-    tea_leaf_calc_residual_device.setArg(2, work_array_2);
-    tea_leaf_calc_residual_device.setArg(3, work_array_5);
-    tea_leaf_calc_residual_device.setArg(4, work_array_6);
-    tea_leaf_calc_residual_device.setArg(5, work_array_7);
+    tea_leaf_calc_residual_device.setArg(2, vector_r);
+    tea_leaf_calc_residual_device.setArg(3, vector_Kx);
+    tea_leaf_calc_residual_device.setArg(4, vector_Ky);
 
-    tea_leaf_cheby_calc_2norm_device.setArg(1, reduce_buf_1);
+    tea_leaf_calc_2norm_device.setArg(2, reduce_buf_1);
 
     // both finalise the same
     tea_leaf_finalise_device.setArg(0, density);
     tea_leaf_finalise_device.setArg(1, u);
     tea_leaf_finalise_device.setArg(2, energy1);
+
+    tea_leaf_init_common_device.setArg(0, density);
+    tea_leaf_init_common_device.setArg(1, energy1);
+    tea_leaf_init_common_device.setArg(2, vector_Kx);
+    tea_leaf_init_common_device.setArg(3, vector_Ky);
+    tea_leaf_init_common_device.setArg(4, u0);
+    tea_leaf_init_common_device.setArg(5, u);
+
+    // block
+    tea_leaf_block_init_device.setArg(0, vector_r);
+    tea_leaf_block_init_device.setArg(1, vector_z);
+    tea_leaf_block_init_device.setArg(2, cp);
+    tea_leaf_block_init_device.setArg(3, bfp);
+    tea_leaf_block_init_device.setArg(4, vector_Kx);
+    tea_leaf_block_init_device.setArg(5, vector_Ky);
+
+    tea_leaf_block_solve_device.setArg(0, vector_r);
+    tea_leaf_block_solve_device.setArg(1, vector_z);
+    tea_leaf_block_solve_device.setArg(2, cp);
+    tea_leaf_block_solve_device.setArg(3, bfp);
+    tea_leaf_block_solve_device.setArg(4, vector_Kx);
+    tea_leaf_block_solve_device.setArg(5, vector_Ky);
+
+    tea_leaf_init_jac_diag_device.setArg(0, vector_Mi);
+    tea_leaf_init_jac_diag_device.setArg(1, vector_Kx);
+    tea_leaf_init_jac_diag_device.setArg(2, vector_Ky);
 
     fprintf(DBGOUT, "Kernel arguments set\n");
 }

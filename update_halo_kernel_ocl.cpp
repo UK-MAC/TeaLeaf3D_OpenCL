@@ -38,14 +38,14 @@ int depth)
         CloverChunk::enqueueKernel(update_halo_##face##_device, \
             __LINE__, __FILE__, \
             cl::NullRange, \
-            update_##dir##_global_size[depth-1], \
-            update_##dir##_local_size[depth-1]); \
+            update_##dir##_global_size[depth], \
+            update_##dir##_local_size[depth]); \
     }
 
     CHECK_LAUNCH(back, fb)
     CHECK_LAUNCH(front, fb)
-    CHECK_LAUNCH(bottom, ud)
-    CHECK_LAUNCH(top, ud)
+    CHECK_LAUNCH(bottom, bt)
+    CHECK_LAUNCH(top, bt)
     CHECK_LAUNCH(left, lr)
     CHECK_LAUNCH(right, lr)
 }

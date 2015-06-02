@@ -242,9 +242,9 @@ void CloverChunk::tea_leaf_kernel_jacobi
 /********************/
 
 extern "C" void tea_leaf_kernel_init_common_ocl_
-(const int * coefficient, double * dt, double * rx, double * ry, int * chunk_neighbours)
+(const int * coefficient, double * dt, double * rx, double * ry, double * rz, int * chunk_neighbours)
 {
-    chunk.tea_leaf_init_common(*coefficient, *dt, rx, ry, chunk_neighbours);
+    chunk.tea_leaf_init_common(*coefficient, *dt, rx, ry, rz, chunk_neighbours);
 }
 
 // used by both
@@ -261,7 +261,7 @@ extern "C" void tea_leaf_calc_residual_ocl_
 }
 
 void CloverChunk::tea_leaf_init_common
-(int coefficient, double dt, double * rx, double * ry, int * chunk_neighbours)
+(int coefficient, double dt, double * rx, double * ry, double * rz, int * chunk_neighbours)
 {
     if (coefficient != CONDUCTIVITY && coefficient != RECIP_CONDUCTIVITY)
     {
@@ -377,7 +377,7 @@ void CloverChunk::ppcg_inner
     for (int step_depth = 1 + (halo_allocate_depth - halo_exchange_depth);
         step_depth <= halo_allocate_depth; step_depth++)
     {
-        size_t step_offset[2] = {step_depth, step_depth, step_depth};
+        size_t step_offset[3] = {step_depth, step_depth, step_depth};
         size_t step_global_size[3] = {
             x_max + (halo_allocate_depth-step_depth)*2,
             y_max + (halo_allocate_depth-step_depth)*2,
@@ -401,10 +401,18 @@ void CloverChunk::ppcg_inner
         {
             step_global_size[1] -= (halo_exchange_depth-step_depth);
         }
-        // TODO z dimension
+        if (chunk_neighbours[CHUNK_BACK - 1] == EXTERNAL_FACE)
+        {
+            step_offset[2] = halo_allocate_depth;
+            step_global_size[2] -= (halo_exchange_depth-step_depth);
+        }
+        if (chunk_neighbours[CHUNK_FRONT - 1] == EXTERNAL_FACE)
+        {
+            step_global_size[2] -= (halo_exchange_depth-step_depth);
+        }
 
-        cl::NDRange step_offset_range(step_offset[0], step_offset[1]);
-        cl::NDRange step_global_size_range(step_global_size[0], step_global_size[1]);
+        cl::NDRange step_offset_range(step_offset[0], step_offset[1], step_offset[2]);
+        cl::NDRange step_global_size_range(step_global_size[0], step_global_size[1], step_global_size[2]);
 
         enqueueKernel(tea_leaf_ppcg_solve_update_r_device, __LINE__, __FILE__,
                       step_offset_range,
