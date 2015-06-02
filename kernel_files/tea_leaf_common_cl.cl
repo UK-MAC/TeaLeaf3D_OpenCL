@@ -3,14 +3,14 @@
 
 __kernel void tea_leaf_finalise
 (__global const double * __restrict const density,
- __global const double * __restrict const u1,
+ __global const double * __restrict const u,
  __global       double * __restrict const energy)
 {
     __kernel_indexes;
 
     if (WITHIN_BOUNDS)
     {
-        energy[THARR3D(0, 0, 0, 0, 0)] = u1[THARR3D(0, 0, 0, 0, 0)]/density[THARR3D(0, 0, 0, 0, 0)];
+        energy[THARR3D(0, 0, 0, 0, 0)] = u[THARR3D(0, 0, 0, 0, 0)]/density[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 

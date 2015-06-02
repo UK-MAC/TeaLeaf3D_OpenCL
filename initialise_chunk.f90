@@ -29,15 +29,15 @@ SUBROUTINE initialise_chunk(chunk)
 
   REAL(KIND=8) :: xmin,ymin,zmin,dx,dy,dz
 
-  dx=(grid%xmax-grid%xmin)/float(grid%x_cells)
-  dy=(grid%ymax-grid%ymin)/float(grid%y_cells)
-  dz=(grid%zmax-grid%zmin)/float(grid%z_cells)
+  dx=(grid%xmax-grid%xmin)/REAL(grid%x_cells)
+  dy=(grid%ymax-grid%ymin)/REAL(grid%y_cells)
+  dz=(grid%zmax-grid%zmin)/REAL(grid%z_cells)
 
-  xmin=grid%xmin+dx*float(chunks(chunk)%field%left-1)
+  xmin=grid%xmin+dx*REAL(chunks(chunk)%field%left-1)
 
-  ymin=grid%ymin+dy*float(chunks(chunk)%field%bottom-1)
+  ymin=grid%ymin+dy*REAL(chunks(chunk)%field%bottom-1)
 
-  zmin=grid%zmin+dz*float(chunks(chunk)%field%back-1)
+  zmin=grid%zmin+dz*REAL(chunks(chunk)%field%back-1)
 
   IF(use_opencl_kernels)THEN
     CALL initialise_chunk_kernel_ocl(xmin,ymin,zmin,dx,dy,dz)

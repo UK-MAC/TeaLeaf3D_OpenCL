@@ -1,4 +1,5 @@
 #include "./kernel_files/macros_cl.cl"
+
 __kernel void initialise_chunk_first
 (const double d_xmin,
  const double d_ymin,
@@ -22,21 +23,21 @@ __kernel void initialise_chunk_first
     __kernel_indexes;
 
     // fill out x arrays
-    if (row == 0 && slice == 0 && column <= (x_max + HALO_DEPTH))
+    if (row == 0 && slice == 0 && column <= (x_max + 2*HALO_DEPTH))
     {
         vertexx[column] = d_xmin + d_dx*(double)((((int)column) - 1) - HALO_DEPTH + 1);
         vertexdx[column] = d_dx;
     }
 
     // fill out y arrays
-    if (column == 0 && slice == 0 && row <= (y_max + HALO_DEPTH))
+    if (column == 0 && slice == 0 && row <= (y_max + 2*HALO_DEPTH))
     {
         vertexy[row] = d_ymin + d_dy*(double)((((int)row) - 1) - HALO_DEPTH + 1);
         vertexdy[row] = d_dy;
     }
 
     // fill out y arrays
-    if (row == 0 && column == 0 && slice <= (z_max + HALO_DEPTH))
+    if (row == 0 && column == 0 && slice <= (z_max + 2*HALO_DEPTH))
     {
         vertexz[slice] = d_zmin + d_dz*(double)((((int)slice) - 1) - HALO_DEPTH + 1);
         vertexdz[slice] = d_dz;
@@ -84,10 +85,10 @@ __kernel void initialise_chunk_second
 
     if (WITHIN_BOUNDS)
     {
-        volume[THARR3D(0, 0, 0,0,0)] = d_dx * d_dy * d_dz;
-        xarea[THARR3D(0, 0,0, 1,0)] = d_dy * d_dz;
-        yarea[THARR3D(0, 0,0, 0,1)] = d_dx * d_dz;
-        zarea[THARR3D(0, 0,0, 0,0)] = d_dx * d_dy;
+        volume[THARR3D(0, 0, 0, 0, 0)] = d_dx * d_dy * d_dz;
+        xarea[THARR3D(0, 0, 0, 1, 0)] = d_dy * d_dz;
+        yarea[THARR3D(0, 0, 0, 0, 1)] = d_dx * d_dz;
+        zarea[THARR3D(0, 0, 0, 0, 0)] = d_dx * d_dy;
     }
 }
 

@@ -19,7 +19,7 @@
     const size_t loc_row = get_local_id(1);            \
     const size_t loc_slice = get_local_id(2);            \
     const size_t lid = loc_slice*LOCAL_X*LOCAL_Y + loc_row*LOCAL_X + loc_column;    \
-    const size_t gid = slice*get_global_size(1)*get_global_size(0) + row*get_global_size(0) + column;
+    const size_t gid = slice*get_global_size(0)*get_global_size(1) + row*get_global_size(0) + column;
 
 #define _THARR2D(x_offset, y_offset, big_row)        \
     (                                               \
@@ -123,7 +123,7 @@
         + (Ky[THARR3D(0, 1, 0, 0, 0)] + Ky[THARR3D(0, 0, 0, 0, 0)]) \
         + (Kz[THARR3D(0, 0, 1, 0, 0)] + Kz[THARR3D(0, 0, 0, 0, 0)]))*vec[THARR3D(0, 0, 0, 0, 0)]    \
         - (Kx[THARR3D(1, 0, 0, 0, 0)]*vec[THARR3D(1, 0, 0, 0, 0)] \
-         +  Kx[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(-1, 0, 0, 0, 0)]) \
+        +  Kx[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(-1, 0, 0, 0, 0)]) \
         - (Ky[THARR3D(0, 1, 0, 0, 0)]*vec[THARR3D(0, 1, 0, 0, 0)] \
          + Ky[THARR3D(0, 0, 0, 0, 0)]*vec[THARR3D(0, -1, 0, 0, 0)])    \
         - (Kz[THARR3D(0, 0, 1, 0, 0)]*vec[THARR3D(0, 0, 1, 0, 0)] \

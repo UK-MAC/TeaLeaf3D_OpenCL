@@ -74,10 +74,12 @@ void CloverChunk::initProgram
     compileKernel(options, "./kernel_files/set_field_cl.cl", "set_field", set_field_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/field_summary_cl.cl", "field_summary", field_summary_device, 0, 0, 0, 0, 0, 0);
 
-    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_top", update_halo_top_device, 0, 0, 0, 0, 0, 0);
-    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_bottom", update_halo_bottom_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_left", update_halo_left_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_right", update_halo_right_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_bottom", update_halo_bottom_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_top", update_halo_top_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_back", update_halo_back_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/update_halo_cl.cl", "update_halo_front", update_halo_front_device, 0, 0, 0, 0, 0, 0);
 
     compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_left_buffer", pack_left_buffer_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_left_buffer", unpack_left_buffer_device, 0, 0, 0, 0, 0, 0);
@@ -87,6 +89,10 @@ void CloverChunk::initProgram
     compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_bottom_buffer", unpack_bottom_buffer_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_top_buffer", pack_top_buffer_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_top_buffer", unpack_top_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_back_buffer", pack_back_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_back_buffer", unpack_back_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "pack_front_buffer", pack_front_buffer_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/pack_kernel_cl.cl", "unpack_front_buffer", unpack_front_buffer_device, 0, 0, 0, 0, 0, 0);
 
     if (tea_solver == TEA_ENUM_CG ||
     tea_solver == TEA_ENUM_CHEBYSHEV ||

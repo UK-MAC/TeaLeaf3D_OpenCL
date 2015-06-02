@@ -1,4 +1,5 @@
 #include "./kernel_files/macros_cl.cl"
+
 __kernel void generate_chunk
 (__global const double * __restrict const vertexx,
  __global const double * __restrict const vertexy,
@@ -44,8 +45,8 @@ __kernel void generate_chunk
             && vertexz[1 + slice] >= state_zmin[state]
             && vertexz[slice] < state_zmax[state])
             {
-                energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
-                density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
+                energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[state];
+                density0[THARR3D(0, 0, 0, 0, 0)] = state_density[state];
             }
         }
         else if (state_geometry[state] == g_circ)
@@ -57,16 +58,16 @@ __kernel void generate_chunk
 
             if (radius <= state_radius[state])
             {
-                energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
-                density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
+                energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[state];
+                density0[THARR3D(0, 0, 0, 0, 0)] = state_density[state];
             }
         }
         else if (state_geometry[state] == g_point)
         {
             if (vertexx[column] == x_cent && vertexy[row] == y_cent && vertexz[slice] == z_cent)
             {
-                energy0[THARR3D(0, 0, 0,0,0)] = state_energy[state];
-                density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
+                energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[state];
+                density0[THARR3D(0, 0, 0, 0, 0)] = state_density[state];
             }
         }
 
@@ -98,8 +99,8 @@ __kernel void generate_chunk_init
 
     if (WITHIN_BOUNDS)
     {
-        energy0[THARR3D(0, 0, 0,0,0)] = state_energy[0];
-        density0[THARR3D(0, 0, 0,0,0)] = state_density[0];
+        energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[0];
+        density0[THARR3D(0, 0, 0, 0, 0)] = state_density[0];
     }
 }
 

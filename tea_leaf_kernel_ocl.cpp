@@ -304,8 +304,8 @@ void CloverChunk::tea_leaf_init_common
     ZERO_BOUNDARY(right, lr, x)
     ZERO_BOUNDARY(bottom, bt, y)
     ZERO_BOUNDARY(top, bt, y)
-    ZERO_BOUNDARY(bottom, fb, z)
-    ZERO_BOUNDARY(top, fb, z)
+    ZERO_BOUNDARY(back, fb, z)
+    ZERO_BOUNDARY(front, fb, z)
 
     generate_chunk_init_u_device.setArg(1, energy1);
     ENQUEUE_OFFSET(generate_chunk_init_u_device);
