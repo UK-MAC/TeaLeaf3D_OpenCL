@@ -13,13 +13,11 @@ CloverChunk chunk;
 extern "C" void initialise_ocl_
 (int* in_x_min, int* in_x_max,
  int* in_y_min, int* in_y_max,
- int* in_z_min, int* in_z_max,
- int* profiler_on)
+ int* in_z_min, int* in_z_max);
 {
     chunk = CloverChunk(in_x_min, in_x_max,
                         in_y_min, in_y_max,
-                        in_z_min, in_z_max,
-                        profiler_on);
+                        in_z_min, in_z_max);
 }
 
 // default ctor
@@ -34,15 +32,13 @@ extern "C" void timer_c_(double*);
 CloverChunk::CloverChunk
 (int* in_x_min, int* in_x_max,
  int* in_y_min, int* in_y_max,
- int* in_z_min, int* in_z_max,
- int* in_profiler_on)
+ int* in_z_min, int* in_z_max);
 :x_min(*in_x_min),
  x_max(*in_x_max),
  y_min(*in_y_min),
  y_max(*in_y_max),
  z_min(*in_z_min),
- z_max(*in_z_max),
- profiler_on(*in_profiler_on)
+ z_max(*in_z_max)
 {
 #ifdef OCL_VERBOSE
     DBGOUT = stdout;
@@ -139,8 +135,10 @@ void CloverChunk::initOcl
     }
 
     // Read in from file - easier than passing in from fortran
-    FILE* input = fopen("tea.in", "r");
-    if (NULL == input)
+    std::ifstream input("tea.in");
+    input.exceptions(std::ifstream::badbit);
+
+    if (!input.is_open())
     {
         // should never happen
         DIE("Input file not found\n");
@@ -149,22 +147,30 @@ void CloverChunk::initOcl
     // use first device whatever happens (ignore MPI rank) for running across different platforms
     bool usefirst = paramEnabled(input, "opencl_usefirst");
 
-    std::string desired_vendor = platformRead(input);
+    profiler_on = paramEnabled(input, "profiler_on");
 
-    int preferred_device = preferredDevice(input);
+    std::string desired_vendor = readString(input, "opencl_vendor");
+
+    int preferred_device = readInt(input, "opencl_device");
     preferred_device = (preferred_device < 0) ? 0 : preferred_device;
     fprintf(DBGOUT, "Preferred device is %d\n", preferred_device);
 
-    std::string type_name = typeRead(input);
+    std::string type_name = readString(input, "opencl_type");
     desired_type = typeMatch(type_name);
 
-    preconditioner_on = paramEnabled(input, "tl_preconditioner_on");
+    int file_halo_depth = readInt(input, "halo_depth");
+
+    // No error checking - assume fortran does it correctly
+    halo_exchange_depth = file_halo_depth;
+
+    halo_allocate_depth = std::max(file_halo_depth, 2);
 
     bool tl_use_jacobi = paramEnabled(input, "tl_use_jacobi");
     bool tl_use_cg = paramEnabled(input, "tl_use_cg");
     bool tl_use_chebyshev = paramEnabled(input, "tl_use_chebyshev");
     bool tl_use_ppcg = paramEnabled(input, "tl_use_ppcg");
 
+    // set solve
     if(!rank)fprintf(stdout, "Solver to use: ");
     if (tl_use_ppcg)
     {
@@ -192,11 +198,34 @@ void CloverChunk::initOcl
         if(!rank)fprintf(stdout, "Jacobi (no solver specified in tea.in)\n");
     }
 
-    fclose(input);
+    std::string desired_preconditioner = readString(input, "tl_preconditioner_type");
+
+    // set preconditioner type
+    if(!rank)fprintf(stdout, "Preconditioner to use: ");
+    if (desired_preconditioner.find("jac_diag") != std::string::npos)
+    {
+        preconditioner_type = TL_PREC_JAC_DIAG;
+        if(!rank)fprintf(stdout, "Diagonal Jacobi\n");
+    }
+    else if (desired_preconditioner.find("jac_block") != std::string::npos)
+    {
+        preconditioner_type = TL_PREC_JAC_BLOCK;
+        if(!rank)fprintf(stdout, "Block Jacobi\n");
+    }
+    else if (desired_preconditioner.find("none") != std::string::npos)
+    {
+        preconditioner_type = TL_PREC_NONE;
+        if(!rank)fprintf(stdout, "None\n");
+    }
+    else
+    {
+        preconditioner_type = TL_PREC_NONE;
+        if(!rank)fprintf(stdout, "None (no preconditioner specified in tea.in)\n");
+    }
 
     if (desired_vendor.find("no_setting") != std::string::npos)
     {
-        DIE("No opencl_vendor specified in clover.in\n");
+        DIE("No opencl_vendor specified in tea.in\n");
     }
     else if (desired_vendor.find("list") != std::string::npos)
     {

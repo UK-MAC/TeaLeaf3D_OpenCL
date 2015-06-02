@@ -3,22 +3,22 @@
 
 extern "C" void ocl_pack_buffers_
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int * depth,
- int * face, double * buffer)
+ int * face, double * host_buffer)
 {
-    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 1, buffer);
+    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 1, host_buffer);
 }
 
 extern "C" void ocl_unpack_buffers_
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS], int * depth,
- int * face, double * buffer)
+ int * face, double * host_buffer)
 {
-    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 0, buffer);
+    chunk.packUnpackAllBuffers(fields, offsets, *depth, *face, 0, host_buffer);
 }
 
 void CloverChunk::packUnpackAllBuffers
 (int fields[NUM_FIELDS], int offsets[NUM_FIELDS],
  const int depth, const int face, const int pack,
- double * buffer)
+ double * host_buffer)
 {
     const int n_exchanged = std::accumulate(fields, fields + NUM_FIELDS, 0);
 
@@ -28,27 +28,27 @@ void CloverChunk::packUnpackAllBuffers
     }
 
     // which buffer is being used for this operation
-    cl::Buffer * side_buffer = NULL;
+    cl::Buffer * device_buffer = NULL;
 
     switch (face)
     {
     case CHUNK_LEFT:
-        side_buffer = &left_buffer;
+        device_buffer = &left_buffer;
         break;
     case CHUNK_RIGHT:
-        side_buffer = &right_buffer;
+        device_buffer = &right_buffer;
         break;
     case CHUNK_BOTTOM:
-        side_buffer = &bottom_buffer;
+        device_buffer = &bottom_buffer;
         break;
     case CHUNK_TOP:
-        side_buffer = &top_buffer;
+        device_buffer = &top_buffer;
         break;
     case CHUNK_BACK:
-        side_buffer = &back_buffer;
+        device_buffer = &back_buffer;
         break;
     case CHUNK_FRONT:
-        side_buffer = &front_buffer;
+        device_buffer = &front_buffer;
         break;
     default:
         DIE("Invalid face identifier %d passed to mpi buffer packing\n", face);
@@ -110,33 +110,36 @@ void CloverChunk::packUnpackAllBuffers
         }
     }
 
-    pack_kernel->setArg(4, *side_buffer);
-    pack_kernel->setArg(5, depth);
+    pack_kernel->setArg(3, *device_buffer);
+    pack_kernel->setArg(4, depth);
 
     // size of this buffer
     size_t side_size = 0;
     // reuse the halo update kernels sizes to launch packing kernels
-    cl::NDRange pack_global, pack_local;
+    cl::NDRange pack_global, pack_local, pack_offset;
 
     switch (face)
     {
     case CHUNK_LEFT:
     case CHUNK_RIGHT:
         side_size = lr_mpi_buf_sz;
-        pack_global = update_lr_global_size[depth-1];
-        pack_local = update_lr_local_size[depth-1];
+        pack_global = update_lr_global_size[depth];
+        pack_local = update_lr_local_size[depth];
+        pack_offset = update_lr_offset[depth];
         break;
     case CHUNK_BOTTOM:
     case CHUNK_TOP:
         side_size = bt_mpi_buf_sz;
-        pack_global = update_ud_global_size[depth-1];
-        pack_local = update_ud_local_size[depth-1];
+        pack_global = update_bt_global_size[depth];
+        pack_local = update_bt_local_size[depth];
+        pack_offset = update_bt_offset[depth];
         break;
     case CHUNK_BACK:
     case CHUNK_FRONT:
         side_size = fb_mpi_buf_sz;
-        pack_global = update_fb_global_size[depth-1];
-        pack_local = update_fb_local_size[depth-1];
+        pack_global = update_fb_global_size[depth];
+        pack_local = update_fb_local_size[depth];
+        pack_offset = update_fb_offset[depth];
         break;
     default:
         DIE("Invalid face identifier %d passed to mpi buffer packing\n", face);
@@ -144,9 +147,9 @@ void CloverChunk::packUnpackAllBuffers
 
     if (!pack)
     {
-        queue.enqueueWriteBuffer(*side_buffer, CL_TRUE, 0,
-            n_exchanged*depth*side_size,
-            buffer);
+        queue.enqueueWriteBuffer(*device_buffer, CL_TRUE, 0,
+            n_exchanged*side_size*sizeof(double),
+            host_buffer);
     }
 
     for (int ii = 0; ii < NUM_FIELDS; ii++)
@@ -172,6 +175,7 @@ void CloverChunk::packUnpackAllBuffers
             case FIELD_u:
             case FIELD_p:
             case FIELD_sd:
+            case FIELD_r:
                 break;
             default:
                 DIE("Invalid field number %d in choosing _inc values\n", which_field);
@@ -191,8 +195,9 @@ void CloverChunk::packUnpackAllBuffers
             CASE_BUF(energy0); break;
             CASE_BUF(energy1); break;
             CASE_BUF(u); break;
-            CASE_BUF(work_array_1); break;
-            CASE_BUF(work_array_8); break;
+            CASE_BUF(vector_p); break;
+            CASE_BUF(vector_sd); break;
+            CASE_BUF(vector_r); break;
             default:
                 DIE("Invalid face %d passed to left/right pack buffer\n", which_field);
             }
@@ -202,12 +207,11 @@ void CloverChunk::packUnpackAllBuffers
             // set args + launch kernel
             pack_kernel->setArg(0, x_inc);
             pack_kernel->setArg(1, y_inc);
-            pack_kernel->setArg(2, z_inc);
-            pack_kernel->setArg(3, *device_array);
-            pack_kernel->setArg(6, offsets[ii]);
+            pack_kernel->setArg(2, *device_array);
+            pack_kernel->setArg(5, offsets[ii]);
 
             enqueueKernel(*pack_kernel, __LINE__, __FILE__,
-                          cl::NullRange,
+                          pack_offset,
                           pack_global,
                           pack_local);
         }
@@ -216,9 +220,9 @@ void CloverChunk::packUnpackAllBuffers
     if (pack)
     {
         queue.finish();
-        queue.enqueueReadBuffer(*side_buffer, CL_TRUE, 0,
-            n_exchanged*depth*side_size,
-            buffer);
+        queue.enqueueReadBuffer(*device_buffer, CL_TRUE, 0,
+            n_exchanged*side_size*sizeof(double),
+            host_buffer);
     }
 }
 

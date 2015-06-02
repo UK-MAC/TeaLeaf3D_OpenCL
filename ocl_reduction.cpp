@@ -131,20 +131,19 @@ void CloverChunk::initReduction
         // name of reduction kernel, data type, what the reduction does
         #define MAKE_REDUCE_KNL(name, data_type, init_val)          \
         {                                                           \
-            std::string red_options = options.str()                 \
-                + "-D red_"+#name+" "                               \
-                + "-D reduce_t="#data_type+" "                      \
-                + "-D INIT_RED_VAL="+#init_val+" ";                 \
+            options << "-D red_" << #name << " ";                   \
+            options << "-D reduce_t="#data_type << " ";             \
+            options << "-D INIT_RED_VAL=" << #init_val << " ";      \
             fprintf(DBGOUT, "Making reduction kernel '%s_%s' ",     \
                     #name, #data_type);                             \
             fprintf(DBGOUT, "with options string:\n%s\n",           \
-                    red_options.c_str());                           \
+                    options.str().c_str());                         \
             try                                                     \
             {                                                       \
-                compileKernel(red_options,                          \
+                compileKernel(options,                              \
                     "./kernel_files/reduction_cl.cl",               \
                     "reduction",                                    \
-                    name##_##data_type);                            \
+                    name##_##data_type, 0, 0, 0, 0);                \
             }                                                       \
             catch (KernelCompileError err)                          \
             {                                                       \

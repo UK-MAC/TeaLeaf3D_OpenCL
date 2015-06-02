@@ -104,7 +104,6 @@ void CloverChunk::enqueueKernel
             fprintf(stdout, "Local size:  [%zu %zu %zu]\n", local_range[0], local_range[1], local_range[2]);
             fprintf(stdout, "Offset size: [%zu %zu %zu]\n", offset_range[0],offset_range[1], offset_range[2]);
             fprintf(stdout, "\n");
-            fflush(stdout);
             #endif
 
             queue.enqueueNDRangeKernel(kernel,
@@ -113,6 +112,7 @@ void CloverChunk::enqueueKernel
                                        local_range,
                                        events,
                                        prof_event);
+
             prof_event->wait();
 
             prof_event->getProfilingInfo(CL_PROFILING_COMMAND_START, &start);
@@ -313,9 +313,9 @@ std::vector<double> CloverChunk::dumpArray
 {
     // number of bytes to allocate for 3d array
     #define BUFSZ3D(x_extra, y_extra)   \
-        ( ((x_max) + 4 + x_extra)       \
-        * ((y_max) + 4 + y_extra)       \
-        * ((z_max) + 4 + z_extra)       \
+        ( ((x_max) + 2*halo_allocate_depth + x_extra)       \
+        * ((y_max) + 2*halo_allocate_depth + y_extra)       \
+        * ((z_max) + 2*halo_allocate_depth + z_extra)       \
         * sizeof(double) )
 
     std::vector<double> host_buffer(BUFSZ3D(x_extra, y_extra)/sizeof(double));
@@ -341,5 +341,4 @@ std::vector<double> CloverChunk::dumpArray
 
     return host_buffer;
 }
-
 

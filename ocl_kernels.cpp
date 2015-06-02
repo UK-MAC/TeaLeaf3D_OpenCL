@@ -13,19 +13,21 @@ void CloverChunk::initProgram
     options << "-DCLOVER_NO_BUILTINS ";
 #endif
 
-    if (preconditioner_on)
-    {
-        // use jacobi preconditioner when running CG solver
-        options << "-DUSE_PRECONDITIONER ";
-    }
+    options << "-DPRECONDITIONER=" << preconditioner_type << " ";
 
     // pass in these values so you don't have to pass them in to every kernel
-    options << "-Dx_min=" << x_min << " ";
     options << "-Dx_max=" << x_max << " ";
-    options << "-Dy_min=" << y_min << " ";
     options << "-Dy_max=" << y_max << " ";
-    options << "-Dz_min=" << z_min << " ";
     options << "-Dz_max=" << z_max << " ";
+
+    options << "-DJACOBI_BLOCK_SIZE=" << JACOBI_BLOCK_SIZE << " ";
+
+    // if it doesn't subdivide exactly, need to make sure it doesn't go off the edge
+    // rather expensive check so don't always do it
+    if (y_max % JACOBI_BLOCK_SIZE)
+    {
+        options << "-DBLOCK_TOP_CHECK ";
+    }
 
     // local sizes
     options << "-DBLOCK_SZ=" << LOCAL_X*LOCAL_Y*LOCAL_Z << " ";
@@ -46,11 +48,12 @@ void CloverChunk::initProgram
     // device type in the form "-D..."
     options << device_type_prepro;
 
-    const std::string options_str = options.str();
+    // depth of halo in terms of memory allocated, NOT in terms of the actual halo size (which might be different)
+    options << "-DHALO_DEPTH=" << halo_allocate_depth << " ";
 
     if (!rank)
     {
-        fprintf(DBGOUT, "Compiling kernels with options:\n%s\n", options_str.c_str());
+        fprintf(DBGOUT, "Compiling kernels with options:\n%s\n", options.str().c_str());
         fprintf(stdout, "Compiling kernels (may take some time)...");
         fflush(stdout);
     }
@@ -128,11 +131,29 @@ void CloverChunk::initProgram
     }
 }
 
+CloverChunk::launch_specs_t CloverChunk::findPaddingSize
+(int smin, int smax, int vmin, int vmax, int hmin, int hmax)
+{
+    size_t global_horz_size = (-(hmin)) + (hmax) + x_max;
+    while (global_horz_size % LOCAL_X) global_horz_size++;
+    size_t global_vert_size = (-(vmin)) + (vmax) + y_max;
+    while (global_vert_size % LOCAL_Y) global_vert_size++;
+    size_t global_slice_size = (-(smin)) + (smax) + z_max;
+    while (global_slice_size % LOCAL_Z) global_slice_size++;
+    launch_specs_t cur_specs;
+    cur_specs.global = cl::NDRange(global_horz_size, global_vert_size, global_slize_size);
+    cur_specs.offset = cl::NDRange((halo_allocate_depth) + (hmin), (halo_allocate_depth) + (vmin), (halo_allocate_depth) + (smin));
+    return cur_specs;
+}
+
 void CloverChunk::compileKernel
-(const std::string& options_orig,
+(std::stringstream& options_orig_knl,
  const std::string& source_name,
  const char* kernel_name,
- cl::Kernel& kernel)
+ cl::Kernel& kernel,
+ int launch_x_min, int launch_x_max,
+ int launch_y_min, int launch_y_max,
+ int launch_z_min, int launch_z_max)
 {
     std::string source_str;
 
@@ -142,6 +163,19 @@ void CloverChunk::compileKernel
             (std::istreambuf_iterator<char>(ifile)),
             (std::istreambuf_iterator<char>()));
     }
+
+    std::stringstream options_orig;
+    options_orig << options_orig_knl.str();
+
+    options_orig << "-D KERNEL_X_MIN=" << launch_x_min << " ";
+    options_orig << "-D KERNEL_X_MAX=" << launch_x_max << " ";
+    options_orig << "-D KERNEL_Y_MIN=" << launch_y_min << " ";
+    options_orig << "-D KERNEL_Y_MAX=" << launch_y_max << " ";
+    options_orig << "-D KERNEL_Z_MIN=" << launch_z_min << " ";
+    options_orig << "-D KERNEL_Z_MAX=" << launch_z_max << " ";
+
+    std::string kernel_additional = std::string(kernel_name) + std::string("_device");
+    launch_specs[kernel_additional] = findPaddingSize(launch_x_min, launch_x_max, launch_y_min, launch_y_max);
 
     fprintf(DBGOUT, "Compiling %s...", kernel_name);
     cl::Program program;
@@ -157,7 +191,7 @@ void CloverChunk::compileKernel
     plusprof << options_orig;
     std::string options(plusprof.str());
 #else
-    std::string options(options_orig);
+    std::string options(options_orig.str());
 #endif
 
     if (built_programs.find(source_name + options) == built_programs.end())
@@ -168,7 +202,7 @@ void CloverChunk::compileKernel
         }
         catch (KernelCompileError err)
         {
-            DIE("Errors in compiling %s:\n%s\n", kernel_name, err.what());
+            DIE("Errors in compiling %s (in %s):\n%s\n", kernel_name, source_name.c_str(), err.what());
         }
 
         built_programs[source_name + options] = program;
@@ -200,7 +234,7 @@ void CloverChunk::compileKernel
                                  NULL));
     if ((LOCAL_X*LOCAL_Y*LOCAL_Z) > max_wg_size)
     {
-        DIE("Work group size %zux%zu is too big for kernel %s"
+        DIE("Work group size %zux%zux%zu is too big for kernel %s"
             " - maximum is %zu\n",
                 LOCAL_X, LOCAL_Y, LOCAL_Z, kernel_name,
                 max_wg_size);
@@ -234,7 +268,7 @@ cl::Program CloverChunk::compileProgram
     }
     catch (cl::Error e)
     {
-        fprintf(stderr, "Errors in creating program\n");
+        fprintf(stderr, "Errors in creating program built with:\n%s\n", options.c_str());
 
         try
         {
@@ -250,6 +284,7 @@ cl::Program CloverChunk::compileProgram
         throw KernelCompileError(errs.c_str());
     }
 
+    // return
     errstream << program.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device);
     std::string errs(errstream.str());
 
@@ -268,13 +303,12 @@ void CloverChunk::initSizes
     fprintf(DBGOUT, "Local size = %zux%zux%zu\n", LOCAL_X, LOCAL_Y, LOCAL_Z);
 
     // pad the global size so the local size fits
-    const size_t glob_x = x_max+5 +
-        (((x_max+5)%LOCAL_X == 0) ? 0 : (LOCAL_X - ((x_max+5)%LOCAL_X)));
-    const size_t glob_y = y_max+5 +
-        (((y_max+5)%LOCAL_Y == 0) ? 0 : (LOCAL_Y - ((y_max+5)%LOCAL_Y)));
-    const size_t glob_z = z_max+5 +
-        (((z_max+5)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max+5)%LOCAL_Z)));
-    total_cells = glob_x*glob_y*glob_z;
+    const size_t glob_x = x_max+4 +
+        (((x_max+4)%LOCAL_X == 0) ? 0 : (LOCAL_X - ((x_max+4)%LOCAL_X)));
+    const size_t glob_y = y_max+4 +
+        (((y_max+4)%LOCAL_Y == 0) ? 0 : (LOCAL_Y - ((y_max+4)%LOCAL_Y)));
+    const size_t glob_z = z_max+4 +
+        (((z_max+4)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max+4)%LOCAL_Z)));
 
     fprintf(DBGOUT, "Global size = %zux%zux%zu\n", glob_x, glob_y, glob_z);
     global_size = cl::NDRange(glob_x, glob_y, glob_z);
@@ -291,6 +325,7 @@ void CloverChunk::initSizes
         (((y_max)%LOCAL_Y == 0) ? 0 : (LOCAL_Y - ((y_max)%LOCAL_Y)));
     const size_t red_z = z_max +
         (((z_max)%LOCAL_Z == 0) ? 0 : (LOCAL_Z - ((z_max)%LOCAL_Z)));
+
     reduced_cells = red_x*red_y*red_z;
 
     /*
@@ -298,9 +333,7 @@ void CloverChunk::initSizes
      *  reduction, so can just fit it to the row/column even if its not a pwoer
      *  of 2
      */
-
     // get max local size for the update kernels
-    // different directions are near identical, so should have the same limit
     size_t max_update_wg_sz;
     cl::detail::errHandler(
         clGetKernelWorkGroupInfo(update_halo_bottom_device(),
@@ -351,17 +384,17 @@ void CloverChunk::initSizes
     update_fb_local_size[1] = cl::NDRange(local_row_size, local_column_size/local_divide, 2);
 
     // start off doing minimum amount of work
-    size_t global_row_size = x_max + 5;
-    size_t global_column_size = y_max + 5;
-    size_t global_slice_size = z_max + 5;
+    size_t global_bt_update_size = x_max + 4;
+    size_t global_lr_update_size = y_max + 4;
+    size_t global_fb_update_size = z_max + 4;
 
     // increase just to fit in with local work group sizes
-    while (global_row_size % local_row_size)
-        global_row_size++;
-    while (global_column_size % local_column_size)
-        global_column_size++;
-    while (global_slice_size % local_slice_size)
-        global_slice_size++;
+    while (global_bt_update_size % local_row_size)
+        global_bt_update_size++;
+    while (global_lr_update_size % local_column_size)
+        global_lr_update_size++;
+    while (global_fb_update_size % local_fb_update_size)
+        global_fb_update_size++;
 
     // create ndranges
     update_lr_global_size[0] = cl::NDRange(1, global_column_size, global_slice_size);
@@ -387,33 +420,6 @@ void CloverChunk::initSizes
 
     fprintf(DBGOUT, "Update halo parameters calculated\n");
 
-    /*
-     *  figure out offset launch sizes for the various kernels
-     *  no 'smart' way to do this?
-     */
-    #define FIND_PADDING_SIZE(knl, smin, smax, vmin, vmax, hmin, hmax)  \
-    {                                                                   \
-        size_t global_horz_size = (-(hmin)) + (hmax) + x_max;           \
-        while (global_horz_size % LOCAL_X) global_horz_size++;          \
-        size_t global_vert_size = (-(vmin)) + (vmax) + y_max;           \
-        while (global_vert_size % LOCAL_Y) global_vert_size++;          \
-        size_t global_slic_size = (-(smin)) + (smax) + z_max;           \
-        while (global_slic_size % LOCAL_Z) global_slic_size++;          \
-        launch_specs_t cur_specs;                                       \
-        cur_specs.global = cl::NDRange(global_horz_size,                \
-            global_vert_size, global_slic_size);                        \
-        cur_specs.offset = cl::NDRange((x_min + 1) + (hmin),            \
-            (y_min + 1) + (vmin), (z_min + 1) + (smin));                \
-        launch_specs[#knl"_device"] = cur_specs;                        \
-    }
-
-    FIND_PADDING_SIZE(set_field, 0, 0, 0, 0, 0, 0);
-    FIND_PADDING_SIZE(field_summary, 0, 0, 0, 0, 0, 0);
-
-    FIND_PADDING_SIZE(initialise_chunk_first, 0, 3, 0, 3, 0, 3);
-    FIND_PADDING_SIZE(initialise_chunk_second, -2, 2, -2, 2, -2, 2);
-    FIND_PADDING_SIZE(generate_chunk_init, -2, 2, -2, 2, -2, 2);
-    FIND_PADDING_SIZE(generate_chunk, -2, 2, -2, 2, -2, 2);
 
     if (tea_solver == TEA_ENUM_CG ||
     tea_solver == TEA_ENUM_CHEBYSHEV ||

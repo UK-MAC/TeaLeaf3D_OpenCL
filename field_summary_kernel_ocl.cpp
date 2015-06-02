@@ -10,6 +10,7 @@ extern "C" void field_summary_kernel_ocl_
 void CloverChunk::field_summary_kernel
 (double* vol, double* mass, double* ie, double* temp)
 {
+    //ENQUEUE(field_summary_device);
     ENQUEUE_OFFSET(field_summary_device);
 
     *vol = reduceValue<double>(sum_red_kernels_double, reduce_buf_1);

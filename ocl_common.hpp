@@ -7,12 +7,12 @@
 #include <cstdlib>
 #include <map>
 
-// 2 dimensional arrays - use a 2D tile for local group
-const static size_t LOCAL_X = 64;
-const static size_t LOCAL_Y = 2;
-const static size_t LOCAL_Z = 1;
-const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
+#define JACOBI_BLOCK_SIZE 4
 
+// 2 dimensional arrays - use a 2D tile for local group
+const static size_t LOCAL_Y = JACOBI_BLOCK_SIZE;
+const static size_t LOCAL_X = 128/LOCAL_Y;
+const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y);
 
 // used in update_halo and for copying back to host for mpi transfers
 #define FIELD_density       1
@@ -21,9 +21,11 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 #define FIELD_u             4
 #define FIELD_p             5
 #define FIELD_sd            6
-#define NUM_FIELDS          6
-#define FIELD_work_array_1 FIELD_p
-#define FIELD_work_array_8 FIELD_sd
+#define FIELD_r             7
+#define NUM_FIELDS          7
+#define FIELD_vector_p FIELD_p
+#define FIELD_vector_sd FIELD_sd
+#define FIELD_vector_r FIELD_r
 
 #define NUM_BUFFERED_FIELDS 5
 
@@ -47,6 +49,11 @@ const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y,LOCAL_Z);
 #define X_FACE_DATA 3
 #define Y_FACE_DATA 4
 #define Z_FACE_DATA 5
+
+// preconditioners
+#define tl_prec_none        1
+#define tl_prec_jac_diag    2
+#define tl_prec_jac_block   3
 
 typedef struct cell_info {
     const int x_extra;
@@ -94,6 +101,7 @@ private:
 
     cl::Kernel generate_chunk_device;
     cl::Kernel generate_chunk_init_device;
+    cl::Kernel generate_chunk_init_u_device;
 
     cl::Kernel initialise_chunk_first_device;
     cl::Kernel initialise_chunk_second_device;
@@ -134,43 +142,44 @@ private:
     int tea_solver;
 
     // tea leaf
-    cl::Kernel tea_leaf_cg_init_u_device;
-    cl::Kernel tea_leaf_cg_init_directions_device;
-    cl::Kernel tea_leaf_cg_init_others_device;
+    cl::Kernel tea_leaf_cg_solve_init_p_device;
     cl::Kernel tea_leaf_cg_solve_calc_w_device;
     cl::Kernel tea_leaf_cg_solve_calc_ur_device;
+    cl::Kernel tea_leaf_cg_solve_calc_rrn_device;
     cl::Kernel tea_leaf_cg_solve_calc_p_device;
-    cl::Buffer z;
+    cl::Buffer vector_z;
 
     // chebyshev solver
     cl::Kernel tea_leaf_cheby_solve_init_p_device;
     cl::Kernel tea_leaf_cheby_solve_calc_u_device;
     cl::Kernel tea_leaf_cheby_solve_calc_p_device;
-    cl::Kernel tea_leaf_cheby_calc_2norm_device;
+    cl::Kernel tea_leaf_calc_2norm_device;
 
     cl::Kernel tea_leaf_ppcg_solve_init_sd_device;
     cl::Kernel tea_leaf_ppcg_solve_calc_sd_device;
     cl::Kernel tea_leaf_ppcg_solve_update_r_device;
-    cl::Kernel tea_leaf_ppcg_solve_init_p_device;
 
     // used to hold the alphas/beta used in chebyshev solver - different from CG ones!
     cl::Buffer ch_alphas_device, ch_betas_device;
 
     // need more for the Kx/Ky arrays
-    cl::Kernel tea_leaf_jacobi_init_device;
     cl::Kernel tea_leaf_jacobi_copy_u_device;
     cl::Kernel tea_leaf_jacobi_solve_device;
 
+    cl::Kernel tea_leaf_block_init_device;
+    cl::Kernel tea_leaf_block_solve_device;
+    cl::Kernel tea_leaf_init_jac_diag_device;;
+    cl::Buffer cp, bfp;
+
     cl::Buffer u, u0;
     cl::Kernel tea_leaf_finalise_device;
-    // TODO could be used by all - precalculate diagonal + scale Kx/Ky
-    cl::Kernel tea_leaf_init_diag_device;
     cl::Kernel tea_leaf_calc_residual_device;
+    cl::Kernel tea_leaf_init_common_device;
 
     // tolerance specified in tea.in
     float tolerance;
-    // whether preconditioner is enabled in input file
-    bool preconditioner_on;
+    // type of preconditioner
+    int preconditioner_type;
 
     // calculate rx/ry to pass back to fortran
     void calcrxryrz
@@ -182,6 +191,9 @@ private:
         cl::NDRange offset;
     } launch_specs_t;
     std::map< std::string, launch_specs_t > launch_specs;
+
+    launch_specs_t findPaddingSize
+    (int vmin, int vmax, int hmin, int hmax);
 
     // reduction kernels - need multiple levels
     reduce_info_vec_t min_red_kernels_double;
@@ -223,14 +235,13 @@ private:
     cl::Buffer zarea;
 
     // generic work arrays
-    cl::Buffer work_array_1;
-    cl::Buffer work_array_2;
-    cl::Buffer work_array_3;
-    cl::Buffer work_array_4;
-    cl::Buffer work_array_5;
-    cl::Buffer work_array_6;
-    cl::Buffer work_array_7;
-    cl::Buffer work_array_8;
+    cl::Buffer vector_p;
+    cl::Buffer vector_r;
+    cl::Buffer vector_w;
+    cl::Buffer vector_Mi;
+    cl::Buffer vector_Kx;
+    cl::Buffer vector_Ky;
+    cl::Buffer vector_sd;
 
     // for reduction in PdV
     cl::Buffer PdV_reduce_buf;
@@ -245,18 +256,23 @@ private:
 
     // global size for kernels
     cl::NDRange global_size;
-    // total number of cells
-    size_t total_cells;
     // number of cells reduced
     size_t reduced_cells;
 
+    // halo size
+    int halo_exchange_depth;
+    int halo_allocate_depth;
+
     // sizes for launching update halo kernels - l/r and u/d updates
-    cl::NDRange update_lr_global_size[2];
-    cl::NDRange update_ud_global_size[2];
-    cl::NDRange update_fb_global_size[2];
-    cl::NDRange update_lr_local_size[2];
-    cl::NDRange update_ud_local_size[2];
-    cl::NDRange update_fb_local_size[2];
+    std::map<int, cl::NDRange> update_lr_global_size;
+    std::map<int, cl::NDRange> update_bt_global_size;
+    std::map<int, cl::NDRange> update_fb_global_size;
+    std::map<int, cl::NDRange> update_lr_local_size;
+    std::map<int, cl::NDRange> update_bt_local_size;
+    std::map<int, cl::NDRange> update_fb_local_size;
+    std::map<int, cl::NDRange> update_lr_offset;
+    std::map<int, cl::NDRange> update_bt_offset;
+    std::map<int, cl::NDRange> update_fb_offset;
 
     // values used to control operation
     size_t x_min;
@@ -268,14 +284,11 @@ private:
     // mpi rank
     int rank;
 
-    // size of mpi buffers
-    size_t lr_mpi_buf_sz, bt_mpi_buf_sz, fb_mpi_buf_sz;
-
     // desired type for opencl
     int desired_type;
 
     // if profiling
-    int profiler_on;
+    bool profiler_on;
     // for recording times if profiling is on
     std::map<std::string, double> kernel_times;
     // recording number of times each kernel was called
@@ -286,10 +299,13 @@ private:
 
     // compile a file and the contained kernels, and check for errors
     void compileKernel
-    (const std::string& options,
+    (std::stringstream& options,
      const std::string& source_name,
      const char* kernel_name,
-     cl::Kernel& kernel);
+     cl::Kernel& kernel,
+     int launch_x_min, int launch_x_max,
+     int launch_y_min, int launch_y_max,
+     int launch_z_min, int launch_z_max);
     cl::Program compileProgram
     (const std::string& source,
      const std::string& options);
@@ -342,7 +358,8 @@ public:
     void initialise_chunk_kernel(double d_xmin, double d_ymin,double d_zmin,
         double d_dx, double d_dy, double d_dz);
 
-    void update_halo_kernel(const int* fields, int depth, const int* chunk_neighbours);
+    void update_halo_kernel(const int* fields, int depth,
+        const int* chunk_neighbours);
     void update_array
     (cl::Buffer& cur_array,
     const cell_info_t& array_type,
@@ -374,11 +391,11 @@ public:
     void ppcg_init(const double * ch_alphas, const double * ch_betas,
         const double theta, const int n);
     void ppcg_init_sd();
-    void ppcg_init_p(double * rro);
-    void ppcg_inner(int);
+    void ppcg_inner(int, int, const int*);
 
     void tea_leaf_finalise();
     void tea_leaf_calc_residual(void);
+    void tea_leaf_init_common(int, double, double*, double*, int*);
 
     // ctor
     CloverChunk
@@ -386,15 +403,13 @@ public:
     CloverChunk
     (int* in_x_min, int* in_x_max,
      int* in_y_min, int* in_y_max,
-     int* in_z_min, int* in_z_max,
-     int* in_profiler_on);
+     int* in_z_min, int* in_z_max);
     // dtor
     ~CloverChunk
     (void);
 
     // enqueue a kernel
     void enqueueKernel
-
     (cl::Kernel const& kernel,
      int line, const char* file,
      const cl::NDRange offset,

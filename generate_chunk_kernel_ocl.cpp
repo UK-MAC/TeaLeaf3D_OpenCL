@@ -25,7 +25,7 @@ const int* g_point)
 }
 
 void CloverChunk::generate_chunk_kernel
-(const int number_of_states,
+(const int number_of_states, 
 const double* state_density, const double* state_energy,
 const double* state_xmin, const double* state_xmax,
 const double* state_ymin, const double* state_ymax,
@@ -67,6 +67,7 @@ const int g_rect, const int g_circ, const int g_point)
     generate_chunk_init_device.setArg(2, tmp_state_density);
     generate_chunk_init_device.setArg(3, tmp_state_energy);
 
+    //ENQUEUE(generate_chunk_init_device);
     ENQUEUE_OFFSET(generate_chunk_init_device);
 
     generate_chunk_device.setArg(9, tmp_state_density);
@@ -88,7 +89,11 @@ const int g_rect, const int g_circ, const int g_point)
     {
         generate_chunk_device.setArg(22, state);
 
+        //ENQUEUE(generate_chunk_device);
         ENQUEUE_OFFSET(generate_chunk_device);
     }
+
+    generate_chunk_init_u_device.setArg(1, energy0);
+    ENQUEUE_OFFSET(generate_chunk_init_u_device);
 }
 

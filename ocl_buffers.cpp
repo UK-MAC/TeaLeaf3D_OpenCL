@@ -3,6 +3,7 @@
 void CloverChunk::initBuffers
 (void)
 {
+    size_t total_cells = (x_max+2*halo_allocate_depth+1) * (y_max+2*halo_allocate_depth+1);
     const std::vector<double> zeros(total_cells, 0.0);
 
     #define BUF_ALLOC(name, buf_sz)                 \
@@ -24,18 +25,18 @@ void CloverChunk::initBuffers
         }
 
     #define BUF1DX_ALLOC(name, x_e)     \
-        BUF_ALLOC(name, (x_max+4+x_e) * sizeof(double))
+        BUF_ALLOC(name, (x_max+2*halo_allocate_depth+x_e) * sizeof(double))
 
     #define BUF1DY_ALLOC(name, y_e)     \
-        BUF_ALLOC(name, (y_max+4+y_e) * sizeof(double))
+        BUF_ALLOC(name, (y_max+2*halo_allocate_depth+y_e) * sizeof(double))
 
     #define BUF1DZ_ALLOC(name, z_e)     \
-        BUF_ALLOC(name, (z_max+4+z_e) * sizeof(double))
+        BUF_ALLOC(name, (z_max+2*halo_allocate_depth+z_e) * sizeof(double))
 
     #define BUF2D_ALLOC(name, x_e, y_e) \
-        BUF_ALLOC(name, (x_max+4+x_e) * (y_max+4+y_e) * sizeof(double))
+        BUF_ALLOC(name, (x_max+2*halo_allocate_depth+x_e) * (y_max+2*halo_allocate_depth+y_e) * sizeof(double))
     #define BUF3D_ALLOC(name, x_e, y_e,z_e) \
-        BUF_ALLOC(name, (x_max+4+x_e) * (y_max+4+y_e) *(z_max+4+z_e) * sizeof(double))
+        BUF_ALLOC(name, (x_max+2*halo_allocate_depth+x_e) * (y_max+2*halo_allocate_depth+y_e) *(z_max+2*halo_allocate_depth+z_e) * sizeof(double))
 
     BUF3D_ALLOC(density, 0, 0,0);
     BUF3D_ALLOC(energy0, 0, 0,0);
@@ -86,17 +87,17 @@ void CloverChunk::initBuffers
     BUF_ALLOC(PdV_reduce_buf, 1.5*((sizeof(int)*reduced_cells)/(LOCAL_X*LOCAL_Y*LOCAL_Z)));
 
     // set initial (ideal) size for buffers and increment untl it hits alignment
-    lr_mpi_buf_sz = sizeof(double)*(y_max + 5)*(z_max + 5);
-    bt_mpi_buf_sz = sizeof(double)*(x_max + 5)*(z_max + 5);
-    fb_mpi_buf_sz = sizeof(double)*(x_max + 5)*(y_max + 5);
+    size_t lr_mpi_buf_sz = sizeof(double)*(y_max + 2*halo_allocate_depth)*(z_max + 2*halo_allocate_depth)*halo_allocate_depth;
+    size_t bt_mpi_buf_sz = sizeof(double)*(x_max + 2*halo_allocate_depth)*(z_max + 2*halo_allocate_depth)*halo_allocate_depth;
+    size_t fb_mpi_buf_sz = sizeof(double)*(x_max + 2*halo_allocate_depth)*(y_max + 2*halo_allocate_depth)*halo_allocate_depth;
 
     // enough for 1 for each array - overkill, but not that much extra space
-    BUF_ALLOC(left_buffer, NUM_BUFFERED_FIELDS*2*lr_mpi_buf_sz);
-    BUF_ALLOC(right_buffer, NUM_BUFFERED_FIELDS*2*lr_mpi_buf_sz);
-    BUF_ALLOC(bottom_buffer, NUM_BUFFERED_FIELDS*2*bt_mpi_buf_sz);
-    BUF_ALLOC(top_buffer, NUM_BUFFERED_FIELDS*2*bt_mpi_buf_sz);
-    BUF_ALLOC(back_buffer, NUM_BUFFERED_FIELDS*2*fb_mpi_buf_sz);
-    BUF_ALLOC(front_buffer, NUM_BUFFERED_FIELDS*2*fb_mpi_buf_sz);
+    BUF_ALLOC(left_buffer, NUM_BUFFERED_FIELDS*lr_mpi_buf_sz);
+    BUF_ALLOC(right_buffer, NUM_BUFFERED_FIELDS*lr_mpi_buf_sz);
+    BUF_ALLOC(bottom_buffer, NUM_BUFFERED_FIELDS*bt_mpi_buf_sz);
+    BUF_ALLOC(top_buffer, NUM_BUFFERED_FIELDS*bt_mpi_buf_sz);
+    BUF_ALLOC(back_buffer, NUM_BUFFERED_FIELDS*fb_mpi_buf_sz);
+    BUF_ALLOC(front_buffer, NUM_BUFFERED_FIELDS*fb_mpi_buf_sz);
 
     fprintf(DBGOUT, "Buffers allocated\n");
 }
