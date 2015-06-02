@@ -14,24 +14,13 @@
  end_time=100.0
  end_step=20
 
- !use_fortran_kernels
-
- opencl_vendor=nvidia
- opencl_type=gpu
+ opencl_vendor=any
+ opencl_type=cpu
  opencl_device=0
 
- tl_use_jacobi
- !tl_use_cg
- !tl_use_chebyshev
- !tl_use_ppcg
- tl_ppcg_inner_steps=30
+ tl_use_ppcg
 
  tl_check_result
-
- ! Should probably be > 20 steps before switching - depends on problem
- !tl_ch_cg_errswitch
- tl_ch_cg_epslim=0.00001
- tl_ch_cg_presteps=20
 
  profiler_on
 

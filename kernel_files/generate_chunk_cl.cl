@@ -29,9 +29,7 @@ __kernel void generate_chunk
 {
     __kernel_indexes;
 
-    if (/*row >= (y_min + 1) - 2 &&*/ row <= (y_max + 1) + 2
-    && /*column >= (x_min + 1) - 2 &&*/ column <= (x_max + 1) + 2
-    && /*slice >= (z_min + 1) - 2 &&*/ slice <= (z_max + 1) + 2)
+    if (WITHIN_BOUNDS)
     {
         const double x_cent = state_xmin[state];
         const double y_cent = state_ymin[state];
@@ -71,29 +69,37 @@ __kernel void generate_chunk
                 density0[THARR3D(0, 0, 0,0,0)] = state_density[state];
             }
         }
-    }
 
-    if (slice >= (z_min + 1) - 1 && slice <= (z_max + 1) + 1)
-    if (row >= (y_min + 1) - 1 && row <= (y_max + 1) + 1
-    && column >= (x_min + 1) - 1 && column <= (x_max + 1) + 1)
+    }
+}
+
+__kernel void generate_chunk_init_u
+(__global const double * density,
+ __global const double * energy,
+ __global       double * u,
+ __global       double * u0)
+{
+    __kernel_indexes;
+
+    if (WITHIN_BOUNDS)
     {
-        u[THARR3D(0, 0, 0, 0, 0)] = energy0[THARR3D(0, 0, 0, 0, 0)]*density0[THARR3D(0, 0, 0, 0, 0)];
+        u[THARR3D(0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0)];
+        u0[THARR3D(0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0)];
     }
 }
 
 __kernel void generate_chunk_init
-(__global double * density0,
- __global double * energy0,
+(__global       double * density0,
+ __global       double * energy0,
  __global const double * state_density,
  __global const double * state_energy)
 {
     __kernel_indexes;
 
-    if(/*row >= (y_min + 1) - 2 &&*/ row <= (y_max + 1) + 2
-    && /*column >= (x_min + 1) - 2 &&*/ column <= (x_max + 1) + 2
-    && /*slice >= (z_min + 1) - 2 &&*/ slice <= (z_max + 1) + 2)
+    if (WITHIN_BOUNDS)
     {
         energy0[THARR3D(0, 0, 0,0,0)] = state_energy[0];
         density0[THARR3D(0, 0, 0,0,0)] = state_density[0];
     }
 }
+

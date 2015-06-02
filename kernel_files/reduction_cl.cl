@@ -14,19 +14,19 @@
  */
 
 #if defined(red_sum)
-inline reduce_t REDUCE
+reduce_t REDUCE
 (reduce_t a, reduce_t b)
 {
     return SUM(a,b);
 }
 #elif defined (red_min)
-inline reduce_t REDUCE
+reduce_t REDUCE
 (reduce_t a, reduce_t b)
 {
     return MIN(a,b);
 }
 #elif defined (red_max)
-inline reduce_t REDUCE
+reduce_t REDUCE
 (reduce_t a, reduce_t b)
 {
     return MAX(a,b);
@@ -141,5 +141,4 @@ __kernel void reduction
 #endif
     }
 }
-
 

@@ -1,5 +1,16 @@
 #pragma OPENCL EXTENSION cl_khr_fp64 : enable
 
+// preconditioners
+#define TL_PREC_NONE        1
+#define TL_PREC_JAC_DIAG    2
+#define TL_PREC_JAC_BLOCK   3
+
+#if defined(BLOCK_TOP_CHECK)
+    #define BLOCK_TOP (MIN(((int)y_max + 2 - (int)row),(int)JACOBI_BLOCK_SIZE))
+#else
+    #define BLOCK_TOP (JACOBI_BLOCK_SIZE)
+#endif
+
 #define __kernel_indexes                            \
     const size_t column = get_global_id(0);            \
     const size_t row = get_global_id(1);    \
@@ -13,15 +24,24 @@
 #define _THARR2D(x_offset, y_offset, big_row)        \
     (                                               \
       column                      /* horizontal  */ \
-    + row*(x_max + 4)             /* vertical    */ \
+    + row*(x_max + 2*HALO_DEPTH)             /* vertical    */ \
     + (x_offset)                  /* horz offset */ \
-    + (y_offset)*(x_max + 4)      /* vert offset */ \
+    + (y_offset)*(x_max + 2*HALO_DEPTH)      /* vert offset */ \
     + (big_row)*(row + (y_offset))/* big row   */   \
     )
 
 #define THARR3D(x_offset, y_offset, z_offset, big_row, big_col)   \
-    ((slice+z_offset)*(x_max+4+big_row)*(y_max+4+big_col)       \
+    ((slice+z_offset)*(x_max+2*HALO_DEPTH+big_row)*(y_max+2*HALO_DEPTH+big_col)       \
     + _THARR2D(x_offset, y_offset, big_row))
+
+// check if within bounds, based on what was passed in when compiled - stops having to make sure 2 numbers in different places are the same
+#define WITHIN_BOUNDS                               \
+    (/*row >= (y_min + 1) - KERNEL_X_MIN &&*/       \
+     row <= (y_max + HALO_DEPTH - 1) + KERNEL_Y_MAX &&           \
+     /*column >= (x_min + 1) - KERNEL_Y_MIN &&*/    \
+     column <= (x_max + HALO_DEPTH - 1) + KERNEL_X_MAX &&   \
+     /*slice >= (z_min + 1) - KERNEL_Z_MIN &&*/    \
+     slice <= (z_max + HALO_DEPTH - 1) + KERNEL_Z_MAX &&)
 
 #ifdef CLOVER_NO_BUILTINS
     #define MAX(a,b) (a<b?a:b)
