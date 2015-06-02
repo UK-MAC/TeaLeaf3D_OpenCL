@@ -295,11 +295,15 @@ SUBROUTINE tea_exchange(fields,depth)
     message_count_lr = 0
     request_ud = 0
     message_count_ud = 0
+    request_fb = 0
+    message_count_fb = 0
 
     end_pack_index_left_right=0
     end_pack_index_bottom_top=0
+    end_pack_index_back_front=0
     left_right_offset = 0
     bottom_top_offset = 0
+    back_front_offset = 0
     DO field=1,NUM_FIELDS
       IF(fields(field).EQ.1) THEN
         left_right_offset(field)=end_pack_index_left_right
@@ -348,9 +352,9 @@ SUBROUTINE tea_exchange(fields,depth)
 !      ! don't have to transfer now
 !      CALL MPI_TESTALL(message_count_lr, request_lr, test_complete, status_lr, err)
 !    ELSE
-      test_complete = .true.
+!      test_complete = .true.
       !make a call to wait / sync
-!      CALL MPI_WAITALL(message_count_lr,request_lr,status_lr,err)
+      CALL MPI_WAITALL(message_count_lr,request_lr,status_lr,err)
 !    ENDIF
 
 !    IF (test_complete .eqv. .true.) THEN

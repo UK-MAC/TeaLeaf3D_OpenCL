@@ -110,8 +110,8 @@ void CloverChunk::packUnpackAllBuffers
         }
     }
 
-    pack_kernel->setArg(3, *device_buffer);
-    pack_kernel->setArg(4, depth);
+    pack_kernel->setArg(4, *device_buffer);
+    pack_kernel->setArg(5, depth);
 
     // size of this buffer
     size_t side_size = 0;
@@ -207,8 +207,9 @@ void CloverChunk::packUnpackAllBuffers
             // set args + launch kernel
             pack_kernel->setArg(0, x_inc);
             pack_kernel->setArg(1, y_inc);
-            pack_kernel->setArg(2, *device_array);
-            pack_kernel->setArg(5, offsets[ii]);
+            pack_kernel->setArg(2, z_inc);
+            pack_kernel->setArg(3, *device_array);
+            pack_kernel->setArg(6, offsets[ii]);
 
             enqueueKernel(*pack_kernel, __LINE__, __FILE__,
                           pack_offset,

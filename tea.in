@@ -20,7 +20,7 @@
 
  halo_depth=10
 
- tl_use_cg
+ tl_use_ppcg
 
  tl_check_result
 
