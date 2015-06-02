@@ -2,17 +2,17 @@
 !
 ! This file is part of TeaLeaf.
 !
-! TeaLeaf is free software: you can redistribute it and/or modify it under 
-! the terms of the GNU General Public License as published by the 
-! Free Software Foundation, either version 3 of the License, or (at your option) 
+! TeaLeaf is free software: you can redistribute it and/or modify it under
+! the terms of the GNU General Public License as published by the
+! Free Software Foundation, either version 3 of the License, or (at your option)
 ! any later version.
 !
-! TeaLeaf is distributed in the hope that it will be useful, but 
-! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+! TeaLeaf is distributed in the hope that it will be useful, but
+! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 ! details.
 !
-! You should have received a copy of the GNU General Public License along with 
+! You should have received a copy of the GNU General Public License along with
 ! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief  Allocates the data for each mesh chunk
@@ -26,7 +26,7 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
 
    IMPLICIT NONE
 
-   INTEGER :: chunk,x_cells,y_cells,z_cells,profiler_int,j,k,l
+   INTEGER :: chunk,x_cells,y_cells,z_cells
 
    chunks(chunk)%field%x_min=1
    chunks(chunk)%field%y_min=1
@@ -37,192 +37,12 @@ SUBROUTINE build_field(chunk,x_cells,y_cells,z_cells)
    chunks(chunk)%field%z_max=z_cells
 
    IF (use_opencl_kernels .EQV. .TRUE.) THEN
-
-     IF(profiler_on) THEN
-       profiler_int=1
-     ELSE
-       profiler_int=0
-     ENDIF
-
      call initialise_ocl(chunks(chunk)%field%x_min, &
                           chunks(chunk)%field%x_max, &
                           chunks(chunk)%field%y_min, &
                           chunks(chunk)%field%y_max, &
                           chunks(chunk)%field%z_min, &
-                          chunks(chunk)%field%z_max, &
-                          profiler_int)
-
-   ELSE
-
-
-   ALLOCATE(chunks(chunk)%field%density  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
-                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%energy0   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
-                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%energy1   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
-                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-
-   ALLOCATE(chunks(chunk)%field%u(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
-                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%u0(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                   chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2,                         &
-                   chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-
-
-   ALLOCATE(chunks(chunk)%field%vector_p(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_r(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_Mi(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_w(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_z(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_Kx(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_Ky(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_Kz(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vector_sd(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                            chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                            chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-
-   ALLOCATE(chunks(chunk)%field%cellx   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2))
-   ALLOCATE(chunks(chunk)%field%celly   (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
-   ALLOCATE(chunks(chunk)%field%cellz   (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vertexx (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3))
-   ALLOCATE(chunks(chunk)%field%vertexy (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
-   ALLOCATE(chunks(chunk)%field%vertexz (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
-   ALLOCATE(chunks(chunk)%field%celldx  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2))
-   ALLOCATE(chunks(chunk)%field%celldy  (chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2))
-   ALLOCATE(chunks(chunk)%field%celldz  (chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%vertexdx(chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3))
-   ALLOCATE(chunks(chunk)%field%vertexdy(chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3))
-   ALLOCATE(chunks(chunk)%field%vertexdz(chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
-   ALLOCATE(chunks(chunk)%field%volume  (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%xarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+3, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%yarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+3, &
-                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+2))
-   ALLOCATE(chunks(chunk)%field%zarea   (chunks(chunk)%field%x_min-2:chunks(chunk)%field%x_max+2, &
-                                         chunks(chunk)%field%y_min-2:chunks(chunk)%field%y_max+2, &
-                                         chunks(chunk)%field%z_min-2:chunks(chunk)%field%z_max+3))
-
-   ! Zeroing isn't strictly neccessary but it ensures physical pages
-   ! are allocated. This prevents first touch overheads in the main code
-   ! cycle which can skew timings in the first step
-   ! Explicit loop limits ensures correct NUMA access, which array syntax does
-   ! not
-!$OMP PARALLEL
-!$OMP DO 
-   DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+2
-   DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+2
-     DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+2
-       chunks(chunk)%field%vector_p(j,k,l)=0.0
-       chunks(chunk)%field%vector_r(j,k,l)=0.0
-       chunks(chunk)%field%vector_Mi(j,k,l)=0.0
-       chunks(chunk)%field%vector_w(j,k,l)=0.0
-       chunks(chunk)%field%vector_z(j,k,l)=0.0
-       chunks(chunk)%field%vector_Kx(j,k,l)=0.0
-       chunks(chunk)%field%vector_Ky(j,k,l)=0.0
-       chunks(chunk)%field%vector_Kz(j,k,l)=0.0
-       chunks(chunk)%field%vector_sd(j,k,l)=0.0
-       chunks(chunk)%field%volume(j,k,l)=0.0
-
-       chunks(chunk)%field%density(j,k,l)=0.0
-       chunks(chunk)%field%energy0(j,k,l)=0.0
-       chunks(chunk)%field%energy1(j,k,l)=0.0
-       chunks(chunk)%field%u(j,k,l)=0.0
-       chunks(chunk)%field%u0(j,k,l)=0.0
-     ENDDO
-   ENDDO
-   ENDDO
-!$OMP ENDDO 
-!$OMP DO 
-   DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+2
-    DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+2
-        DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+3
-            chunks(chunk)%field%xarea(j,k,l)=0.0
-        ENDDO
-    ENDDO
-   ENDDO
-!$OMP END DO
-!$OMP DO 
-   DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+2
-    DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+3
-        DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+2
-            chunks(chunk)%field%yarea(j,k,l)=0.0
-        ENDDO
-    ENDDO
-   ENDDO
-!$OMP END DO
-!$OMP DO 
-   DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+3
-    DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+2
-        DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+2
-            chunks(chunk)%field%zarea(j,k,l)=0.0
-        ENDDO
-    ENDDO
-   ENDDO
-!$OMP END DO
-
-!$OMP DO 
-    DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+2
-        chunks(chunk)%field%cellx(j)=0.0
-        chunks(chunk)%field%celldx(j)=0.0
-    ENDDO
-!$OMP END DO
-!$OMP DO 
-    DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+2
-        chunks(chunk)%field%celly(k)=0.0
-        chunks(chunk)%field%celldy(k)=0.0
-    ENDDO
-!$OMP END DO
-!$OMP DO 
-    DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+2
-        chunks(chunk)%field%cellz(l)=0.0
-        chunks(chunk)%field%celldz(l)=0.0
-    ENDDO
-!$OMP END DO
-
-!$OMP DO 
-    DO j=chunks(chunk)%field%x_min-2,chunks(chunk)%field%x_max+3
-        chunks(chunk)%field%vertexx(j)=0.0
-        chunks(chunk)%field%vertexdx(j)=0.0
-    ENDDO
-!$OMP END DO
-!$OMP DO 
-    DO k=chunks(chunk)%field%y_min-2,chunks(chunk)%field%y_max+3
-        chunks(chunk)%field%vertexy(k)=0.0
-        chunks(chunk)%field%vertexdy(k)=0.0
-    ENDDO
-!$OMP END DO
-!$OMP DO 
-    DO l=chunks(chunk)%field%z_min-2,chunks(chunk)%field%z_max+3
-        chunks(chunk)%field%vertexz(l)=0.0
-        chunks(chunk)%field%vertexdz(l)=0.0
-    ENDDO
-!$OMP END DO
-!$OMP END PARALLEL
-
+                          chunks(chunk)%field%z_max)
   ENDIF
   
 END SUBROUTINE build_field

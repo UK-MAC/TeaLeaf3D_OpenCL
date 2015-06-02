@@ -2,17 +2,17 @@
 !
 ! This file is part of TeaLeaf.
 !
-! TeaLeaf is free software: you can redistribute it and/or modify it under 
-! the terms of the GNU General Public License as published by the 
-! Free Software Foundation, either version 3 of the License, or (at your option) 
+! TeaLeaf is free software: you can redistribute it and/or modify it under
+! the terms of the GNU General Public License as published by the
+! Free Software Foundation, either version 3 of the License, or (at your option)
 ! any later version.
 !
-! TeaLeaf is distributed in the hope that it will be useful, but 
-! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
-! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more 
+! TeaLeaf is distributed in the hope that it will be useful, but
+! WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+! FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
 ! details.
 !
-! You should have received a copy of the GNU General Public License along with 
+! You should have received a copy of the GNU General Public License along with
 ! TeaLeaf. If not, see http://www.gnu.org/licenses/.
 
 !>  @brief Driver for the field summary kernels
@@ -27,7 +27,6 @@
 SUBROUTINE field_summary()
 
   USE tea_module
-  USE field_summary_kernel_module
 
   IMPLICIT NONE
 
@@ -43,34 +42,18 @@ SUBROUTINE field_summary()
   IF(parallel%boss)THEN
     WRITE(g_out,*)
     WRITE(g_out,*) 'Time ',time
-    WRITE(g_out,'(a13,5a16)')'           ','Volume','Mass','Density'       &
+    WRITE(g_out,'(a13,5a26)')'           ','Volume','Mass','Density'       &
                                           ,'Energy','U'
   ENDIF
 
   IF(profiler_on) kernel_time=timer()
-  IF(use_fortran_kernels)THEN
-    DO c=1,chunks_per_task
-      IF(chunks(c)%task.EQ.parallel%task) THEN
-        CALL field_summary_kernel(chunks(c)%field%x_min,                   &
-                                  chunks(c)%field%x_max,                   &
-                                  chunks(c)%field%y_min,                   &
-                                  chunks(c)%field%y_max,                   &
-                                  chunks(c)%field%z_min,                   &
-                                  chunks(c)%field%z_max,                   &
-                                  chunks(c)%field%volume,                  &
-                                  chunks(c)%field%density,                 &
-                                  chunks(c)%field%energy0,                 &
-                                  chunks(c)%field%u,                       &
-                                  vol,mass,ie,temp                         )
-      ENDIF
-    ENDDO
-  ELSEIF(use_opencl_kernels)THEN
-    DO c=1,chunks_per_task
+  DO c=1,chunks_per_task
+    IF(use_opencl_kernels)THEN
       IF(chunks(c)%task.EQ.parallel%task) THEN
         CALL field_summary_kernel_ocl(vol,mass,ie,temp)
       ENDIF
-    ENDDO
-  ENDIF
+    ENDIF
+  ENDDO
 
   ! For mpi I need a reduction here
   CALL tea_sum(vol)
@@ -81,8 +64,9 @@ SUBROUTINE field_summary()
 
   IF(parallel%boss) THEN
 !$  IF(OMP_GET_THREAD_NUM().EQ.0) THEN
-      WRITE(g_out,'(a6,i7,5e16.7)')' step:',step,vol,mass,mass/vol,ie,temp
+      WRITE(g_out,'(a6,i7,5e26.17)')' step:',step,vol,mass,mass/vol,ie,temp
       WRITE(g_out,*)
+      call flush(g_out)
 !$  ENDIF
   ENDIF
 

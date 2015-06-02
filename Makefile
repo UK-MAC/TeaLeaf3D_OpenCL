@@ -196,8 +196,6 @@ tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 	-o tea_leaf
 	@echo $(MESSAGE)
 
-include make.deps
-
 %.o: %.cpp Makefile make.deps ocl_common.hpp
 	$(CXX_MPI_COMPILER) $(CXXFLAGS) -c $< -o $*.o
 %_module.mod: %.f90 %.o
