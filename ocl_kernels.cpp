@@ -29,6 +29,9 @@ void CloverChunk::initProgram
         options << "-DBLOCK_TOP_CHECK ";
     }
 
+    options << "-DCOEF_CONDUCTIVITY=1 ";
+    options << "-DCOEF_RECIP_CONDUCTIVITY=2 ";
+
     // local sizes
     options << "-DBLOCK_SZ=" << LOCAL_X*LOCAL_Y*LOCAL_Z << " ";
     options << "-DLOCAL_X=" << LOCAL_X << " ";

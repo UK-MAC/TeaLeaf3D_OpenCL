@@ -1,4 +1,5 @@
 #include <kernel_files/macros_cl.cl>
+#include <kernel_files/tea_block_jacobi.cl>
 
 /*
  *  Kernels used for conjugate gradient method
@@ -25,15 +26,15 @@ __kernel void tea_leaf_cg_solve_init_p
         }
         else if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            z[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)];
-            p[THARR3D(0, 0, 0, 0)] = z[THARR3D(0, 0, 0, 0)];
+            z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = z[THARR3D(0, 0, 0, 0, 0)];
         }
         else if (PRECONDITIONER == TL_PREC_NONE)
         {
-            p[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
-        rro_shared[lid] = r[THARR3D(0, 0, 0, 0)]*p[THARR3D(0, 0, 0, 0)];
+        rro_shared[lid] = r[THARR3D(0, 0, 0, 0, 0)]*p[THARR3D(0, 0, 0, 0, 0)];
     }
 
     REDUCTION(rro_shared, rro, SUM)
@@ -90,8 +91,8 @@ __kernel void tea_leaf_cg_solve_calc_ur
 
     if (WITHIN_BOUNDS)
     {
-        u[THARR3D(0, 0, 0, 0)] += alpha*p[THARR3D(0, 0, 0, 0)];
-        r[THARR3D(0, 0, 0, 0)] -= alpha*w[THARR3D(0, 0, 0, 0)];
+        u[THARR3D(0, 0, 0, 0, 0)] += alpha*p[THARR3D(0, 0, 0, 0, 0)];
+        r[THARR3D(0, 0, 0, 0, 0)] -= alpha*w[THARR3D(0, 0, 0, 0, 0)];
     }
 
     if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
@@ -100,19 +101,19 @@ __kernel void tea_leaf_cg_solve_calc_ur
 
         if (WITHIN_BOUNDS)
         {
-            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0)];
+            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
         if (loc_row == 0)
         {
-            block_solve_func(rrn_shared, z_l, cp, bfp, Kx, Ky);
+            block_solve_func(rrn_shared, z_l, cp, bfp, Kx, Ky, Kz);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if (WITHIN_BOUNDS)
         {
-            z[THARR3D(0, 0, 0, 0)] = z_l[lid];
+            z[THARR3D(0, 0, 0, 0, 0)] = z_l[lid];
 
             rrn_shared[lid] = rrn_shared[lid]*z_l[lid];
         }
@@ -121,12 +122,12 @@ __kernel void tea_leaf_cg_solve_calc_ur
     {
         if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            z[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)];
-            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0)]*z[THARR3D(0, 0, 0, 0)];
+            z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
+            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0, 0)]*z[THARR3D(0, 0, 0, 0, 0)];
         }
         else if (PRECONDITIONER == TL_PREC_NONE)
         {
-            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0)];
+            rrn_shared[lid] = r[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
         }
     }
 
@@ -147,11 +148,11 @@ __kernel void tea_leaf_cg_solve_calc_p
     {
         if (PRECONDITIONER != TL_PREC_NONE)
         {
-            p[THARR3D(0, 0, 0, 0)] = z[THARR3D(0, 0, 0, 0)] + beta*p[THARR3D(0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = z[THARR3D(0, 0, 0, 0, 0)] + beta*p[THARR3D(0, 0, 0, 0, 0)];
         }
         else
         {
-            p[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)] + beta*p[THARR3D(0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)] + beta*p[THARR3D(0, 0, 0, 0, 0)];
         }
     }
 }

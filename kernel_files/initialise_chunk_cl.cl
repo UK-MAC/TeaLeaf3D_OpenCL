@@ -14,9 +14,9 @@ __kernel void initialise_chunk_first
  __global double * __restrict const vertexdz,
  __global       double * __restrict const cellx,
  __global       double * __restrict const celldx,
- __global       double * __restrict const celldy,
  __global       double * __restrict const celly,
  __global       double * __restrict const celldy,
+ __global       double * __restrict const cellz,
  __global       double * __restrict const celldz)
 {
     __kernel_indexes;

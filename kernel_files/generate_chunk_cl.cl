@@ -83,8 +83,8 @@ __kernel void generate_chunk_init_u
 
     if (WITHIN_BOUNDS)
     {
-        u[THARR3D(0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0)];
-        u0[THARR3D(0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0)];
+        u[THARR3D(0, 0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0, 0)];
+        u0[THARR3D(0, 0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 

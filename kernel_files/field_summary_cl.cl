@@ -24,7 +24,7 @@ __kernel void field_summary
     if (WITHIN_BOUNDS)
     {
         const double cell_vol = volume[THARR3D(0, 0, 0,0,0)];
-        const double cell_mass = cell_vol * density0[THARR3D(0, 0, 0,0,0)];
+        const double cell_mass = cell_vol * density[THARR3D(0, 0, 0,0,0)];
 
         vol_shared[lid] = cell_vol;
         mass_shared[lid] = cell_mass;

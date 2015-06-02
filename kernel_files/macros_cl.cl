@@ -41,7 +41,7 @@
      /*column >= (x_min + 1) - KERNEL_Y_MIN &&*/    \
      column <= (x_max + HALO_DEPTH - 1) + KERNEL_X_MAX &&   \
      /*slice >= (z_min + 1) - KERNEL_Z_MIN &&*/    \
-     slice <= (z_max + HALO_DEPTH - 1) + KERNEL_Z_MAX &&)
+     slice <= (z_max + HALO_DEPTH - 1) + KERNEL_Z_MAX)
 
 #ifdef CLOVER_NO_BUILTINS
     #define MAX(a,b) (a<b?a:b)

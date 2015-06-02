@@ -30,31 +30,31 @@ __kernel void tea_leaf_ppcg_solve_init_sd
 
         if (WITHIN_BOUNDS)
         {
-            r_l[lid] = r[THARR3D(0, 0, 0, 0)];
+            r_l[lid] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
         if (loc_row == 0)
         {
-            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky);
+            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky, Kz);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if (WITHIN_BOUNDS)
         {
-            sd[THARR3D(0, 0, 0, 0)] = z_l[lid]/theta;
+            sd[THARR3D(0, 0, 0, 0, 0)] = z_l[lid]/theta;
         }
     }
     else if (WITHIN_BOUNDS)
     {
         if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            //z[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)];
-            sd[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)]/theta;
+            //z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
+            sd[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
         else if (PRECONDITIONER == TL_PREC_NONE)
         {
-            sd[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]/theta;
+            sd[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
     }
 }
@@ -106,7 +106,7 @@ __kernel void tea_leaf_ppcg_solve_calc_sd
 
         if (WITHIN_BOUNDS)
         {
-            r_l[lid] = r[THARR3D(0, 0, 0, 0)];
+            r_l[lid] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
@@ -121,7 +121,7 @@ __kernel void tea_leaf_ppcg_solve_calc_sd
 
         if (WITHIN_BOUNDS)
         {
-            sd[THARR3D(0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0)]
+            sd[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0, 0)]
                                 + beta[step]*z_l[lid];
         }
     }
@@ -129,14 +129,14 @@ __kernel void tea_leaf_ppcg_solve_calc_sd
     {
         if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            //z[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)];
-            sd[THARR3D(0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0)]
-                                + beta[step]*r[THARR3D(0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0)];
+            //z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
+            sd[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0, 0)]
+                                + beta[step]*r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
         }
         else if (PRECONDITIONER == TL_PREC_NONE)
         {
-            sd[THARR3D(0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0)]
-                                + beta[step]*r[THARR3D(0, 0, 0, 0)];
+            sd[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0, 0)]
+                                + beta[step]*r[THARR3D(0, 0, 0, 0, 0)];
         }
     }
 }
