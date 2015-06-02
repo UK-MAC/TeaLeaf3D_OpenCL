@@ -270,10 +270,10 @@ void CloverChunk::tea_leaf_init_common
 
     calcrxryrz(dt, rx, ry, rz);
 
-    tea_leaf_init_common_device.setArg(7, *rx);
-    tea_leaf_init_common_device.setArg(8, *ry);
-    tea_leaf_init_common_device.setArg(9, *rz);
-    tea_leaf_init_common_device.setArg(10, coefficient);
+    tea_leaf_init_common_device.setArg(5, *rx);
+    tea_leaf_init_common_device.setArg(6, *ry);
+    tea_leaf_init_common_device.setArg(7, *rz);
+    tea_leaf_init_common_device.setArg(8, coefficient);
     ENQUEUE_OFFSET(tea_leaf_init_common_device);
 
     int depth = halo_exchange_depth;
@@ -300,10 +300,10 @@ void CloverChunk::tea_leaf_init_common
                       update_##dir##_local_size[depth]); \
     }
 
-    ZERO_BOUNDARY(left, lr, x)
-    ZERO_BOUNDARY(right, lr, x)
     ZERO_BOUNDARY(bottom, bt, y)
     ZERO_BOUNDARY(top, bt, y)
+    ZERO_BOUNDARY(left, lr, x)
+    ZERO_BOUNDARY(right, lr, x)
     ZERO_BOUNDARY(back, fb, z)
     ZERO_BOUNDARY(front, fb, z)
 

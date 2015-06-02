@@ -412,13 +412,13 @@ void CloverChunk::initOcl
             // choose reduction based on device type
             switch (desired_type)
             {
-            case CL_DEVICE_TYPE_GPU : 
+            case CL_DEVICE_TYPE_GPU :
                 device_type_prepro = "-DCL_DEVICE_TYPE_GPU ";
                 break;
-            case CL_DEVICE_TYPE_CPU : 
+            case CL_DEVICE_TYPE_CPU :
                 device_type_prepro = "-DCL_DEVICE_TYPE_CPU ";
                 break;
-            case CL_DEVICE_TYPE_ACCELERATOR : 
+            case CL_DEVICE_TYPE_ACCELERATOR :
                 device_type_prepro = "-DCL_DEVICE_TYPE_ACCELERATOR ";
                 break;
             default :

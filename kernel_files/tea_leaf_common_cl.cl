@@ -54,8 +54,6 @@ __kernel void tea_leaf_init_common
  __global       double * __restrict const Kx,
  __global       double * __restrict const Ky,
  __global       double * __restrict const Kz,
- __global       double * __restrict const u0,
- __global       double * __restrict const u,
  double rx, double ry, double rz,
  const int coef)
 {

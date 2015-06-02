@@ -220,6 +220,8 @@ CloverChunk::~CloverChunk
             // how many arrays each kernel accesses
             std::map<std::string, double> kernel_params;
 
+            double reduction_amount = 1.0/reduced_cells;
+
             /*
              *  could do this as some kind of static thing but some paramters
              *  needs changing depending on the run time parameters. This is
@@ -236,11 +238,15 @@ CloverChunk::~CloverChunk
              *  Underestimating it and assuming perfect caching is about as
              *  sensible as possible
              */
-            kernel_params["field_summary"] = 7;
-            kernel_params["generate_chunk"] = 3;
-            kernel_params["generate_chunk_init"] = 2;
-            kernel_params["initialise_chunk_first"] = 1;
+            kernel_params["initialise_chunk_first"] = 1/reduced_cells;
             kernel_params["initialise_chunk_second"] = 4;
+
+            kernel_params["generate_chunk_init"] = 2;
+            kernel_params["generate_chunk"] = 2;
+            kernel_params["generate_chunk_init_u"] = 4;
+
+            kernel_params["field_summary"] = 4 + 4.0*reduction_amount;
+
             // 6 <= (avg depth) * 2 for writing and reading 2 slices of array
             //   <= ((1+2)/2) * 2
             kernel_params["update_halo_left"] = 3.0/(x_max);
@@ -249,31 +255,50 @@ CloverChunk::~CloverChunk
             kernel_params["update_halo_top"] = 3.0/(y_max);
             kernel_params["update_halo_back"] = 3.0/(z_max);
             kernel_params["update_halo_front"] = 3.0/(z_max);
+
+            kernel_params["pack_left_buffer"] = 1.5/(x_max);
+            kernel_params["pack_right_buffer"] = 1.5/(x_max);
+            kernel_params["pack_bottom_buffer"] = 1.5/(y_max);
+            kernel_params["pack_top_buffer"] = 1.5/(y_max);
+            kernel_params["pack_back_buffer"] = 1.5/(z_max);
+            kernel_params["pack_front_buffer"] = 1.5/(z_max);
+            kernel_params["unpack_left_buffer"] = 1.5/(x_max);
+            kernel_params["unpack_right_buffer"] = 1.5/(x_max);
+            kernel_params["unpack_bottom_buffer"] = 1.5/(y_max);
+            kernel_params["unpack_top_buffer"] = 1.5/(y_max);
+            kernel_params["unpack_back_buffer"] = 1.5/(z_max);
+            kernel_params["unpack_front_buffer"] = 1.5/(z_max);
+
             // slighty underestimated, but roughly correct
             kernel_params["reduction"] = 1.0/(LOCAL_X*LOCAL_Y*LOCAL_Z);
 
             // TL specific
             kernel_params["set_field"] = 2;
-            kernel_params["tea_leaf_init_diag"] = 3;
-            kernel_params["tea_leaf_finalise"] = 2;
-            kernel_params["tea_leaf_jacobi_init"] = 7;
+
+            kernel_params["tea_leaf_finalise"] = 3;
+            kernel_params["tea_leaf_calc_residual"] = 6;
+            kernel_params["tea_leaf_calc_2norm"] = 1 + reduction_amount;
+            kernel_params["tea_leaf_init_common"] = 5;
+
+            kernel_params["tea_leaf_init_jac_diag"] = 4;
+
+            // FIXME add in conditionals for if preconditioner is enabled so badnwdith is accurate
+
+            kernel_params["tea_leaf_cg_solve_init_p"] = 4 + reduction_amount;
+            kernel_params["tea_leaf_cg_solve_calc_w"] = 5 + reduction_amount;
+            kernel_params["tea_leaf_cg_solve_calc_ur"] = 4 + reduction_amount;
+            kernel_params["tea_leaf_cg_solve_calc_p"] = 2;
+
+            kernel_params["tea_leaf_cheby_solve_init_p"] = 8;
+            kernel_params["tea_leaf_cheby_solve_calc_u"] = 2;
+            kernel_params["tea_leaf_cheby_solve_calc_p"] = 8;
+
+            kernel_params["tea_leaf_ppcg_solve_init_sd"] = 2;
+            kernel_params["tea_leaf_ppcg_solve_update_r"] = 6;
+            kernel_params["tea_leaf_ppcg_solve_calc_sd"] = 2;
+
             kernel_params["tea_leaf_jacobi_copy_u"] = 2;
             kernel_params["tea_leaf_jacobi_solve"] = 6;
-            kernel_params["tea_leaf_cg_init_u"] = 6;
-            kernel_params["tea_leaf_cg_init_directions"] = 4;
-            kernel_params["tea_leaf_cg_init_others"] = 9; // with preconditioner!
-            kernel_params["tea_leaf_cg_solve_calc_w"] = 5;
-            kernel_params["tea_leaf_cg_solve_calc_ur"] = 6; // with preconditioner!
-            kernel_params["tea_leaf_cg_solve_calc_p"] = 3; // with preconditioner!
-            kernel_params["tea_leaf_cheby_solve_init_p"] = 9; // with preconditioner!
-            kernel_params["tea_leaf_cheby_solve_calc_u"] = 2;
-            kernel_params["tea_leaf_cheby_solve_calc_p"] = 9; // with preconditioner!
-            kernel_params["tea_leaf_cheby_calc_2norm"] = 1;
-            kernel_params["tea_leaf_calc_residual"] = 6;
-            kernel_params["tea_leaf_ppcg_solve_init_sd"] = 3;
-            kernel_params["tea_leaf_ppcg_solve_init_p"] = 3;
-            kernel_params["tea_leaf_ppcg_solve_update_r"] = 6;
-            kernel_params["tea_leaf_ppcg_solve_calc_sd"] = 3;
 
             double total_transferred = 0.0;
             double total_kernel_time = 0.0;
@@ -291,8 +316,18 @@ CloverChunk::~CloverChunk
 
             for (; ii != kernel_times.end(); ii++, jj++)
             {
-                double kernel_transferred = (x_max*y_max*z_max*sizeof(double)
-                    *jj->second*kernel_params.at(jj->first))*1e-9;
+                double kernel_transferred;
+
+                try
+                {
+                    kernel_transferred = (x_max*y_max*z_max*sizeof(double)
+                        *jj->second*kernel_params.at(jj->first))*1e-9;
+                }
+                catch (std::out_of_range e)
+                {
+                    continue;
+                }
+
                 double kernel_bw = kernel_transferred/(ii->second/1000.0);
 
                 fprintf(stdout, "%30s %9.3f %5d %7.5f\n",

@@ -12,7 +12,7 @@
  zmax=10.0
 
  end_time=100.0
- end_step=20
+ end_step=10
 
  opencl_vendor=any
  opencl_type=cpu

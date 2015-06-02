@@ -1,5 +1,20 @@
 #include "./kernel_files/macros_cl.cl"
 
+__kernel void generate_chunk_init
+(__global       double * density0,
+ __global       double * energy0,
+ __global const double * state_density,
+ __global const double * state_energy)
+{
+    __kernel_indexes;
+
+    if (WITHIN_BOUNDS)
+    {
+        energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[0];
+        density0[THARR3D(0, 0, 0, 0, 0)] = state_density[0];
+    }
+}
+
 __kernel void generate_chunk
 (__global const double * __restrict const vertexx,
  __global const double * __restrict const vertexy,
@@ -7,9 +22,9 @@ __kernel void generate_chunk
  __global const double * __restrict const cellx,
  __global const double * __restrict const celly,
  __global const double * __restrict const cellz,
+
  __global       double * __restrict const density0,
  __global       double * __restrict const energy0,
- __global       double * __restrict const u,
 
  __global const double * __restrict const state_density,
  __global const double * __restrict const state_energy,
@@ -86,21 +101,6 @@ __kernel void generate_chunk_init_u
     {
         u[THARR3D(0, 0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0, 0)];
         u0[THARR3D(0, 0, 0, 0, 0)] = energy[THARR3D(0, 0, 0, 0, 0)]*density[THARR3D(0, 0, 0, 0, 0)];
-    }
-}
-
-__kernel void generate_chunk_init
-(__global       double * density0,
- __global       double * energy0,
- __global const double * state_density,
- __global const double * state_energy)
-{
-    __kernel_indexes;
-
-    if (WITHIN_BOUNDS)
-    {
-        energy0[THARR3D(0, 0, 0, 0, 0)] = state_energy[0];
-        density0[THARR3D(0, 0, 0, 0, 0)] = state_density[0];
     }
 }
 

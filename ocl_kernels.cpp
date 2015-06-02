@@ -48,8 +48,6 @@ void CloverChunk::initProgram
     // include current directory
     options << "-I. ";
 
-    options << "-g ";
-
     // device type in the form "-D..."
     options << device_type_prepro;
 
@@ -65,11 +63,11 @@ void CloverChunk::initProgram
 
     // launch with special work group sizes to cover the whole grid
     compileKernel(options, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_first", initialise_chunk_first_device, -halo_allocate_depth, halo_allocate_depth, -halo_allocate_depth, halo_allocate_depth, -halo_allocate_depth, halo_allocate_depth);
-
     compileKernel(options, "./kernel_files/initialise_chunk_cl.cl", "initialise_chunk_second", initialise_chunk_second_device, -2, 2, -2, 2, -2, 2);
+
     compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init", generate_chunk_init_device, -1, 1, -1, 1, -1, 1);
-    compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init_u", generate_chunk_init_u_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk", generate_chunk_device, -2, 2, -2, 2, -2, 2);
+    compileKernel(options, "./kernel_files/generate_chunk_cl.cl", "generate_chunk_init_u", generate_chunk_init_u_device, 0, 0, 0, 0, 0, 0);
 
     compileKernel(options, "./kernel_files/set_field_cl.cl", "set_field", set_field_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/field_summary_cl.cl", "field_summary", field_summary_device, 0, 0, 0, 0, 0, 0);
@@ -98,10 +96,10 @@ void CloverChunk::initProgram
     tea_solver == TEA_ENUM_CHEBYSHEV ||
     tea_solver == TEA_ENUM_PPCG)
     {
+        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_init_p", tea_leaf_cg_solve_init_p_device, 0, 0, 0, 0, 0, 0);
         compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_w", tea_leaf_cg_solve_calc_w_device, 0, 0, 0, 0, 0, 0);
         compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_ur", tea_leaf_cg_solve_calc_ur_device, 0, 0, 0, 0, 0, 0);
         compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_calc_p", tea_leaf_cg_solve_calc_p_device, 0, 0, 0, 0, 0, 0);
-        compileKernel(options, "./kernel_files/tea_leaf_cg_cl.cl", "tea_leaf_cg_solve_init_p", tea_leaf_cg_solve_init_p_device, 0, 0, 0, 0, 0, 0);
 
         if (tea_solver == TEA_ENUM_CHEBYSHEV)
         {
@@ -112,8 +110,8 @@ void CloverChunk::initProgram
         else if (tea_solver == TEA_ENUM_PPCG)
         {
             compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_init_sd", tea_leaf_ppcg_solve_init_sd_device, 0, 0, 0, 0, 0, 0);
-            compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_calc_sd", tea_leaf_ppcg_solve_calc_sd_device, 0, 0, 0, 0, 0, 0);
             compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_update_r", tea_leaf_ppcg_solve_update_r_device, 0, 0, 0, 0, 0, 0);
+            compileKernel(options, "./kernel_files/tea_leaf_ppcg_cl.cl", "tea_leaf_ppcg_solve_calc_sd", tea_leaf_ppcg_solve_calc_sd_device, 0, 0, 0, 0, 0, 0);
         }
     }
     else
@@ -125,11 +123,11 @@ void CloverChunk::initProgram
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_finalise", tea_leaf_finalise_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_calc_residual", tea_leaf_calc_residual_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_calc_2norm", tea_leaf_calc_2norm_device, 0, 0, 0, 0, 0, 0);
+    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_common", tea_leaf_init_common_device, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth);
 
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_block_init", tea_leaf_block_init_device, 0, 0, 0, 0, 0, 0);
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_block_solve", tea_leaf_block_solve_device, 0, 0, 0, 0, 0, 0);
 
-    compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_common", tea_leaf_init_common_device, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth, 1-halo_exchange_depth, halo_exchange_depth);
     compileKernel(options, "./kernel_files/tea_leaf_common_cl.cl", "tea_leaf_init_jac_diag", tea_leaf_init_jac_diag_device, -halo_exchange_depth, halo_exchange_depth, -halo_exchange_depth, halo_exchange_depth, -halo_exchange_depth, halo_exchange_depth);
 
     if (!rank)
@@ -511,7 +509,6 @@ void CloverChunk::initArgs
     generate_chunk_device.setArg(5, cellz);
     generate_chunk_device.setArg(6, density);
     generate_chunk_device.setArg(7, energy0);
-    generate_chunk_device.setArg(8, u);
 
     // field summary
     field_summary_device.setArg(0, volume);
@@ -663,8 +660,6 @@ void CloverChunk::initArgs
     tea_leaf_init_common_device.setArg(2, vector_Kx);
     tea_leaf_init_common_device.setArg(3, vector_Ky);
     tea_leaf_init_common_device.setArg(4, vector_Kz);
-    tea_leaf_init_common_device.setArg(5, u0);
-    tea_leaf_init_common_device.setArg(6, u);
 
     // block
     tea_leaf_block_init_device.setArg(0, vector_r);
