@@ -270,10 +270,10 @@ void CloverChunk::tea_leaf_init_common
 
     calcrxryrz(dt, rx, ry, rz);
 
-    tea_leaf_init_common_device.setArg(6, *rx);
-    tea_leaf_init_common_device.setArg(7, *ry);
-    tea_leaf_init_common_device.setArg(8, *rz);
-    tea_leaf_init_common_device.setArg(9, coefficient);
+    tea_leaf_init_common_device.setArg(7, *rx);
+    tea_leaf_init_common_device.setArg(8, *ry);
+    tea_leaf_init_common_device.setArg(9, *rz);
+    tea_leaf_init_common_device.setArg(10, coefficient);
     ENQUEUE_OFFSET(tea_leaf_init_common_device);
 
     int depth = halo_exchange_depth;
@@ -286,10 +286,11 @@ void CloverChunk::tea_leaf_init_common
             sizeof(double)*(xyz##_max + 2*depth)*depth, &zeros.front()); \
         unpack_##face##_buffer_device.setArg(0, 0);     \
         unpack_##face##_buffer_device.setArg(1, 0);     \
-        unpack_##face##_buffer_device.setArg(2, vector_K##xyz);      \
-        unpack_##face##_buffer_device.setArg(3, face##_buffer);     \
-        unpack_##face##_buffer_device.setArg(4, depth);       \
-        unpack_##face##_buffer_device.setArg(5, 0);     \
+        unpack_##face##_buffer_device.setArg(2, 0);     \
+        unpack_##face##_buffer_device.setArg(3, vector_K##xyz);      \
+        unpack_##face##_buffer_device.setArg(4, face##_buffer);     \
+        unpack_##face##_buffer_device.setArg(5, depth);       \
+        unpack_##face##_buffer_device.setArg(6, 0);     \
         cl::NDRange offset_plus_one(update_##dir##_offset[depth][0]+1,  \
             update_##dir##_offset[depth][1]+1); \
         enqueueKernel(unpack_##face##_buffer_device, \

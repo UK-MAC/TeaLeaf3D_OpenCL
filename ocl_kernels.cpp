@@ -48,6 +48,8 @@ void CloverChunk::initProgram
     // include current directory
     options << "-I. ";
 
+    options << "-g ";
+
     // device type in the form "-D..."
     options << device_type_prepro;
 
@@ -412,8 +414,8 @@ void CloverChunk::initSizes
         global_bt_pack_size++;
     while (global_lr_pack_size % local_column_size)
         global_lr_pack_size++;
-    while (global_lr_pack_size % local_slice_size)
-        global_lr_pack_size++;
+    while (global_fb_pack_size % local_slice_size)
+        global_fb_pack_size++;
 
     update_lr_global_size[halo_exchange_depth] = cl::NDRange(halo_exchange_depth, global_lr_pack_size, global_fb_pack_size);
     update_bt_global_size[halo_exchange_depth] = cl::NDRange(global_bt_pack_size, halo_exchange_depth, global_fb_pack_size);
@@ -471,16 +473,17 @@ void CloverChunk::initArgs
     initialise_chunk_first_device.setArg(9, vertexdy);
     initialise_chunk_first_device.setArg(10, vertexz);
     initialise_chunk_first_device.setArg(11, vertexdz);
-    initialise_chunk_first_device.setArg(8, cellx);
-    initialise_chunk_first_device.setArg(9, celldx);
-    initialise_chunk_first_device.setArg(9, celldz);
-    initialise_chunk_first_device.setArg(10, celly);
-    initialise_chunk_first_device.setArg(11, celldy);
-    initialise_chunk_first_device.setArg(11, celldz);
+    initialise_chunk_first_device.setArg(12, cellx);
+    initialise_chunk_first_device.setArg(13, celldx);
+    initialise_chunk_first_device.setArg(14, celly);
+    initialise_chunk_first_device.setArg(15, celldy);
+    initialise_chunk_first_device.setArg(16, cellz);
+    initialise_chunk_first_device.setArg(17, celldz);
 
-    initialise_chunk_second_device.setArg(4, volume);
-    initialise_chunk_second_device.setArg(5, xarea);
-    initialise_chunk_second_device.setArg(6, yarea);
+    initialise_chunk_second_device.setArg(6, volume);
+    initialise_chunk_second_device.setArg(7, xarea);
+    initialise_chunk_second_device.setArg(8, yarea);
+    initialise_chunk_second_device.setArg(9, zarea);
 
     // set field
     set_field_device.setArg(0, energy0);
@@ -540,6 +543,7 @@ void CloverChunk::initArgs
         tea_leaf_cg_solve_calc_w_device.setArg(2, vector_w);
         tea_leaf_cg_solve_calc_w_device.setArg(3, vector_Kx);
         tea_leaf_cg_solve_calc_w_device.setArg(4, vector_Ky);
+        tea_leaf_cg_solve_calc_w_device.setArg(5, vector_Kz);
 
         tea_leaf_cg_solve_calc_ur_device.setArg(1, u);
         tea_leaf_cg_solve_calc_ur_device.setArg(2, vector_p);
@@ -551,7 +555,8 @@ void CloverChunk::initArgs
         tea_leaf_cg_solve_calc_ur_device.setArg(8, vector_Mi);
         tea_leaf_cg_solve_calc_ur_device.setArg(9, vector_Kx);
         tea_leaf_cg_solve_calc_ur_device.setArg(10, vector_Ky);
-        tea_leaf_cg_solve_calc_ur_device.setArg(11, reduce_buf_5);
+        tea_leaf_cg_solve_calc_ur_device.setArg(11, vector_Kz);
+        tea_leaf_cg_solve_calc_ur_device.setArg(12, reduce_buf_5);
 
         tea_leaf_cg_solve_calc_p_device.setArg(1, vector_p);
         tea_leaf_cg_solve_calc_p_device.setArg(2, vector_r);
@@ -569,6 +574,7 @@ void CloverChunk::initArgs
             tea_leaf_cheby_solve_init_p_device.setArg(7, vector_Mi);
             tea_leaf_cheby_solve_init_p_device.setArg(8, vector_Kx);
             tea_leaf_cheby_solve_init_p_device.setArg(9, vector_Ky);
+            tea_leaf_cheby_solve_init_p_device.setArg(10, vector_Kz);
 
             tea_leaf_cheby_solve_calc_u_device.setArg(0, u);
             tea_leaf_cheby_solve_calc_u_device.setArg(1, vector_p);
@@ -583,6 +589,7 @@ void CloverChunk::initArgs
             tea_leaf_cheby_solve_calc_p_device.setArg(7, vector_Mi);
             tea_leaf_cheby_solve_calc_p_device.setArg(8, vector_Kx);
             tea_leaf_cheby_solve_calc_p_device.setArg(9, vector_Ky);
+            tea_leaf_cheby_solve_calc_p_device.setArg(10, vector_Kz);
         }
         else if (tea_solver == TEA_ENUM_PPCG)
         {
@@ -594,14 +601,16 @@ void CloverChunk::initArgs
             tea_leaf_ppcg_solve_init_sd_device.setArg(5, vector_Mi);
             tea_leaf_ppcg_solve_init_sd_device.setArg(6, vector_Kx);
             tea_leaf_ppcg_solve_init_sd_device.setArg(7, vector_Ky);
-            tea_leaf_ppcg_solve_init_sd_device.setArg(8, u);
-            tea_leaf_ppcg_solve_init_sd_device.setArg(9, u0);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(8, vector_Kz);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(9, u);
+            tea_leaf_ppcg_solve_init_sd_device.setArg(10, u0);
 
             tea_leaf_ppcg_solve_update_r_device.setArg(0, u);
             tea_leaf_ppcg_solve_update_r_device.setArg(1, vector_r);
             tea_leaf_ppcg_solve_update_r_device.setArg(2, vector_Kx);
             tea_leaf_ppcg_solve_update_r_device.setArg(3, vector_Ky);
-            tea_leaf_ppcg_solve_update_r_device.setArg(4, vector_sd);
+            tea_leaf_ppcg_solve_update_r_device.setArg(4, vector_Kz);
+            tea_leaf_ppcg_solve_update_r_device.setArg(5, vector_sd);
 
             tea_leaf_ppcg_solve_calc_sd_device.setArg(0, vector_r);
             tea_leaf_ppcg_solve_calc_sd_device.setArg(1, vector_sd);
@@ -611,6 +620,7 @@ void CloverChunk::initArgs
             tea_leaf_ppcg_solve_calc_sd_device.setArg(5, vector_Mi);
             tea_leaf_ppcg_solve_calc_sd_device.setArg(6, vector_Kx);
             tea_leaf_ppcg_solve_calc_sd_device.setArg(7, vector_Ky);
+            tea_leaf_ppcg_solve_calc_sd_device.setArg(8, vector_Kz);
         }
     }
     else
@@ -621,10 +631,11 @@ void CloverChunk::initArgs
 
         tea_leaf_jacobi_solve_device.setArg(0, vector_Kx);
         tea_leaf_jacobi_solve_device.setArg(1, vector_Ky);
-        tea_leaf_jacobi_solve_device.setArg(2, u0);
-        tea_leaf_jacobi_solve_device.setArg(3, u);
-        tea_leaf_jacobi_solve_device.setArg(4, vector_Mi);
-        tea_leaf_jacobi_solve_device.setArg(5, reduce_buf_1);
+        tea_leaf_jacobi_solve_device.setArg(2, vector_Kz);
+        tea_leaf_jacobi_solve_device.setArg(3, u0);
+        tea_leaf_jacobi_solve_device.setArg(4, u);
+        tea_leaf_jacobi_solve_device.setArg(5, vector_Mi);
+        tea_leaf_jacobi_solve_device.setArg(6, reduce_buf_1);
     }
 
     tea_leaf_calc_residual_device.setArg(0, u);
@@ -632,6 +643,7 @@ void CloverChunk::initArgs
     tea_leaf_calc_residual_device.setArg(2, vector_r);
     tea_leaf_calc_residual_device.setArg(3, vector_Kx);
     tea_leaf_calc_residual_device.setArg(4, vector_Ky);
+    tea_leaf_calc_residual_device.setArg(5, vector_Kz);
 
     tea_leaf_calc_2norm_device.setArg(2, reduce_buf_1);
 
@@ -644,8 +656,9 @@ void CloverChunk::initArgs
     tea_leaf_init_common_device.setArg(1, energy1);
     tea_leaf_init_common_device.setArg(2, vector_Kx);
     tea_leaf_init_common_device.setArg(3, vector_Ky);
-    tea_leaf_init_common_device.setArg(4, u0);
-    tea_leaf_init_common_device.setArg(5, u);
+    tea_leaf_init_common_device.setArg(4, vector_Kz);
+    tea_leaf_init_common_device.setArg(5, u0);
+    tea_leaf_init_common_device.setArg(6, u);
 
     // block
     tea_leaf_block_init_device.setArg(0, vector_r);
@@ -654,6 +667,7 @@ void CloverChunk::initArgs
     tea_leaf_block_init_device.setArg(3, bfp);
     tea_leaf_block_init_device.setArg(4, vector_Kx);
     tea_leaf_block_init_device.setArg(5, vector_Ky);
+    tea_leaf_block_init_device.setArg(6, vector_Kz);
 
     tea_leaf_block_solve_device.setArg(0, vector_r);
     tea_leaf_block_solve_device.setArg(1, vector_z);
@@ -661,10 +675,12 @@ void CloverChunk::initArgs
     tea_leaf_block_solve_device.setArg(3, bfp);
     tea_leaf_block_solve_device.setArg(4, vector_Kx);
     tea_leaf_block_solve_device.setArg(5, vector_Ky);
+    tea_leaf_block_solve_device.setArg(6, vector_Kz);
 
     tea_leaf_init_jac_diag_device.setArg(0, vector_Mi);
     tea_leaf_init_jac_diag_device.setArg(1, vector_Kx);
     tea_leaf_init_jac_diag_device.setArg(2, vector_Ky);
+    tea_leaf_init_jac_diag_device.setArg(3, vector_Kz);
 
     fprintf(DBGOUT, "Kernel arguments set\n");
 }

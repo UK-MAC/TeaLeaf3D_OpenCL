@@ -160,8 +160,12 @@ void CloverChunk::initOcl
 
     int file_halo_depth = readInt(input, "halo_depth");
 
-    // No error checking - assume fortran does it correctly
     halo_exchange_depth = file_halo_depth;
+
+    if (halo_exchange_depth < 1)
+    {
+        DIE("Halo exchange depth unspecified or was too small");
+    }
 
     halo_allocate_depth = std::max(file_halo_depth, 2);
 

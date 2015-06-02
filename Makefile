@@ -118,6 +118,7 @@ ifdef IEEE
   I3E=$(I3E_$(COMPILER))
 endif
 
+CXXFLAGS=-fno-inline
 
 MPICXX_LIB=#-lmpi_cxx
 
@@ -142,7 +143,7 @@ ifdef VERBOSE
 CXXFLAGS+=-D OCL_VERBOSE
 endif
 
-CXXFLAGS+=$(CFLAGS)
+#CXXFLAGS+=$(CFLAGS)
 
 C_FILES=\
 	timer_c.o

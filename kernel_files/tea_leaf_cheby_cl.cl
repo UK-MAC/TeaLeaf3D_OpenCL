@@ -21,7 +21,7 @@ __kernel void tea_leaf_cheby_solve_init_p
     {
         w[THARR3D(0, 0, 0, 0, 0)] = SMVP(u);
 
-        r[THARR3D(0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0)];
+        r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
     }
 
     if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
@@ -34,30 +34,30 @@ __kernel void tea_leaf_cheby_solve_init_p
 
         if (WITHIN_BOUNDS)
         {
-            r_l[lid] = r[THARR3D(0, 0, 0, 0)];
+            r_l[lid] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
         if (loc_row == 0)
         {
-            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky);
+            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky, Kz);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if (WITHIN_BOUNDS)
         {
-            p[THARR3D(0, 0, 0, 0)] = z_l[lid]/theta;
+            p[THARR3D(0, 0, 0, 0, 0)] = z_l[lid]/theta;
         }
     }
     else if (WITHIN_BOUNDS)
     {
         if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            p[THARR3D(0, 0, 0, 0)] = (Mi[THARR3D(0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0)])/theta;
+            p[THARR3D(0, 0, 0, 0, 0)] = (Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)])/theta;
         }
         else
         {
-            p[THARR3D(0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0)]/theta;
+            p[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
     }
 }
@@ -70,7 +70,7 @@ __kernel void tea_leaf_cheby_solve_calc_u
 
     if (WITHIN_BOUNDS)
     {
-        u[THARR3D(0, 0, 0, 0)] += p[THARR3D(0, 0, 0, 0)];
+        u[THARR3D(0, 0, 0, 0, 0)] += p[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 
@@ -96,7 +96,7 @@ __kernel void tea_leaf_cheby_solve_calc_p
     {
         w[THARR3D(0, 0, 0, 0, 0)] = SMVP(u);
 
-        r[THARR3D(0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0)];
+        r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
     }
 
     if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
@@ -109,19 +109,19 @@ __kernel void tea_leaf_cheby_solve_calc_p
 
         if (WITHIN_BOUNDS)
         {
-            r_l[lid] = r[THARR3D(0, 0, 0, 0)];
+            r_l[lid] = r[THARR3D(0, 0, 0, 0, 0)];
         }
 
         barrier(CLK_LOCAL_MEM_FENCE);
         if (loc_row == 0)
         {
-            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky);
+            block_solve_func(r_l, z_l, cp, bfp, Kx, Ky, Kz);
         }
         barrier(CLK_LOCAL_MEM_FENCE);
 
         if (WITHIN_BOUNDS)
         {
-            p[THARR3D(0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0)]
+            p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
                             + beta[step]*z_l[lid];
         }
     }
@@ -129,13 +129,13 @@ __kernel void tea_leaf_cheby_solve_calc_p
     {
         if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
-            p[THARR3D(0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0)]
-                                + beta[step]*Mi[THARR3D(0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
+                                + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
         }
         else
         {
-            p[THARR3D(0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0)]
-                            + beta[step]*r[THARR3D(0, 0, 0, 0)];
+            p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
+                            + beta[step]*r[THARR3D(0, 0, 0, 0, 0)];
         }
     }
 }

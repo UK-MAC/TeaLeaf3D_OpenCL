@@ -63,18 +63,19 @@ void CloverChunk::initBuffers
     BUF1DZ_ALLOC(vertexdz, 1);
 
     // work arrays used in various kernels (post_vol, pre_vol, mom_flux, etc)
-    BUF3D_ALLOC(vector_p, 1, 1, 1);
-    BUF3D_ALLOC(vector_r, 1, 1, 1);
-    BUF3D_ALLOC(vector_w, 1, 1, 1);
-    BUF3D_ALLOC(vector_Mi, 1, 1, 1);
-    BUF3D_ALLOC(vector_Kx, 1, 1, 1);
-    BUF3D_ALLOC(vector_Ky, 1, 1, 1);
-    BUF3D_ALLOC(vector_sd, 1, 1, 1);
+    BUF3D_ALLOC(vector_p, 0, 0, 0);
+    BUF3D_ALLOC(vector_r, 0, 0, 0);
+    BUF3D_ALLOC(vector_w, 0, 0, 0);
+    BUF3D_ALLOC(vector_Mi, 0, 0, 0);
+    BUF3D_ALLOC(vector_Kx, 0, 0, 0);
+    BUF3D_ALLOC(vector_Ky, 0, 0, 0);
+    BUF3D_ALLOC(vector_Kz, 0, 0, 0);
+    BUF3D_ALLOC(vector_sd, 0, 0, 0);
 
     // tealeaf
     BUF3D_ALLOC(u, 0, 0, 0);
     BUF3D_ALLOC(u0, 0, 0, 0);
-    BUF3D_ALLOC(vector_z, 1, 1, 1);
+    BUF3D_ALLOC(vector_z, 0, 0, 0);
 
     BUF3D_ALLOC(cp, 0, 0, 0);
     BUF3D_ALLOC(bfp, 0, 0, 0);
