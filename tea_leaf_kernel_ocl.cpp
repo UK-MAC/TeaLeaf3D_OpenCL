@@ -351,7 +351,7 @@ void CloverChunk::ppcg_init
 (const double * ch_alphas, const double * ch_betas,
  const double theta, const int n_inner_steps)
 {
-    tea_leaf_ppcg_solve_init_sd_device.setArg(10, theta);
+    tea_leaf_ppcg_solve_init_sd_device.setArg(11, theta);
 
     // never going to do more than n_inner_steps steps? XXX
     size_t ch_buf_sz = n_inner_steps*sizeof(double);
@@ -362,8 +362,8 @@ void CloverChunk::ppcg_init
     ch_betas_device = cl::Buffer(context, CL_MEM_READ_ONLY, ch_buf_sz);
     queue.enqueueWriteBuffer(ch_betas_device, CL_TRUE, 0, ch_buf_sz, ch_betas);
 
-    tea_leaf_ppcg_solve_calc_sd_device.setArg(8, ch_alphas_device);
-    tea_leaf_ppcg_solve_calc_sd_device.setArg(9, ch_betas_device);
+    tea_leaf_ppcg_solve_calc_sd_device.setArg(9, ch_alphas_device);
+    tea_leaf_ppcg_solve_calc_sd_device.setArg(10, ch_betas_device);
 }
 
 void CloverChunk::ppcg_init_sd
@@ -420,7 +420,7 @@ void CloverChunk::ppcg_inner
                       step_global_size_range,
                       cl::NullRange);
 
-        tea_leaf_ppcg_solve_calc_sd_device.setArg(10, ppcg_cur_step - 1 + (step_depth - 1));
+        tea_leaf_ppcg_solve_calc_sd_device.setArg(11, ppcg_cur_step - 1 + (step_depth - 1));
 
         enqueueKernel(tea_leaf_ppcg_solve_calc_sd_device, __LINE__, __FILE__,
                       step_offset_range,

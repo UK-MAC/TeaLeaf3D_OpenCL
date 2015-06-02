@@ -74,7 +74,7 @@ OMP=$(OMP_$(COMPILER))
 
 FLAGS_INTEL     = -O3 -fpp -no-prec-div
 FLAGS_SUN       = -fast -xipo=2 -Xlistv4
-FLAGS_GNU       = -O3 -march=native -funroll-loops
+FLAGS_GNU       = -O3 -funroll-loops -ffree-line-length-none
 FLAGS_CRAY      = -em -ra -h acc_model=fast_addr:no_deep_copy:auto_async_all
 FLAGS_PGI       = -fastsse -gopt -Mipa=fast -Mlist
 FLAGS_PATHSCALE = -O3
@@ -118,8 +118,6 @@ ifdef IEEE
   I3E=$(I3E_$(COMPILER))
 endif
 
-CXXFLAGS=-fno-inline
-
 MPICXX_LIB=#-lmpi_cxx
 
 LDLIBS+=-lOpenCL -lstdc++ $(MPICXX_LIB)
@@ -143,7 +141,7 @@ ifdef VERBOSE
 CXXFLAGS+=-D OCL_VERBOSE
 endif
 
-#CXXFLAGS+=$(CFLAGS)
+CXXFLAGS+=$(CFLAGS)
 
 C_FILES=\
 	timer_c.o
@@ -197,13 +195,15 @@ tea_leaf: Makefile $(FORTRAN_FILES) $(C_FILES) $(OCL_FILES)
 	-o tea_leaf
 	@echo $(MESSAGE)
 
-%.o: %.cpp Makefile make.deps ocl_common.hpp
+include makefile.deps
+
+%.o: %.cpp Makefile makefile.deps ocl_common.hpp
 	$(CXX_MPI_COMPILER) $(CXXFLAGS) -c $< -o $*.o
 %_module.mod: %.f90 %.o
 	@true
-%.o: %.f90 Makefile make.deps
+%.o: %.f90 Makefile makefile.deps
 	$(MPI_COMPILER) $(FLAGS) -c $< -o $*.o
-%.o: %.c Makefile make.deps
+%.o: %.c Makefile makefile.deps
 	$(C_MPI_COMPILER) $(CFLAGS) -c $< -o $*.o
 
 clean:

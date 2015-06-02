@@ -3,7 +3,7 @@
 void CloverChunk::initBuffers
 (void)
 {
-    size_t total_cells = (x_max+2*halo_allocate_depth+1) * (y_max+2*halo_allocate_depth+1);
+    size_t total_cells = (z_max+2*halo_allocate_depth+1) * (x_max+2*halo_allocate_depth+1) * (y_max+2*halo_allocate_depth+1);
     const std::vector<double> zeros(total_cells, 0.0);
 
     #define BUF_ALLOC(name, buf_sz)                 \
