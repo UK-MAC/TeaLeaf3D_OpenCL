@@ -1,7 +1,7 @@
 #include "./kernel_files/macros_cl.cl"
 
 #define VERT_IDX                                                    \
-    ((0 + column - get_global_offset(0)) +                                                 \
+    ((1 + column - get_global_offset(0)) +                                                 \
     ((1 + row    - get_global_offset(1)) + depth - 1)*depth +                              \
     ((1 + slice  - get_global_offset(2)) + depth - 1)*(y_max + y_extra + 2*depth)*depth)   \
     + offset
@@ -9,7 +9,7 @@
 // bottom/top
 #define HORZ_IDX                                                                    \
     ((1 + column - get_global_offset(0)) + depth +                                                           \
-    ((0 + slice  - get_global_offset(2)) + depth - 1)* (x_max + x_extra + 2*depth) +                             \
+    ((1 + slice  - get_global_offset(2)) + depth - 1)* (x_max + x_extra + 2*depth) +                             \
     ((1 + row    - get_global_offset(1))         - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth))) \
     + offset
 
@@ -17,7 +17,7 @@
 #define DEPTH_IDX                                                                       \
     ((1 + row    - get_global_offset(1)) + depth +                                                             \
     ((1 + column - get_global_offset(0)) + depth - 1)* (x_max + x_extra + 2*depth) +                               \
-    ((0 + slice  - get_global_offset(2))         - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth)))   \
+    ((1 + slice  - get_global_offset(2))         - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth)))   \
     + offset
 
 __kernel void pack_left_buffer
