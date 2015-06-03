@@ -211,7 +211,7 @@ void CloverChunk::cloverDie
 CloverChunk::~CloverChunk
 (void)
 {
-    if (profiler_on)
+    if (profiler_on && !rank)
     {
         fprintf(stdout, "@@@@@ PROFILING @@@@@\n");
 
@@ -284,7 +284,7 @@ CloverChunk::~CloverChunk
 
             // FIXME add in conditionals for if preconditioner is enabled so badnwdith is accurate
 
-            kernel_params["tea_leaf_cg_solve_init_p"] = 4 + reduction_amount;
+            kernel_params["tea_leaf_cg_solve_init_p"] = 2 + reduction_amount;
             kernel_params["tea_leaf_cg_solve_calc_w"] = 5 + reduction_amount;
             kernel_params["tea_leaf_cg_solve_calc_ur"] = 4 + reduction_amount;
             kernel_params["tea_leaf_cg_solve_calc_p"] = 2;
