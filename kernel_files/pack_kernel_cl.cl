@@ -1,30 +1,23 @@
 #include "./kernel_files/macros_cl.cl"
 
-#if 1
 #define VERT_IDX                                                    \
-    ((column - 0) +                                                 \
-    ((row    - 1) + depth - 1)*depth +                              \
-    ((slice  - 1) + depth - 1)*(y_max + y_extra + 2*depth)*depth)   \
+    ((0 + column - get_global_offset(0)) +                                                 \
+    ((1 + row    - get_global_offset(1)) + depth - 1)*depth +                              \
+    ((1 + slice  - get_global_offset(2)) + depth - 1)*(y_max + y_extra + 2*depth)*depth)   \
     + offset
-#else
-#define VERT_IDX                                            \
-    (slice  + depth - 1 +                                                           \
-    (row    + depth - 1)* (x_max + x_extra + 2*depth) +                             \
-    (column         - 1)*((z_max + z_extra + 2*depth)*(y_max + y_extra + 2*depth)))
-#endif
 
 // bottom/top
 #define HORZ_IDX                                                                    \
-    (column + depth - 1 +                                                           \
-    (slice  + depth - 0)* (x_max + x_extra + 2*depth) +                             \
-    (row            - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth))) \
+    ((1 + column - get_global_offset(0)) + depth +                                                           \
+    ((0 + slice  - get_global_offset(2)) + depth - 1)* (x_max + x_extra + 2*depth) +                             \
+    ((1 + row    - get_global_offset(1))         - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth))) \
     + offset
 
 // back/front
-#define DEPTH_IDX                                                                   \
-    ((row    - 1) + depth +                                                           \
-    ((column - 1) + depth)* (x_max + x_extra + 2*depth) +                             \
-    ((slice  - 0)        )*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth))) \
+#define DEPTH_IDX                                                                       \
+    ((1 + row    - get_global_offset(1)) + depth +                                                             \
+    ((1 + column - get_global_offset(0)) + depth - 1)* (x_max + x_extra + 2*depth) +                               \
+    ((0 + slice  - get_global_offset(2))         - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth)))   \
     + offset
 
 __kernel void pack_left_buffer
