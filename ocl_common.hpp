@@ -12,7 +12,7 @@
 // 2 dimensional arrays - use a 2D tile for local group
 const static size_t LOCAL_Z = 1;
 const static size_t LOCAL_Y = JACOBI_BLOCK_SIZE;
-const static size_t LOCAL_X = 128/LOCAL_Y;
+const static size_t LOCAL_X = 128/(LOCAL_Y*LOCAL_Z);
 const static cl::NDRange local_group_size(LOCAL_X, LOCAL_Y, LOCAL_Z);
 
 // used in update_halo and for copying back to host for mpi transfers
