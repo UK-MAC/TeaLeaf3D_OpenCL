@@ -278,22 +278,27 @@ void CloverChunk::tea_leaf_init_common
     ENQUEUE_OFFSET(tea_leaf_init_common_device);
 
     int depth = halo_exchange_depth;
-    std::vector<double> zeros((std::max(std::max(x_max, y_max), z_max) + 2*depth)*depth, 0);
+    int max_dim = std::max(std::max(x_max, y_max), z_max);
 
-    #define ZERO_BOUNDARY(face, dir, xyz) \
+    std::vector<double> zeros((max_dim + 2*depth)*(max_dim + 2*depth)*depth, 0);
+
+    #define ZERO_BOUNDARY(face, dir, side, xyz1, xyz2) \
     if (chunk_neighbours[CHUNK_ ## face - 1] == EXTERNAL_FACE)\
     {   \
         queue.enqueueWriteBuffer(face##_buffer, CL_TRUE, 0, \
-            sizeof(double)*(xyz##_max + 2*depth)*depth, &zeros.front()); \
+            sizeof(double)*(xyz1##_max + 2*depth)*(xyz2##_max + 2*depth)*depth, \
+            &zeros.front()); \
         unpack_##face##_buffer_device.setArg(0, 0);     \
         unpack_##face##_buffer_device.setArg(1, 0);     \
         unpack_##face##_buffer_device.setArg(2, 0);     \
-        unpack_##face##_buffer_device.setArg(3, vector_K##xyz);      \
+        unpack_##face##_buffer_device.setArg(3, vector_K##side);      \
         unpack_##face##_buffer_device.setArg(4, face##_buffer);     \
         unpack_##face##_buffer_device.setArg(5, depth);       \
         unpack_##face##_buffer_device.setArg(6, 0);     \
-        cl::NDRange offset_plus_one(update_##dir##_offset[depth][0]+1,  \
-            update_##dir##_offset[depth][1]+1); \
+        cl::NDRange offset_plus_one(    \
+            update_##dir##_offset[depth][0]+1,  \
+            update_##dir##_offset[depth][1]+1,  \
+            update_##dir##_offset[depth][2]+1); \
         enqueueKernel(unpack_##face##_buffer_device, \
                       __LINE__, __FILE__,  \
                       offset_plus_one, \
@@ -301,12 +306,12 @@ void CloverChunk::tea_leaf_init_common
                       update_##dir##_local_size[depth]); \
     }
 
-    ZERO_BOUNDARY(bottom, bt, y)
-    ZERO_BOUNDARY(top, bt, y)
-    ZERO_BOUNDARY(left, lr, x)
-    ZERO_BOUNDARY(right, lr, x)
-    ZERO_BOUNDARY(back, fb, z)
-    ZERO_BOUNDARY(front, fb, z)
+    ZERO_BOUNDARY(left,   lr, x, y, z)
+    ZERO_BOUNDARY(right,  lr, x, y, z)
+    ZERO_BOUNDARY(bottom, bt, y, x, z)
+    ZERO_BOUNDARY(top,    bt, y, x, z)
+    ZERO_BOUNDARY(back,   fb, z, x, y)
+    ZERO_BOUNDARY(front,  fb, z, x, y)
 
     generate_chunk_init_u_device.setArg(1, energy1);
     ENQUEUE_OFFSET(generate_chunk_init_u_device);

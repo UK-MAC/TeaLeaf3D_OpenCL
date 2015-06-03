@@ -174,7 +174,7 @@ const int depth, int offset)
     if (row >= HALO_DEPTH - depth && row <= (y_max + HALO_DEPTH - 1) + y_extra + depth)
     if (column >= HALO_DEPTH - depth && column <= (x_max + HALO_DEPTH - 1) + x_extra + depth)
     {
-        const size_t src = 1 + (HALO_DEPTH - row - 1)*2;
+        const size_t src = 1 + (HALO_DEPTH - slice - 1)*2;
         back_buffer[DEPTH_IDX] = cur_array[THARR3D(0, 0, src, x_extra, y_extra)];
     }
 }

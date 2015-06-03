@@ -64,7 +64,7 @@ __kernel void initialise_chunk_first
     //fill y arrays
     if (row == 0 && column == 0 && slice <= (z_max + HALO_DEPTH))
     {
-        cellz[slice] = 0.5 * (vertexz[row] + vertexz_plusone);
+        cellz[slice] = 0.5 * (vertexz[slice] + vertexz_plusone);
         celldz[slice] = d_dz;
     }
 }

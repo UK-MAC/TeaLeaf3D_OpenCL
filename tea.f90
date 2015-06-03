@@ -585,10 +585,10 @@ SUBROUTINE tea_send_recv_message_back(back_snd_buffer, back_rcv_buffer,     &
   back_task=chunks(chunk)%chunk_neighbours(chunk_back)
 
   CALL MPI_ISEND(back_snd_buffer,total_size,MPI_DOUBLE_PRECISION,back_task,tag_send, &
-                 MPI_COMM_WORLD,req_send,err)
+                 mpi_cart_comm,req_send,err)
 
   CALL MPI_IRECV(back_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,back_task,tag_recv, &
-                 MPI_COMM_WORLD,req_recv,err)
+                 mpi_cart_comm,req_recv,err)
 
 END SUBROUTINE tea_send_recv_message_back
 
@@ -608,10 +608,10 @@ SUBROUTINE tea_send_recv_message_front(front_snd_buffer, front_rcv_buffer,      
   front_task=chunks(chunk)%chunk_neighbours(chunk_front)
 
   CALL MPI_ISEND(front_snd_buffer,total_size,MPI_DOUBLE_PRECISION,front_task,tag_send &
-                ,MPI_COMM_WORLD,req_send,err)
+                ,mpi_cart_comm,req_send,err)
 
   CALL MPI_IRECV(front_rcv_buffer,total_size,MPI_DOUBLE_PRECISION,front_task,tag_recv &
-                ,MPI_COMM_WORLD,req_recv,err)
+                ,mpi_cart_comm,req_recv,err)
 
 END SUBROUTINE tea_send_recv_message_front
 
