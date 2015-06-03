@@ -20,7 +20,7 @@ __kernel void tea_leaf_ppcg_solve_init_sd
 {
     __kernel_indexes;
 
-    if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
+    #if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
     {
         __local double r_l[BLOCK_SZ];
         __local double z_l[BLOCK_SZ];
@@ -45,18 +45,21 @@ __kernel void tea_leaf_ppcg_solve_init_sd
             sd[THARR3D(0, 0, 0, 0, 0)] = z_l[lid]/theta;
         }
     }
-    else if (WITHIN_BOUNDS)
+    #else
+    if (WITHIN_BOUNDS)
     {
-        if (PRECONDITIONER == TL_PREC_JAC_DIAG)
+        #if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
             //z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
             sd[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
-        else if (PRECONDITIONER == TL_PREC_NONE)
+        #elif (PRECONDITIONER == TL_PREC_NONE)
         {
             sd[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
+        #endif
     }
+    #endif
 }
 
 __kernel void tea_leaf_ppcg_solve_update_r
@@ -96,7 +99,7 @@ __kernel void tea_leaf_ppcg_solve_calc_sd
 {
     __kernel_indexes;
 
-    if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
+    #if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
     {
         __local double r_l[BLOCK_SZ];
         __local double z_l[BLOCK_SZ];
@@ -125,19 +128,22 @@ __kernel void tea_leaf_ppcg_solve_calc_sd
                                 + beta[step]*z_l[lid];
         }
     }
-    else if (HALO_DEPTH >= 2 || WITHIN_BOUNDS)
+    #else
+    if (HALO_DEPTH >= 2 || WITHIN_BOUNDS)
     {
-        if (PRECONDITIONER == TL_PREC_JAC_DIAG)
+        #if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
             //z[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
             sd[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0, 0)]
                                 + beta[step]*r[THARR3D(0, 0, 0, 0, 0)]*Mi[THARR3D(0, 0, 0, 0, 0)];
         }
-        else if (PRECONDITIONER == TL_PREC_NONE)
+        #elif (PRECONDITIONER == TL_PREC_NONE)
         {
             sd[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*sd[THARR3D(0, 0, 0, 0, 0)]
                                 + beta[step]*r[THARR3D(0, 0, 0, 0, 0)];
         }
+        #endif
     }
+    #endif
 }
 

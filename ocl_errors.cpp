@@ -277,8 +277,8 @@ CloverChunk::~CloverChunk
 
             kernel_params["tea_leaf_finalise"] = 3;
             kernel_params["tea_leaf_calc_residual"] = 6;
-            kernel_params["tea_leaf_calc_2norm"] = 1 + reduction_amount;
-            kernel_params["tea_leaf_init_common"] = 5;
+            kernel_params["tea_leaf_calc_2norm"] = 2 + reduction_amount;
+            kernel_params["tea_leaf_init_common"] = 4;
 
             kernel_params["tea_leaf_init_jac_diag"] = 4;
 
@@ -295,7 +295,7 @@ CloverChunk::~CloverChunk
 
             kernel_params["tea_leaf_ppcg_solve_init_sd"] = 2;
             kernel_params["tea_leaf_ppcg_solve_update_r"] = 6;
-            kernel_params["tea_leaf_ppcg_solve_calc_sd"] = 2;
+            kernel_params["tea_leaf_ppcg_solve_calc_sd"] = 3;
 
             kernel_params["tea_leaf_jacobi_copy_u"] = 2;
             kernel_params["tea_leaf_jacobi_solve"] = 6;

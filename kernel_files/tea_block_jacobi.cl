@@ -1,4 +1,12 @@
 
+#if !(PRECONDITIONER == TL_PREC_NONE)
+#if !(PRECONDITIONER == TL_PREC_JAC_DIAG)
+#if !(PRECONDITIONER == TL_PREC_JAC_BLOCK)
+    #error No preconditioner specified
+#endif
+#endif
+#endif
+
 #define COEF_A (-Kz[THARR3D(0, 0, k+0, 0, 0)])
 
 #define COEF_B (1.0                                             \

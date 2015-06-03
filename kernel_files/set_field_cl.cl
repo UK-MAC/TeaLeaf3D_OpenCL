@@ -8,7 +8,7 @@ __kernel void set_field
 
     if (WITHIN_BOUNDS)
     {
-        energy1[THARR3D(0, 0, 0, 0, 0)]  = energy0[THARR3D(0, 0, 0, 0, 0)];
+        energy1[THARR3D(0, 0, 0, 0, 0)] = energy0[THARR3D(0, 0, 0, 0, 0)];
     }
 }
 

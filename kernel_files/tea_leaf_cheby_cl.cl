@@ -24,7 +24,7 @@ __kernel void tea_leaf_cheby_solve_init_p
         r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
     }
 
-    if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
+    #if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
     {
         __local double r_l[BLOCK_SZ];
         __local double z_l[BLOCK_SZ];
@@ -49,17 +49,20 @@ __kernel void tea_leaf_cheby_solve_init_p
             p[THARR3D(0, 0, 0, 0, 0)] = z_l[lid]/theta;
         }
     }
-    else if (WITHIN_BOUNDS)
+    #else
+    if (WITHIN_BOUNDS)
     {
-        if (PRECONDITIONER == TL_PREC_JAC_DIAG)
+        #if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
             p[THARR3D(0, 0, 0, 0, 0)] = (Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)])/theta;
         }
-        else
+        #else
         {
             p[THARR3D(0, 0, 0, 0, 0)] = r[THARR3D(0, 0, 0, 0, 0)]/theta;
         }
+        #endif
     }
+    #endif
 }
 
 __kernel void tea_leaf_cheby_solve_calc_u
@@ -99,7 +102,7 @@ __kernel void tea_leaf_cheby_solve_calc_p
         r[THARR3D(0, 0, 0, 0, 0)] = u0[THARR3D(0, 0, 0, 0, 0)] - w[THARR3D(0, 0, 0, 0, 0)];
     }
 
-    if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
+    #if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
     {
         __local double r_l[BLOCK_SZ];
         __local double z_l[BLOCK_SZ];
@@ -125,18 +128,21 @@ __kernel void tea_leaf_cheby_solve_calc_p
                             + beta[step]*z_l[lid];
         }
     }
-    else if (WITHIN_BOUNDS)
+    #else
+    if (WITHIN_BOUNDS)
     {
-        if (PRECONDITIONER == TL_PREC_JAC_DIAG)
+        #if (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
             p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
                                 + beta[step]*Mi[THARR3D(0, 0, 0, 0, 0)]*r[THARR3D(0, 0, 0, 0, 0)];
         }
-        else
+        #else
         {
             p[THARR3D(0, 0, 0, 0, 0)] = alpha[step]*p[THARR3D(0, 0, 0, 0, 0)]
                             + beta[step]*r[THARR3D(0, 0, 0, 0, 0)];
         }
+        #endif
     }
+    #endif
 }
 
