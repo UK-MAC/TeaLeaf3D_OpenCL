@@ -92,16 +92,17 @@ void CloverChunk::tea_leaf_kernel_cheby_init
     queue.enqueueWriteBuffer(ch_alphas_device, CL_TRUE, 0, ch_buf_sz, ch_alphas);
     ch_betas_device = cl::Buffer(context, CL_MEM_READ_ONLY, ch_buf_sz);
     queue.enqueueWriteBuffer(ch_betas_device, CL_TRUE, 0, ch_buf_sz, ch_betas);
-    tea_leaf_cheby_solve_calc_p_device.setArg(9, ch_alphas_device);
-    tea_leaf_cheby_solve_calc_p_device.setArg(10, ch_betas_device);
-    tea_leaf_cheby_solve_calc_p_device.setArg(11, rx);
-    tea_leaf_cheby_solve_calc_p_device.setArg(12, ry);
-    tea_leaf_cheby_solve_calc_p_device.setArg(13, rz);
 
-    tea_leaf_cheby_solve_init_p_device.setArg(9, theta);
-    tea_leaf_cheby_solve_init_p_device.setArg(10, rx);
-    tea_leaf_cheby_solve_init_p_device.setArg(11, ry);
-    tea_leaf_cheby_solve_init_p_device.setArg(12, rz);
+    tea_leaf_cheby_solve_init_p_device.setArg(11, theta);
+    tea_leaf_cheby_solve_init_p_device.setArg(12, rx);
+    tea_leaf_cheby_solve_init_p_device.setArg(13, ry);
+    tea_leaf_cheby_solve_init_p_device.setArg(14, rz);
+
+    tea_leaf_cheby_solve_calc_p_device.setArg(11, ch_alphas_device);
+    tea_leaf_cheby_solve_calc_p_device.setArg(12, ch_betas_device);
+    tea_leaf_cheby_solve_calc_p_device.setArg(13, rx);
+    tea_leaf_cheby_solve_calc_p_device.setArg(14, ry);
+    tea_leaf_cheby_solve_calc_p_device.setArg(15, rz);
 
     ENQUEUE_OFFSET(tea_leaf_cheby_solve_init_p_device);
 
@@ -112,7 +113,7 @@ void CloverChunk::tea_leaf_kernel_cheby_iterate
 (const double * ch_alphas, const double * ch_betas, int n_coefs,
  const double rx, const double ry, const double rz, const int cheby_calc_step)
 {
-    tea_leaf_cheby_solve_calc_p_device.setArg(14, cheby_calc_step-1);
+    tea_leaf_cheby_solve_calc_p_device.setArg(16, cheby_calc_step-1);
 
     ENQUEUE_OFFSET(tea_leaf_cheby_solve_calc_p_device);
     ENQUEUE_OFFSET(tea_leaf_cheby_solve_calc_u_device);
