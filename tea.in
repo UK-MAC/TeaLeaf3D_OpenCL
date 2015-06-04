@@ -21,7 +21,7 @@
  test_problem 1
 
  opencl_vendor=any
- opencl_type=gpu
+ opencl_type=cpu
  opencl_device=0
 
  halo_depth=4
