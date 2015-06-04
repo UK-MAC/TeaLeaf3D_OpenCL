@@ -301,11 +301,6 @@ void CloverChunk::tea_leaf_init_common
             update_##dir##_offset[depth][2]+1); \
         enqueueKernel(unpack_##face##_buffer_device, \
                       __LINE__, __FILE__,  \
-                      update_##dir##_offset[depth], \
-                      update_##dir##_global_size[depth], \
-                      update_##dir##_local_size[depth]); \
-        enqueueKernel(unpack_##face##_buffer_device, \
-                      __LINE__, __FILE__,  \
                       offset_plus_one, \
                       update_##dir##_global_size[depth], \
                       update_##dir##_local_size[depth]); \
