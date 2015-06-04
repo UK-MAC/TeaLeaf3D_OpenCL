@@ -238,13 +238,5 @@ const int depth, int offset)
     {
         const size_t dst = z_max + z_extra + (HALO_DEPTH - slice - 1)*2 + 1;
         cur_array[THARR3D(0, 0, dst, x_extra, y_extra)] = front_buffer[DEPTH_IDX];
-        //printf("%3zu %3zu %3zu %4zu   %3d %3d\n",
-        //    column - get_global_offset(0),
-        //    row - get_global_offset(1),
-        //    slice - get_global_offset(2),
-        //    DEPTH_IDX,
-        //    (x_max + x_extra + 2*depth),
-        //    (y_max + y_extra + 2*depth)
-        //    );
     }
 }
