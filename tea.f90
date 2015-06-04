@@ -188,14 +188,14 @@ SUBROUTINE tea_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,fron
     top(c) = top(c) + 1
   endif
 
-  back(c) = mpi_coords(1)*delta_z + 1
-  if (mpi_coords(1) .le. mod_z) then
-    back(c) = back(c) + mpi_coords(1)
+  back(c) = mpi_coords(3)*delta_z + 1
+  if (mpi_coords(3) .le. mod_z) then
+    back(c) = back(c) + mpi_coords(3)
   else
     back(c) = back(c) + mod_z
   endif
   front(c) = back(c)+delta_z - 1
-  if (mpi_coords(1) .lt. mod_z) then
+  if (mpi_coords(3) .lt. mod_z) then
     front(c) = front(c) + 1
   endif
 
