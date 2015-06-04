@@ -75,15 +75,10 @@ SUBROUTINE field_summary()
     IF(parallel%boss) THEN
 !$    IF(OMP_GET_THREAD_NUM().EQ.0) THEN
         IF(test_problem.GE.1) THEN
-  ! Note that the "correct" solution is with IEEE switched on, 1 task, 1 thread, Intel compiler on Ivy Bridge
-          IF(test_problem.EQ.1) qa_diff=ABS((100.0_8*(temp/157.550841832793_8))-100.0_8)
-          IF(test_problem.EQ.2) qa_diff=ABS((100.0_8*(temp/116.067951160930_8))-100.0_8)
-          IF(test_problem.EQ.3) qa_diff=ABS((100.0_8*(temp/95.4865103390698_8))-100.0_8)
-          IF(test_problem.EQ.4) qa_diff=ABS((100.0_8*(temp/166.838315378708_8))-100.0_8)
-          IF(test_problem.EQ.5) qa_diff=ABS((100.0_8*(temp/116.482111627676_8))-100.0_8)
+          ! TODO Get better reference results
 
-          IF(test_problem.EQ.6) qa_diff=ABS((100.0_8*(temp/39.354056418637555_8))-100.0_8)
-          ! TODO Get reference results for 3d
+          ! 60x60x60 for 100 steps
+          IF(test_problem.EQ.1) qa_diff=ABS((100.0_8*(temp/1157.9351670225969_8))-100.0_8)
 
           WRITE(*,'(a,i4,a,e16.7,a)')"Test problem", Test_problem," is within",qa_diff,"% of the expected solution"
           WRITE(g_out,'(a,i4,a,e16.7,a)')"Test problem", Test_problem," is within",qa_diff,"% of the expected solution"

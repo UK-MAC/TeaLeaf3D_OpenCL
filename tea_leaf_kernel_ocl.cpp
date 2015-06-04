@@ -399,6 +399,7 @@ void CloverChunk::ppcg_inner
         {
             step_global_size[0] -= (halo_exchange_depth-step_depth);
         }
+
         if (chunk_neighbours[CHUNK_BOTTOM - 1] == EXTERNAL_FACE)
         {
             step_offset[1] = halo_allocate_depth;
@@ -408,6 +409,7 @@ void CloverChunk::ppcg_inner
         {
             step_global_size[1] -= (halo_exchange_depth-step_depth);
         }
+
         if (chunk_neighbours[CHUNK_BACK - 1] == EXTERNAL_FACE)
         {
             step_offset[2] = halo_allocate_depth;
