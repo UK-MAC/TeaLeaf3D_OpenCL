@@ -79,6 +79,8 @@ SUBROUTINE field_summary()
 
           ! 60x60x60 for 100 steps
           IF(test_problem.EQ.1) qa_diff=ABS((100.0_8*(temp/1157.9351670225969_8))-100.0_8)
+          ! 20x20x20 for 100 steps
+          IF(test_problem.EQ.2) qa_diff=ABS((100.0_8*(temp/1171.2070668447768_8))-100.0_8)
 
           WRITE(*,'(a,i4,a,e16.7,a)')"Test problem", Test_problem," is within",qa_diff,"% of the expected solution"
           WRITE(g_out,'(a,i4,a,e16.7,a)')"Test problem", Test_problem," is within",qa_diff,"% of the expected solution"

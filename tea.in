@@ -26,7 +26,7 @@
 
  halo_depth=4
 
- tl_use_ppcg
+ tl_use_cg
  tl_max_iters=10000
  tl_eps=1.0e-10
 
