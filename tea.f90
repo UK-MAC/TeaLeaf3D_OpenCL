@@ -155,8 +155,8 @@ SUBROUTINE tea_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,fron
     chunks(c)%chunk_neighbours = external_face
   END WHERE
 
-  chunk_x = mpi_dims(1)
-  chunk_y = mpi_dims(2)
+  chunk_y = mpi_dims(1)
+  chunk_x = mpi_dims(2)
   chunk_z = mpi_dims(3)
 
   delta_x=x_cells/chunk_x
