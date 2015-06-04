@@ -90,7 +90,7 @@ void CloverChunk::initBuffers
     BUF_ALLOC(reduce_buf_6, 1.5*((sizeof(double)*reduced_cells)/(LOCAL_X*LOCAL_Y*LOCAL_Z)));
     BUF_ALLOC(PdV_reduce_buf, 1.5*((sizeof(int)*reduced_cells)/(LOCAL_X*LOCAL_Y*LOCAL_Z)));
 
-    // set initial (ideal) size for buffers and increment untl it hits alignment
+    // size of one side of mesh, plus one extra on the side for each depth, times the number of halos to be exchanged
     size_t lr_mpi_buf_sz = sizeof(double)*(y_max + 2*halo_allocate_depth)*(z_max + 2*halo_allocate_depth)*halo_allocate_depth;
     size_t bt_mpi_buf_sz = sizeof(double)*(x_max + 2*halo_allocate_depth)*(z_max + 2*halo_allocate_depth)*halo_allocate_depth;
     size_t fb_mpi_buf_sz = sizeof(double)*(x_max + 2*halo_allocate_depth)*(y_max + 2*halo_allocate_depth)*halo_allocate_depth;

@@ -35,11 +35,11 @@ int depth)
         update_halo_##face##_device.setArg(9, array_type.grid_type); \
         update_halo_##face##_device.setArg(10, depth); \
         update_halo_##face##_device.setArg(11, cur_array); \
-        CloverChunk::enqueueKernel(update_halo_##face##_device, \
-            __LINE__, __FILE__, \
-            cl::NullRange, \
-            update_##dir##_global_size[depth], \
-            update_##dir##_local_size[depth]); \
+        enqueueKernel(update_halo_##face##_device, \
+                      __LINE__, __FILE__,  \
+                      update_##dir##_offset[depth], \
+                      update_##dir##_global_size[depth], \
+                      update_##dir##_local_size[depth]); \
     }
 
     CHECK_LAUNCH(back, fb)
