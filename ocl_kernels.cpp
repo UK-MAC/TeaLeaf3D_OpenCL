@@ -388,43 +388,6 @@ void CloverChunk::initSizes
     update_fb_local_size[1] = cl::NDRange(local_row_size, local_column_size, 1);
     update_fb_local_size[2] = cl::NDRange(local_row_size, local_column_size/local_divide, 2);
 
-    // start off doing minimum amount of work
-    size_t global_bt_update_size = x_max + 4;
-    size_t global_lr_update_size = y_max + 4;
-    size_t global_fb_update_size = z_max + 4;
-
-    // increase just to fit in with local work group sizes
-    while (global_bt_update_size % local_row_size)
-        global_bt_update_size++;
-    while (global_lr_update_size % local_column_size)
-        global_lr_update_size++;
-    while (global_fb_update_size % local_slice_size)
-        global_fb_update_size++;
-
-    // create ndranges
-    update_lr_global_size[1] = cl::NDRange(1, global_lr_update_size, global_fb_update_size);
-    update_lr_global_size[2] = cl::NDRange(2, global_lr_update_size, global_fb_update_size);
-    update_bt_global_size[1] = cl::NDRange(global_bt_update_size, 1, global_fb_update_size);
-    update_bt_global_size[2] = cl::NDRange(global_bt_update_size, 2, global_fb_update_size);
-    update_fb_global_size[1] = cl::NDRange(global_bt_update_size, global_lr_update_size, 1);
-    update_fb_global_size[2] = cl::NDRange(global_bt_update_size, global_lr_update_size, 2);
-
-    size_t global_bt_pack_size = x_max + 2*halo_allocate_depth;
-    size_t global_lr_pack_size = y_max + 2*halo_allocate_depth;
-    size_t global_fb_pack_size = z_max + 2*halo_allocate_depth;
-
-    // increase just to fit in with local work group sizes
-    while (global_bt_pack_size % local_row_size)
-        global_bt_pack_size++;
-    while (global_lr_pack_size % local_column_size)
-        global_lr_pack_size++;
-    while (global_fb_pack_size % local_slice_size)
-        global_fb_pack_size++;
-
-    update_lr_global_size[halo_exchange_depth] = cl::NDRange(halo_exchange_depth, global_lr_pack_size, global_fb_pack_size);
-    update_bt_global_size[halo_exchange_depth] = cl::NDRange(global_bt_pack_size, halo_exchange_depth, global_fb_pack_size);
-    update_fb_global_size[halo_exchange_depth] = cl::NDRange(global_bt_pack_size, global_lr_pack_size, halo_exchange_depth);
-
     // use same local size as depth 1
     update_lr_local_size[halo_exchange_depth] = update_lr_local_size[1];
     update_bt_local_size[halo_exchange_depth] = update_bt_local_size[1];
@@ -432,10 +395,29 @@ void CloverChunk::initSizes
 
     //for (int depth = 0; depth < 2; depth++)
     std::map<int, cl::NDRange>::iterator typedef irangeit;
-    for (irangeit key = update_lr_global_size.begin();
-        key != update_lr_global_size.end(); key++)
+
+    for (irangeit key = update_lr_local_size.begin();
+        key != update_lr_local_size.end(); key++)
     {
         int depth = key->first;
+
+        // start off doing minimum amount of work
+        size_t global_bt_update_size = x_max + 2*depth;
+        size_t global_lr_update_size = y_max + 2*depth;
+        size_t global_fb_update_size = z_max + 2*depth;
+
+        // increase just to fit in with local work group sizes
+        while (global_bt_update_size % local_row_size)
+            global_bt_update_size++;
+        while (global_lr_update_size % local_column_size)
+            global_lr_update_size++;
+        while (global_fb_update_size % local_slice_size)
+            global_fb_update_size++;
+
+        // create ndranges
+        update_lr_global_size[depth] = cl::NDRange(depth, global_lr_update_size, global_fb_update_size);
+        update_bt_global_size[depth] = cl::NDRange(global_bt_update_size, depth, global_fb_update_size);
+        update_fb_global_size[depth] = cl::NDRange(global_bt_update_size, global_lr_update_size, depth);
 
         update_lr_offset[depth] = cl::NDRange(halo_allocate_depth - depth, halo_allocate_depth - depth, halo_allocate_depth - depth);
         update_bt_offset[depth] = cl::NDRange(halo_allocate_depth - depth, halo_allocate_depth - depth, halo_allocate_depth - depth);
