@@ -259,10 +259,7 @@ SUBROUTINE tea_leaf()
 
               IF(use_opencl_kernels) THEN
                 CALL tea_leaf_calc_residual_ocl()
-              ENDIF
-
-              IF(use_opencl_kernels) THEN
-                call tea_leaf_kernel_ppcg_init_ocl(ch_alphas, ch_betas, &
+                CALL tea_leaf_kernel_ppcg_init_ocl(ch_alphas, ch_betas, &
                     theta, tl_ppcg_inner_steps)
               ENDIF
             ENDIF
@@ -352,6 +349,8 @@ SUBROUTINE tea_leaf()
           ENDIF
 
           IF (MOD(n, 50) .EQ. 0) THEN
+            CALL update_halo(fields,1)
+
             CALL tea_leaf_calc_residual_ocl()
             CALL tea_leaf_calc_2norm_kernel_ocl(1, error)
           ENDIF
