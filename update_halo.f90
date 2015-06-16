@@ -40,10 +40,12 @@ SUBROUTINE update_halo(fields,depth)
   IF (reflective_boundary .eqv. .TRUE.) THEN
     IF (profiler_on) halo_time=timer()
     DO c=1,chunks_per_task
-      IF(use_opencl_kernels)THEN
-          CALL update_halo_kernel_ocl(chunks(c)%chunk_neighbours,     &
-                                      fields,                         &
-                                      depth                           )
+      IF(chunks(c)%task.EQ.parallel%task) THEN
+        IF(use_opencl_kernels)THEN
+            CALL update_halo_kernel_ocl(chunks(c)%chunk_neighbours,     &
+                                        fields,                         &
+                                        depth                           )
+        ENDIF
       ENDIF
     ENDDO
     IF (profiler_on) profiler%halo_update = profiler%halo_update + (timer() - halo_time)
