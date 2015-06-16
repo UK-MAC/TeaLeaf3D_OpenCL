@@ -213,7 +213,7 @@ CloverChunk::~CloverChunk
 {
     if (profiler_on && !rank)
     {
-        fprintf(stdout, "@@@@@ PROFILING @@@@@\n");
+        fprintf(stdout, "@@@@@ OpenCL Profiling information (from rank 0) @@@@@\n");
 
         if (kernel_times.size() > 0)
         {
@@ -287,7 +287,7 @@ CloverChunk::~CloverChunk
             kernel_params["tea_leaf_cg_solve_init_p"] = 2 + reduction_amount;
             kernel_params["tea_leaf_cg_solve_calc_w"] = 5 + reduction_amount;
             kernel_params["tea_leaf_cg_solve_calc_ur"] = 4 + reduction_amount;
-            kernel_params["tea_leaf_cg_solve_calc_p"] = 2;
+            kernel_params["tea_leaf_cg_solve_calc_p"] = 3;
 
             kernel_params["tea_leaf_cheby_solve_init_p"] = 8;
             kernel_params["tea_leaf_cheby_solve_calc_u"] = 2;
