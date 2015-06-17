@@ -238,12 +238,18 @@ CloverChunk::~CloverChunk
              *  Underestimating it and assuming perfect caching is about as
              *  sensible as possible
              */
+
+            /*
+            Initialisation only
             kernel_params["initialise_chunk_first"] = 1/reduced_cells;
             kernel_params["initialise_chunk_second"] = 4;
 
             kernel_params["generate_chunk_init"] = 2;
             kernel_params["generate_chunk"] = 2;
             kernel_params["generate_chunk_init_u"] = 4;
+
+            kernel_params["set_field"] = 2;
+            */
 
             kernel_params["field_summary"] = 4 + 4.0*reduction_amount;
 
@@ -271,9 +277,6 @@ CloverChunk::~CloverChunk
 
             // slighty underestimated, but roughly correct
             kernel_params["reduction"] = 1.0/(LOCAL_X*LOCAL_Y*LOCAL_Z);
-
-            // TL specific
-            kernel_params["set_field"] = 2;
 
             kernel_params["tea_leaf_finalise"] = 3;
             kernel_params["tea_leaf_calc_residual"] = 6;
@@ -309,7 +312,7 @@ CloverChunk::~CloverChunk
                 total_kernel_time += ii->second;
             }
 
-            fprintf(stdout, "%30s   %7s %5s %9s\n", "Kernel name", "runtime", "calls", "bandwidth");
+            fprintf(stdout, "%30s %9s %8s %5s %9s\n", "Kernel name", "runtime", "%runtime", "calls", "bandwidth");
 
             std::map<std::string, double>::iterator ii = kernel_times.begin();
             std::map<std::string, int>::iterator jj = kernel_calls.begin();
@@ -330,8 +333,8 @@ CloverChunk::~CloverChunk
 
                 double kernel_bw = kernel_transferred/(ii->second/1000.0);
 
-                fprintf(stdout, "%30s %9.3f %5d %7.5f\n",
-                    ii->first.c_str(), ii->second, jj->second, kernel_bw);
+                fprintf(stdout, "%30s %9.3f %8.2f %5d %9.5f\n",
+                    ii->first.c_str(), ii->second, 100.0*ii->second/total_kernel_time, jj->second, kernel_bw);
 
                 total_transferred += kernel_transferred;
             }
