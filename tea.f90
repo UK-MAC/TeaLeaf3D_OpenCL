@@ -131,6 +131,7 @@ SUBROUTINE tea_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,fron
   INTEGER :: c,delta_x,delta_y,delta_z
 
   INTEGER  :: chunk_x,chunk_y,chunk_z,mod_x,mod_y,mod_z
+  INTEGER  :: x_mpi_idx, y_mpi_idx, z_mpi_idx
 
   INTEGER  :: err
 
@@ -139,25 +140,30 @@ SUBROUTINE tea_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,fron
 
   ! Get destinations/sources
   CALL mpi_cart_shift(mpi_cart_comm, 0, 1,      &
-    chunks(c)%chunk_neighbours(chunk_bottom),   &
-    chunks(c)%chunk_neighbours(chunk_top),      &
-    err)
-  CALL mpi_cart_shift(mpi_cart_comm, 1, 1,      &
-    chunks(c)%chunk_neighbours(chunk_left),     &
-    chunks(c)%chunk_neighbours(chunk_right),    &
-    err)
-  CALL mpi_cart_shift(mpi_cart_comm, 2, 1,      &
     chunks(c)%chunk_neighbours(chunk_back),     &
     chunks(c)%chunk_neighbours(chunk_front),    &
     err)
+  CALL mpi_cart_shift(mpi_cart_comm, 1, 1,      &
+    chunks(c)%chunk_neighbours(chunk_bottom),   &
+    chunks(c)%chunk_neighbours(chunk_top),      &
+    err)
+  CALL mpi_cart_shift(mpi_cart_comm, 2, 1,      &
+    chunks(c)%chunk_neighbours(chunk_left),     &
+    chunks(c)%chunk_neighbours(chunk_right),    &
+    err)
+
+  ! order of split - z, y, x, based on contiguous mem access
+  z_mpi_idx = 1
+  y_mpi_idx = 2
+  x_mpi_idx = 3
 
   WHERE (chunks(c)%chunk_neighbours .EQ. mpi_proc_null)
     chunks(c)%chunk_neighbours = external_face
   END WHERE
 
-  chunk_y = mpi_dims(1)
-  chunk_x = mpi_dims(2)
-  chunk_z = mpi_dims(3)
+  chunk_x = mpi_dims(x_mpi_idx)
+  chunk_z = mpi_dims(y_mpi_idx)
+  chunk_y = mpi_dims(z_mpi_idx)
 
   delta_x=x_cells/chunk_x
   delta_y=y_cells/chunk_y
@@ -166,36 +172,36 @@ SUBROUTINE tea_decompose(x_cells,y_cells,z_cells,left,right,bottom,top,back,fron
   mod_y=MOD(y_cells,chunk_y)
   mod_z=MOD(z_cells,chunk_z)
 
-  left(c) = mpi_coords(2)*delta_x + 1
-  if (mpi_coords(2) .le. mod_x) then
-    left(c) = left(c) + mpi_coords(2)
-  else
-    left(c) = left(c) + mod_x
-  endif
-  right(c) = left(c)+delta_x - 1
-  if (mpi_coords(2) .lt. mod_x) then
-    right(c) = right(c) + 1
-  endif
-
-  bottom(c) = mpi_coords(1)*delta_y + 1
-  if (mpi_coords(1) .le. mod_y) then
-    bottom(c) = bottom(c) + mpi_coords(1)
+  bottom(c) = mpi_coords(x_mpi_idx)*delta_y + 1
+  if (mpi_coords(x_mpi_idx) .le. mod_y) then
+    bottom(c) = bottom(c) + mpi_coords(x_mpi_idx)
   else
     bottom(c) = bottom(c) + mod_y
   endif
   top(c) = bottom(c)+delta_y - 1
-  if (mpi_coords(1) .lt. mod_y) then
+  if (mpi_coords(x_mpi_idx) .lt. mod_y) then
     top(c) = top(c) + 1
   endif
 
-  back(c) = mpi_coords(3)*delta_z + 1
-  if (mpi_coords(3) .le. mod_z) then
-    back(c) = back(c) + mpi_coords(3)
+  left(c) = mpi_coords(y_mpi_idx)*delta_x + 1
+  if (mpi_coords(y_mpi_idx) .le. mod_x) then
+    left(c) = left(c) + mpi_coords(y_mpi_idx)
+  else
+    left(c) = left(c) + mod_x
+  endif
+  right(c) = left(c)+delta_x - 1
+  if (mpi_coords(y_mpi_idx) .lt. mod_x) then
+    right(c) = right(c) + 1
+  endif
+
+  back(c) = mpi_coords(z_mpi_idx)*delta_z + 1
+  if (mpi_coords(z_mpi_idx) .le. mod_z) then
+    back(c) = back(c) + mpi_coords(z_mpi_idx)
   else
     back(c) = back(c) + mod_z
   endif
   front(c) = back(c)+delta_z - 1
-  if (mpi_coords(3) .lt. mod_z) then
+  if (mpi_coords(z_mpi_idx) .lt. mod_z) then
     front(c) = front(c) + 1
   endif
 

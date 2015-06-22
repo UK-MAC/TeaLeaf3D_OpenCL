@@ -6,7 +6,7 @@
 #define TL_PREC_JAC_BLOCK   3
 
 #if defined(BLOCK_TOP_CHECK)
-    #define BLOCK_TOP (MIN(((int)y_max + 2 - (int)row),(int)JACOBI_BLOCK_SIZE))
+    #define BLOCK_TOP (MIN((int)(y_max + HALO_DEPTH - row),JACOBI_BLOCK_SIZE))
 #else
     #define BLOCK_TOP (JACOBI_BLOCK_SIZE)
 #endif

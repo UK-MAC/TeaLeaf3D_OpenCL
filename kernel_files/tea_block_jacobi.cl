@@ -7,14 +7,20 @@
 #endif
 #endif
 
-#define COEF_A (-Kz[THARR3D(0, 0, k+0, 0, 0)])
+#if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
+#if (LOCAL_Z > 1)
+    #error Block jacobi precontioner only works when LOCAL_Z is 1
+#endif
+#endif
+
+#define COEF_A (-Ky[THARR3D(0, 0 + k, 0, 0, 0)])
 
 #define COEF_B (1.0                                             \
-    + (Kx[THARR3D(1, 0, k+0, 0, 0)] + Kx[THARR3D(0, 0, k+0, 0, 0)])       \
-    + (Ky[THARR3D(0, 1, k+0, 0, 0)] + Ky[THARR3D(0, 0, k+0, 0, 0)])       \
-    + (Kz[THARR3D(0, 0, k+1, 0, 0)] + Kz[THARR3D(0, 0, k+0, 0, 0)]))
+    + (Kx[THARR3D(1, 0 + k, 0, 0, 0)] + Kx[THARR3D(0, 0 + k, 0, 0, 0)])       \
+    + (Ky[THARR3D(0, 1 + k, 0, 0, 0)] + Ky[THARR3D(0, 0 + k, 0, 0, 0)])       \
+    + (Kz[THARR3D(0, 0 + k, 1, 0, 0)] + Kz[THARR3D(0, 0 + k, 0, 0, 0)]))
 
-#define COEF_C (-Kz[THARR3D(0, 0, k+1, 0, 0)])
+#define COEF_C (-Ky[THARR3D(0, 1 + k, 0, 0, 0)])
 
 void block_solve_func
 (__local const double r_local[BLOCK_SZ],
@@ -43,7 +49,7 @@ void block_solve_func
 
     for (k = 1; k < upper_limit; k++)
     {
-        dp_priv[k] = (r_local[LOC_K] - COEF_A*dp_priv[k - 1])*bfp[THARR3D(0, 0, 0, k, 0)];
+        dp_priv[k] = (r_local[LOC_K] - COEF_A*dp_priv[k - 1])*bfp[THARR3D(0, k, 0, 0, 0)];
     }
 
     k = upper_limit - 1;
@@ -52,7 +58,7 @@ void block_solve_func
 
     for (k = upper_limit - 2; k >= 0; k--)
     {
-        z_local[LOC_K] = dp_priv[k] - cp[THARR3D(0, 0, 0, k, 0)]*z_local[LOC_K + LOCAL_X];
+        z_local[LOC_K] = dp_priv[k] - cp[THARR3D(0, k, 0, 0, 0)]*z_local[LOC_K + LOCAL_X];
     }
 }
 
@@ -110,12 +116,12 @@ __kernel void tea_leaf_block_init
         {
             int k = 0;
 
-            cp[THARR3D(0, 0, k, 0, 0)] = COEF_C/COEF_B;
+            cp[THARR3D(0, k, 0, 0, 0)] = COEF_C/COEF_B;
 
             for (k = 1; k < upper_limit; k++)
             {
-                bfp[THARR3D(0, 0, k, 0, 0)] = 1.0/(COEF_B - COEF_A*cp[THARR3D(0, 0, k - 1, 0, 0)]);
-                cp[THARR3D(0, 0, k, 0, 0)] = COEF_C*bfp[THARR3D(0, 0, k, 0, 0)];
+                bfp[THARR3D(0, k, 0, 0, 0)] = 1.0/(COEF_B - COEF_A*cp[THARR3D(0, k - 1, 0, 0, 0)]);
+                cp[THARR3D(0, k, 0, 0, 0)] = COEF_C*bfp[THARR3D(0, k, 0, 0, 0)];
             }
         }
     }

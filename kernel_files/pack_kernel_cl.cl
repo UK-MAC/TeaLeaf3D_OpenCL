@@ -1,12 +1,6 @@
 #include "./kernel_files/macros_cl.cl"
 
 // left/right
-//#define VERT_IDX                                                    \
-//    ((0 + column - get_global_offset(0)) +                                                 \
-//    ((0 + row    - get_global_offset(1)) + depth - 1)*depth +                              \
-//    ((0 + slice  - get_global_offset(2)) + depth - 1)*(y_max + y_extra + 2*depth)*depth)   \
-//    + offset
-
 #define VERT_IDX \
     (column - get_global_offset(0)) + \
     (row    - get_global_offset(1))*depth + \
@@ -14,12 +8,6 @@
     offset
 
 // bottom/top
-//#define HORZ_IDX                                                                    \
-//    ((-1 + column - get_global_offset(0)) + depth +                                                           \
-//    ((0 + slice  - get_global_offset(2)) + depth - 1)* (x_max + x_extra + 2*depth) +                             \
-//    ((-1 + row    - get_global_offset(1))         - 1)*((x_max + x_extra + 2*depth)*(z_max + z_extra + 2*depth))) \
-//    + offset
-
 #define HORZ_IDX    \
     (column - get_global_offset(0)) + \
     (row    - get_global_offset(1))*(x_max + x_extra + 2*depth) + \
@@ -27,12 +15,6 @@
     offset
 
 // back/front
-//#define DEPTH_IDX                                                                       \
-//    ((0 + row    - get_global_offset(1)) + depth +                                                             \
-//    ((0 + column - get_global_offset(0)) + depth - 1)* (x_max + x_extra + 2*depth) +                               \
-//    ((-1 + slice  - get_global_offset(2))         - 1)*((x_max + x_extra + 2*depth)*(y_max + y_extra + 2*depth)))   \
-//    + offset
-
 #define DEPTH_IDX    \
     (column - get_global_offset(0)) + \
     (row    - get_global_offset(1))*(x_max + x_extra + 2*depth) + \
@@ -240,3 +222,4 @@ const int depth, int offset)
         cur_array[THARR3D(0, 0, dst, x_extra, y_extra)] = front_buffer[DEPTH_IDX];
     }
 }
+

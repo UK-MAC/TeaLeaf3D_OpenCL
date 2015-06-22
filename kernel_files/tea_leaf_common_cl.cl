@@ -105,3 +105,4 @@ __kernel void tea_leaf_init_jac_diag
         Mi[THARR3D(0, 0, 0, 0, 0)] = 1.0/diag;
     }
 }
+

@@ -381,8 +381,7 @@ void CloverChunk::ppcg_init_sd
 void CloverChunk::ppcg_inner
 (int ppcg_cur_step, int max_steps, const int* chunk_neighbours)
 {
-    for (int step_depth = 1 + (halo_allocate_depth - halo_exchange_depth);
-        step_depth <= halo_allocate_depth; step_depth++)
+    for (int step_depth = 1; step_depth <= halo_exchange_depth; step_depth++)
     {
         size_t step_offset[3] = {step_depth, step_depth, step_depth};
         size_t step_global_size[3] = {
@@ -435,7 +434,7 @@ void CloverChunk::ppcg_inner
                       step_global_size_range,
                       cl::NullRange);
 
-        if (ppcg_cur_step + step_depth >= max_steps)
+        if (ppcg_cur_step + step_depth > max_steps)
         {
             break;
         }

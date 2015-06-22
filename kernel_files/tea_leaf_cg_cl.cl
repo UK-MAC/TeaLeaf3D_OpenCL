@@ -22,7 +22,7 @@ __kernel void tea_leaf_cg_solve_init_p
         #if (PRECONDITIONER == TL_PREC_JAC_BLOCK)
         {
             // z initialised when block_solve kernel is called before this
-            p[THARR3D(0, 0, 0, 0, 0)] = 0.0;
+            p[THARR3D(0, 0, 0, 0, 0)] = z[THARR3D(0, 0, 0, 0, 0)];
         }
         #elif (PRECONDITIONER == TL_PREC_JAC_DIAG)
         {
