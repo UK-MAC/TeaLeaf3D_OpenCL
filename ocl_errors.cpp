@@ -333,15 +333,15 @@ CloverChunk::~CloverChunk
 
                 double kernel_bw = kernel_transferred/(ii->second/1000.0);
 
-                fprintf(stdout, "%30s %9.3f %8.2f %5d %9.5f\n",
+                fprintf(stdout, "%30s %9.2f %8.2f %5d %9.2f\n",
                     ii->first.c_str(), ii->second, 100.0*ii->second/total_kernel_time, jj->second, kernel_bw);
 
                 total_transferred += kernel_transferred;
             }
 
-            fprintf(stdout, "Total kernel time %f ms\n", total_kernel_time);
-            fprintf(stdout, "Total kernel memory transferred %f GB\n", total_transferred);
-            fprintf(stdout, "Average kernel bandwidth %f GB/s\n", total_transferred/(total_kernel_time/1000.0));
+            fprintf(stdout, "Total kernel time %.2f ms\n", total_kernel_time);
+            fprintf(stdout, "Total kernel memory transferred %.2f GB\n", total_transferred);
+            fprintf(stdout, "Average kernel bandwidth %.2f GB/s\n", total_transferred/(total_kernel_time/1000.0));
         }
     }
 }
